@@ -62,7 +62,7 @@ const Home = () => {
       .eq("id", session.user.id)
       .single();
 
-    if (!profileData?.display_name) {
+    if (!profileData?.full_name && !profileData?.avatar_url && !profileData?.profile_photo_url) {
       navigate("/profile-setup");
       return;
     }
