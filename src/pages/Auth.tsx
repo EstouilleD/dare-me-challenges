@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import logo from "@/assets/logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -99,9 +100,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-hero">
       <Card className="w-full max-w-md shadow-elevated">
         <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Dare Me
-          </CardTitle>
+          <img src={logo} alt="Dare Me" className="h-20 mx-auto" />
           <CardDescription>Challenge yourself and your friends</CardDescription>
         </CardHeader>
         <CardContent>

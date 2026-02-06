@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Plus, LogOut } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 interface Profile {
   id: string;
@@ -191,7 +192,7 @@ const Home = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-white">Dare Me</h1>
+              <img src={logo} alt="Dare Me" className="h-10" />
               <p className="text-sm text-white/80">Hi, {profile?.display_name}! 👋</p>
             </div>
             <div className="flex items-center gap-2">
