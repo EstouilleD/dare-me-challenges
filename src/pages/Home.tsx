@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Plus, LogOut } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 interface Profile {
   id: string;
