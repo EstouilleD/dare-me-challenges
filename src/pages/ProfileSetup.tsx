@@ -84,7 +84,7 @@ const ProfileSetup = () => {
     let profilePhotoUrl = "";
     if (!useAvatar && photoFile) {
       const fileExt = photoFile.name.split(".").pop();
-      const fileName = `${session.user.id}-${Math.random()}.${fileExt}`;
+      const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from("avatars")
         .upload(fileName, photoFile);
