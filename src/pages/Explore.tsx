@@ -49,6 +49,7 @@ const Explore = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
 
   useEffect(() => {
     loadChallengeTypes();
@@ -57,7 +58,7 @@ const Explore = () => {
 
   useEffect(() => {
     loadChallenges();
-  }, [selectedType, startDate]);
+  }, [selectedType, startDate, endDate]);
 
   const loadChallengeTypes = async () => {
     const { data } = await supabase.from("challenge_types").select("*");
@@ -83,6 +84,10 @@ const Explore = () => {
 
     if (startDate) {
       query = query.gte("start_date", startDate.toISOString());
+    }
+
+    if (endDate) {
+      query = query.lte("end_date", endDate.toISOString());
     }
 
     const { data, error } = await query;
@@ -119,9 +124,10 @@ const Explore = () => {
     setSearchQuery("");
     setSelectedType("all");
     setStartDate(undefined);
+    setEndDate(undefined);
   };
 
-  const hasActiveFilters = searchQuery || selectedType !== "all" || startDate;
+  const hasActiveFilters = searchQuery || selectedType !== "all" || startDate || endDate;
 
   return (
     <div className="min-h-screen bg-background">
@@ -190,6 +196,30 @@ const Explore = () => {
                   mode="single"
                   selected={startDate}
                   onSelect={setStartDate}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-[180px] justify-start text-left font-normal",
+                    !endDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {endDate ? format(endDate, "PPP") : "End date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={endDate}
+                  onSelect={setEndDate}
                   initialFocus
                   className={cn("p-3 pointer-events-auto")}
                 />
