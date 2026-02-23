@@ -250,7 +250,7 @@ const InviteParticipants = ({ challengeId, currentUserId, existingParticipantIds
                 <p className="text-xs text-muted-foreground">Invitations sent:</p>
                 {[...sentEmails].map((e) => (
                   <div key={e} className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Check className="h-3 w-3 text-green-500" />
+                    <Check className="h-3 w-3 text-accent-foreground" />
                     {e}
                   </div>
                 ))}
