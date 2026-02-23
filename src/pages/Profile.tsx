@@ -77,6 +77,7 @@ const Profile = () => {
     end_date_hours_before: 24,
   });
   const [savingNotifs, setSavingNotifs] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
     loadProfile();
