@@ -251,6 +251,45 @@ export type Database = {
         }
         Relationships: []
       }
+      deleted_users: {
+        Row: {
+          account_status: string
+          created_at: string | null
+          deleted_at: string
+          deleted_by: string | null
+          deletion_reason: string | null
+          display_name: string
+          email: string
+          full_name: string | null
+          id: string
+          original_user_id: string
+        }
+        Insert: {
+          account_status?: string
+          created_at?: string | null
+          deleted_at?: string
+          deleted_by?: string | null
+          deletion_reason?: string | null
+          display_name: string
+          email: string
+          full_name?: string | null
+          id?: string
+          original_user_id: string
+        }
+        Update: {
+          account_status?: string
+          created_at?: string | null
+          deleted_at?: string
+          deleted_by?: string | null
+          deletion_reason?: string | null
+          display_name?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          original_user_id?: string
+        }
+        Relationships: []
+      }
       invitations: {
         Row: {
           challenge_id: string
