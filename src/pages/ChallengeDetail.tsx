@@ -826,31 +826,44 @@ const ChallengeDetail = () => {
         <ChallengeRanking challengeId={challenge.id} isFinished={challenge.status === "finished"} />
 
         {/* Social Feed */}
-        <div>
-          <h2 className="text-lg font-semibold mb-3">
-            Proofs Feed ({proofs.length})
-          </h2>
-          {proofs.length === 0 ? (
-            <Card className="shadow-card">
-              <CardContent className="py-8 text-center text-muted-foreground">
-                No proofs submitted yet.
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {[...proofs].reverse().map((proof) => (
-                <ProofFeedItem
-                  key={proof.id}
-                  proof={{ ...proof, challenge_id: challenge.id }}
-                  currentUserId={currentUserId}
-                  askNumericScore={challenge.ask_numeric_score}
-                  challengeStatus={challenge.status}
-                  onRefresh={loadData}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        {challenge.is_surprise && challenge.status !== "finished" ? (
+          <Card className="shadow-card">
+            <CardContent className="py-8 text-center text-muted-foreground space-y-2">
+              <div className="text-4xl">🤫</div>
+              <p className="font-medium">Surprise Challenge!</p>
+              <p className="text-sm">Proofs are hidden until the challenge ends.</p>
+              {isParticipant && (
+                <p className="text-xs">You can still submit your proofs — they just won't be visible to others yet.</p>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <div>
+            <h2 className="text-lg font-semibold mb-3">
+              Proofs Feed ({proofs.length})
+            </h2>
+            {proofs.length === 0 ? (
+              <Card className="shadow-card">
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  No proofs submitted yet.
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {[...proofs].reverse().map((proof) => (
+                  <ProofFeedItem
+                    key={proof.id}
+                    proof={{ ...proof, challenge_id: challenge.id }}
+                    currentUserId={currentUserId}
+                    askNumericScore={challenge.ask_numeric_score}
+                    challengeStatus={challenge.status}
+                    onRefresh={loadData}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );
