@@ -227,30 +227,7 @@ const Home = () => {
           </Button>
         </div>
 
-        {/* Badges preview */}
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-primary" /> My Badges
-            </h2>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/badges")} className="text-primary">
-              View all →
-            </Button>
-          </div>
-          {recentBadges.length === 0 ? (
-            <Card>
-              <CardContent className="py-6 text-center text-muted-foreground">
-                No badges earned yet. Start completing challenges! 🎯
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-4 gap-2">
-              {recentBadges.map((b, i) => (
-                <BadgeCard key={i} icon={b.icon} name={b.name} description={b.description} earned size="sm" />
-              ))}
-            </div>
-          )}
-        </section>
+
 
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">My challenges to complete</h2>
