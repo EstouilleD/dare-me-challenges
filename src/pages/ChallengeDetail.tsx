@@ -293,6 +293,8 @@ const ChallengeDetail = () => {
       clearFile();
       setDialogOpen(false);
       await supabase.from("participations").update({ is_done: true }).eq("id", myParticipation.id);
+      // 🎉 Confetti!
+      confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
       loadData();
     }
   };
