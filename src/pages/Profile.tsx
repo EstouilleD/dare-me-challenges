@@ -353,50 +353,6 @@ const Profile = () => {
             </Card>
           </TabsContent>
 
-          {/* Badges Tab */}
-          <TabsContent value="badges">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Trophy className="h-5 w-5 text-primary" /> Badges
-                    </CardTitle>
-                    <CardDescription>
-                      {userBadges.length} / {badges.length} earned
-                    </CardDescription>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => navigate("/badges")}>
-                    View all →
-                  </Button>
-                </div>
-                <div className="h-3 rounded-full bg-muted overflow-hidden mt-2">
-                  <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
-                    style={{ width: `${badges.length > 0 ? (userBadges.length / badges.length) * 100 : 0}%` }}
-                  />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-3">
-                  {badges.map(badge => {
-                    const earned = userBadges.find(ub => ub.badge_id === badge.id);
-                    return (
-                      <BadgeCard
-                        key={badge.id}
-                        icon={badge.icon}
-                        name={badge.name}
-                        description={badge.description}
-                        earned={!!earned}
-                        earnedAt={earned?.earned_at}
-                        size="sm"
-                      />
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           {/* Appearance Tab */}
           <TabsContent value="appearance">
