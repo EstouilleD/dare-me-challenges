@@ -7,10 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Plus, Compass, ChevronDown, Trophy } from "lucide-react";
+import { Plus, Compass, ChevronDown } from "lucide-react";
 import logo from "@/assets/logo.png";
 import BurgerMenu from "@/components/BurgerMenu";
-import BadgeCard from "@/components/BadgeCard";
 
 interface Profile {
   id: string;
@@ -46,8 +45,6 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [myVisible, setMyVisible] = useState(5);
   const [createdVisible, setCreatedVisible] = useState(5);
-  const [recentBadges, setRecentBadges] = useState<{ icon: string; name: string; description: string; earned_at: string }[]>([]);
-  const [badgeStats, setBadgeStats] = useState({ earned: 0, total: 0 });
 
   useEffect(() => {
     loadData();
@@ -110,24 +107,20 @@ const Home = () => {
 
     setCreatedChallenges(created as Challenge[] || []);
 
-    // Check and load badges
+    // Check badges and notify new ones
+    const { data: beforeBadges } = await supabase
+      .from("user_badges").select("badge_id").eq("user_id", session.user.id);
+    const beforeIds = new Set((beforeBadges || []).map(b => b.badge_id));
+
     await supabase.rpc("check_and_award_badges", { _user_id: session.user.id });
-    const [allBadgesRes, earnedRes] = await Promise.all([
-      supabase.from("badges").select("id"),
-      supabase.from("user_badges").select("badge_id, earned_at, badges(icon, name, description)")
-        .eq("user_id", session.user.id)
-        .order("earned_at", { ascending: false })
-        .limit(4),
-    ]);
-    setBadgeStats({ earned: earnedRes.data?.length || 0, total: allBadgesRes.data?.length || 0 });
-    setRecentBadges(
-      (earnedRes.data || []).map((ub: any) => ({
-        icon: ub.badges.icon,
-        name: ub.badges.name,
-        description: ub.badges.description,
-        earned_at: ub.earned_at,
-      }))
-    );
+
+    const { data: afterBadges } = await supabase
+      .from("user_badges").select("badge_id, badges(icon, name)").eq("user_id", session.user.id);
+    const newBadges = (afterBadges || []).filter((b: any) => !beforeIds.has(b.badge_id));
+    
+    for (const nb of newBadges) {
+      toast({ title: `${(nb as any).badges.icon} Badge unlocked!`, description: (nb as any).badges.name });
+    }
 
     setLoading(false);
   };
@@ -234,30 +227,7 @@ const Home = () => {
           </Button>
         </div>
 
-        {/* Badges preview */}
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-primary" /> My Badges
-            </h2>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/badges")} className="text-primary">
-              View all →
-            </Button>
-          </div>
-          {recentBadges.length === 0 ? (
-            <Card>
-              <CardContent className="py-6 text-center text-muted-foreground">
-                No badges earned yet. Start completing challenges! 🎯
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-4 gap-2">
-              {recentBadges.map((b, i) => (
-                <BadgeCard key={i} icon={b.icon} name={b.name} description={b.description} earned size="sm" />
-              ))}
-            </div>
-          )}
-        </section>
+
 
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">My challenges to complete</h2>
