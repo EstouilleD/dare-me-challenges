@@ -10,8 +10,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Camera, Video, X, Link } from "lucide-react";
+import { ArrowLeft, Camera, Video, X, Link, Lock, Crown } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { checkCreationLimit } from "@/hooks/usePremium";
+import { Badge } from "@/components/ui/badge";
 
 interface ChallengeType {
   id: string;
