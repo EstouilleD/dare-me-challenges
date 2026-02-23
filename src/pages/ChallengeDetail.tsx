@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import ProofFeedItem from "@/components/ProofFeedItem";
 import InviteParticipants from "@/components/InviteParticipants";
 import ChallengeProgress from "@/components/ChallengeProgress";
+import ChallengeRanking from "@/components/ChallengeRanking";
+import confetti from "canvas-confetti";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
