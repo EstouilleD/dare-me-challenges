@@ -4,8 +4,9 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, PartyPopper, X } from "lucide-react";
+import { Loader2, PartyPopper, X, Lock, Crown } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { checkParticipationLimit } from "@/hooks/usePremium";
 
 const JoinChallenge = () => {
   const { challengeId } = useParams();
