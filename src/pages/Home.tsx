@@ -41,7 +41,6 @@ const Home = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [myChallenges, setMyChallenges] = useState<Challenge[]>([]);
   const [createdChallenges, setCreatedChallenges] = useState<Challenge[]>([]);
-  const [createdChallenges, setCreatedChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
