@@ -255,17 +255,20 @@ const Profile = () => {
 
       <main className="container mx-auto px-4 py-6 max-w-lg">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="profile" className="gap-1.5">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="profile" className="gap-1.5 text-xs">
               <User className="h-4 w-4" /> Profile
             </TabsTrigger>
-            <TabsTrigger value="appearance" className="gap-1.5">
+            <TabsTrigger value="badges" className="gap-1.5 text-xs">
+              <Award className="h-4 w-4" /> Badges
+            </TabsTrigger>
+            <TabsTrigger value="appearance" className="gap-1.5 text-xs">
               <Palette className="h-4 w-4" /> Theme
             </TabsTrigger>
-            <TabsTrigger value="security" className="gap-1.5">
+            <TabsTrigger value="security" className="gap-1.5 text-xs">
               <Lock className="h-4 w-4" /> Security
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-1.5">
+            <TabsTrigger value="notifications" className="gap-1.5 text-xs">
               <Bell className="h-4 w-4" /> Notifs
             </TabsTrigger>
           </TabsList>
