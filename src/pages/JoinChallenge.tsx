@@ -73,6 +73,18 @@ const JoinChallenge = () => {
     if (!userId || !challengeId) return;
     setJoining(true);
 
+    // Check participation limit
+    const limitResult = await checkParticipationLimit(userId);
+    if (!limitResult.allowed) {
+      toast({ 
+        variant: "destructive", 
+        title: "Participation limit reached", 
+        description: `You're in ${limitResult.count}/${limitResult.limit} active challenges. Upgrade to Premium for unlimited.` 
+      });
+      setJoining(false);
+      return;
+    }
+
     // Upsert participation
     const { data: existing } = await supabase
       .from("participations")
