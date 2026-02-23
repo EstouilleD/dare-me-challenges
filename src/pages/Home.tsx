@@ -222,9 +222,16 @@ const Home = () => {
             </Card>
           ) : (
             <div className="grid gap-4">
-              {myChallenges.map((challenge) => (
+              {myChallenges.slice(0, myVisible).map((challenge) => (
                 <ChallengeCard key={challenge.id} challenge={challenge} />
               ))}
+            </div>
+          )}
+          {myChallenges.length > myVisible && (
+            <div className="flex justify-center">
+              <Button variant="ghost" onClick={() => setMyVisible((v) => v + 5)} className="gap-1">
+                <ChevronDown className="h-4 w-4" /> Show more ({myChallenges.length - myVisible} remaining)
+              </Button>
             </div>
           )}
         </section>
