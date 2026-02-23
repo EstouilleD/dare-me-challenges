@@ -12,6 +12,7 @@ import ProofDetail from "./pages/ProofDetail";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import Explore from "./pages/Explore";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
