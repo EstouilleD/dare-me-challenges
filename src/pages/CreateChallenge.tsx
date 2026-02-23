@@ -245,6 +245,20 @@ const CreateChallenge = () => {
             <CardTitle>New Challenge</CardTitle>
           </CardHeader>
           <CardContent>
+            {creationLimitReached && (
+              <div className="mb-6 p-4 rounded-lg bg-accent/50 border border-accent text-center space-y-2">
+                <div className="flex items-center justify-center gap-2 text-sm font-medium">
+                  <Lock className="h-4 w-4" />
+                  Monthly limit reached ({creationCount}/5)
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Upgrade to <span className="font-semibold text-primary">Premium</span> for unlimited challenge creation.
+                </p>
+                <Button size="sm" variant="default" className="gap-1" onClick={() => navigate("/profile")}>
+                  <Crown className="h-3 w-3" /> Go Premium
+                </Button>
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Title *</Label>
