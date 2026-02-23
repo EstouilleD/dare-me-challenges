@@ -46,6 +46,8 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [myVisible, setMyVisible] = useState(5);
   const [createdVisible, setCreatedVisible] = useState(5);
+  const [recentBadges, setRecentBadges] = useState<{ icon: string; name: string; description: string; earned_at: string }[]>([]);
+  const [badgeStats, setBadgeStats] = useState({ earned: 0, total: 0 });
 
   useEffect(() => {
     loadData();
