@@ -49,6 +49,7 @@ interface Challenge {
   end_date: string;
   status: string;
   is_public: boolean;
+  is_surprise: boolean;
   ask_numeric_score: boolean;
   owner_id: string;
   quantity_target: number | null;
