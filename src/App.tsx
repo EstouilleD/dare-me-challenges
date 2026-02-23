@@ -17,6 +17,7 @@ import MyChallenges from "./pages/MyChallenges";
 import CreatedChallenges from "./pages/CreatedChallenges";
 import DeletedChallenges from "./pages/DeletedChallenges";
 import ChallengeHistory from "./pages/ChallengeHistory";
+import JoinChallenge from "./pages/JoinChallenge";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/created-challenges" element={<CreatedChallenges />} />
           <Route path="/deleted-challenges" element={<DeletedChallenges />} />
           <Route path="/challenge-history" element={<ChallengeHistory />} />
+          <Route path="/join/:challengeId" element={<JoinChallenge />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
