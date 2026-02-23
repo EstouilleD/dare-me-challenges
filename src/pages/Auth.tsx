@@ -24,7 +24,13 @@ const Auth = () => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/");
+        const pendingJoin = localStorage.getItem("pendingJoin");
+        if (pendingJoin) {
+          localStorage.removeItem("pendingJoin");
+          navigate(pendingJoin);
+        } else {
+          navigate("/");
+        }
       }
     });
   }, [navigate]);
