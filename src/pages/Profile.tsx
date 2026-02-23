@@ -311,7 +311,7 @@ const Profile = () => {
                               selectedAvatar === avatar ? "ring-4 ring-primary scale-110" : "hover:scale-105"
                             }`}
                           >
-                            <Avatar className="h-14 w-14">
+                            <Avatar className="h-14 w-14 bg-white">
                               <AvatarImage src={avatar} />
                               <AvatarFallback>?</AvatarFallback>
                             </Avatar>
