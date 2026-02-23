@@ -110,6 +110,25 @@ const Home = () => {
 
     setCreatedChallenges(created as Challenge[] || []);
 
+    // Check and load badges
+    await supabase.rpc("check_and_award_badges", { _user_id: session.user.id });
+    const [allBadgesRes, earnedRes] = await Promise.all([
+      supabase.from("badges").select("id"),
+      supabase.from("user_badges").select("badge_id, earned_at, badges(icon, name, description)")
+        .eq("user_id", session.user.id)
+        .order("earned_at", { ascending: false })
+        .limit(4),
+    ]);
+    setBadgeStats({ earned: earnedRes.data?.length || 0, total: allBadgesRes.data?.length || 0 });
+    setRecentBadges(
+      (earnedRes.data || []).map((ub: any) => ({
+        icon: ub.badges.icon,
+        name: ub.badges.name,
+        description: ub.badges.description,
+        earned_at: ub.earned_at,
+      }))
+    );
+
     setLoading(false);
   };
 
