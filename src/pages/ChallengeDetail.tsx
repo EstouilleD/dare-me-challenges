@@ -422,16 +422,6 @@ const ChallengeDetail = () => {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              {!isOwner && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setReportDialogOpen(true)}
-                  className="text-white hover:bg-white/20"
-                >
-                  <Flag className="h-4 w-4" />
-                </Button>
-              )}
               {isOwner && (
                 <>
                   <Button
