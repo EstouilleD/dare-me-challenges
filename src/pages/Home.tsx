@@ -107,24 +107,20 @@ const Home = () => {
 
     setCreatedChallenges(created as Challenge[] || []);
 
-    // Check and load badges
+    // Check badges and notify new ones
+    const { data: beforeBadges } = await supabase
+      .from("user_badges").select("badge_id").eq("user_id", session.user.id);
+    const beforeIds = new Set((beforeBadges || []).map(b => b.badge_id));
+
     await supabase.rpc("check_and_award_badges", { _user_id: session.user.id });
-    const [allBadgesRes, earnedRes] = await Promise.all([
-      supabase.from("badges").select("id"),
-      supabase.from("user_badges").select("badge_id, earned_at, badges(icon, name, description)")
-        .eq("user_id", session.user.id)
-        .order("earned_at", { ascending: false })
-        .limit(4),
-    ]);
-    setBadgeStats({ earned: earnedRes.data?.length || 0, total: allBadgesRes.data?.length || 0 });
-    setRecentBadges(
-      (earnedRes.data || []).map((ub: any) => ({
-        icon: ub.badges.icon,
-        name: ub.badges.name,
-        description: ub.badges.description,
-        earned_at: ub.earned_at,
-      }))
-    );
+
+    const { data: afterBadges } = await supabase
+      .from("user_badges").select("badge_id, badges(icon, name)").eq("user_id", session.user.id);
+    const newBadges = (afterBadges || []).filter((b: any) => !beforeIds.has(b.badge_id));
+    
+    for (const nb of newBadges) {
+      toast({ title: `${(nb as any).badges.icon} Badge unlocked!`, description: (nb as any).badges.name });
+    }
 
     setLoading(false);
   };
