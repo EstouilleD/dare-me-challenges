@@ -193,22 +193,22 @@ const Home = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-8">
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-2">
           <Button 
             size="lg" 
             onClick={() => navigate("/create-challenge")}
-            className="shadow-glow"
+            className="shadow-glow w-full max-w-sm text-base py-6"
           >
             <Plus className="h-5 w-5 mr-2" />
             Create a new challenge
           </Button>
           <Button 
-            size="lg" 
-            variant="outline"
+            variant="ghost"
             onClick={() => navigate("/explore")}
+            className="text-muted-foreground"
           >
-            <Compass className="h-5 w-5 mr-2" />
-            Explore
+            <Compass className="h-4 w-4 mr-1" />
+            Explore challenges
           </Button>
         </div>
 
