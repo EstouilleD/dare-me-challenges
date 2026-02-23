@@ -201,6 +201,24 @@ const Profile = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { navigate("/auth"); return; }
+
+    const { error } = await supabase.functions.invoke("delete-user", {
+      body: { target_user_id: session.user.id, reason: "Self-deletion" },
+    });
+
+    setDeletingAccount(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Failed to delete account", description: error.message });
+    } else {
+      await supabase.auth.signOut();
+      navigate("/auth");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
