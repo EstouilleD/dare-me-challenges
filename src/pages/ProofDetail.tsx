@@ -284,14 +284,6 @@ const ProofDetail = () => {
               </div>
             )}
             
-            {proof.quantity_value && (
-              <div>
-                <h3 className="font-semibold mb-2">Quantity</h3>
-                <Badge variant="secondary" className="text-lg px-4 py-2">
-                  {proof.quantity_value}
-                </Badge>
-              </div>
-            )}
 
             {proof.image_url && (
               <div>
