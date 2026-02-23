@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
-import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus, Camera, Video, Upload, X, Flag } from "lucide-react";
+import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus, Camera, Video, Upload, X, Flag, DoorOpen } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProofFeedItem from "@/components/ProofFeedItem";
@@ -446,6 +446,29 @@ const ChallengeDetail = () => {
               </div>
             </div>
             <div className="flex items-center gap-1">
+              {isParticipant && !isOwner && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" title="Quit challenge">
+                      <DoorOpen className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Quit this challenge?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        You will lose your progress and proofs will remain visible.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleQuit} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Quit
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
               {isOwner && (
                 <>
                   <Button
@@ -706,12 +729,12 @@ const ChallengeDetail = () => {
           />
         )}
 
-        {isParticipant && challenge.challenge_types.name !== "Frequency" && challenge.challenge_types.name !== "Quantity" && (
+        {isParticipant && challenge.challenge_types.name !== "Frequency" && challenge.challenge_types.name !== "Quantity" && !proofs.some(p => p.participations.user_id === currentUserId) && (
           <Card className="shadow-elevated border-accent">
             <CardHeader>
               <CardTitle>My Participation</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="w-full">Submit Proof</Button>
@@ -759,9 +782,6 @@ const ChallengeDetail = () => {
                   </div>
                 </DialogContent>
               </Dialog>
-              <Button variant="outline" onClick={handleQuit} className="w-full">
-                Quit Challenge
-              </Button>
             </CardContent>
           </Card>
         )}
