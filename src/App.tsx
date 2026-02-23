@@ -15,6 +15,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Explore from "./pages/Explore";
 import Profile from "./pages/Profile";
 import MyProfile from "./pages/MyProfile";
+import MyChallenges from "./pages/MyChallenges";
 import CreatedChallenges from "./pages/CreatedChallenges";
 import DeletedChallenges from "./pages/DeletedChallenges";
 import ChallengeHistory from "./pages/ChallengeHistory";
