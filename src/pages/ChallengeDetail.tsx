@@ -134,8 +134,10 @@ const ChallengeDetail = () => {
 
   // Report state
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
-  const [reportReason, setReportReason] = useState("");
+  const [reportCategory, setReportCategory] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
   const [submittingReport, setSubmittingReport] = useState(false);
+  const [reportSubmitted, setReportSubmitted] = useState(false);
 
   useEffect(() => {
     loadData();
