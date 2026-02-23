@@ -45,6 +45,9 @@ interface Challenge {
   is_public: boolean;
   ask_numeric_score: boolean;
   owner_id: string;
+  quantity_target: number | null;
+  frequency_quantity: number | null;
+  frequency_period: string | null;
   challenge_types: ChallengeType;
   profiles: Profile;
 }
