@@ -90,6 +90,22 @@ const AdminUsers = () => {
     loadUsers();
   };
 
+  const handleDeleteUser = async (userId: string, displayName: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const { error } = await supabase.functions.invoke("delete-user", {
+      body: { target_user_id: userId, reason: "Deleted by admin" },
+    });
+
+    if (error) {
+      toast({ variant: "destructive", title: "Delete failed", description: error.message });
+    } else {
+      toast({ title: `${displayName} deleted` });
+      loadUsers();
+    }
+  };
+
   const getAvatar = (u: UserRow) => {
     if (u.use_avatar && u.avatar_url) return u.avatar_url;
     if (u.profile_photo_url) return u.profile_photo_url;
