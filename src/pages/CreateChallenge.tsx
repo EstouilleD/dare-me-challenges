@@ -47,6 +47,10 @@ const CreateChallenge = () => {
   const [demoFile, setDemoFile] = useState<File | null>(null);
   const [demoPreview, setDemoPreview] = useState<string | null>(null);
   const [demoTab, setDemoTab] = useState("url");
+  const [isSurprise, setIsSurprise] = useState(false);
+  const [isPremiumUser, setIsPremiumUser] = useState(false);
+  const [creationLimitReached, setCreationLimitReached] = useState(false);
+  const [creationCount, setCreationCount] = useState(0);
 
   // Frequency fields
   const [frequencyQuantity, setFrequencyQuantity] = useState("1");
