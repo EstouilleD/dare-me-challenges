@@ -200,6 +200,14 @@ const Home = () => {
             <Plus className="h-5 w-5 mr-2" />
             Create a new challenge
           </Button>
+          <Button 
+            size="lg" 
+            variant="outline"
+            onClick={() => navigate("/explore")}
+          >
+            <Compass className="h-5 w-5 mr-2" />
+            Explore
+          </Button>
         </div>
 
         <section className="space-y-4">
