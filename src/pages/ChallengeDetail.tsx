@@ -66,6 +66,28 @@ interface Proof {
   };
 }
 
+const useCountdown = (endDate: string) => {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return useMemo(() => {
+    const end = new Date(endDate);
+    if (now >= end) return "Ended";
+    const days = differenceInDays(end, now);
+    if (days >= 1) return `${days}D left`;
+    const hours = differenceInHours(end, now);
+    if (hours >= 1) return `${hours}H left`;
+    const mins = differenceInMinutes(end, now);
+    if (mins >= 1) return `${mins}min left`;
+    const secs = differenceInSeconds(end, now);
+    return `${secs}s left`;
+  }, [endDate, now]);
+};
+
 const ChallengeDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
