@@ -10,7 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Camera, Video, X, Link } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ChallengeType {
   id: string;
@@ -41,6 +42,9 @@ const CreateChallenge = () => {
   const [endDate, setEndDate] = useState("");
   const [askNumericScore, setAskNumericScore] = useState(false);
   const [demoVideoUrl, setDemoVideoUrl] = useState("");
+  const [demoFile, setDemoFile] = useState<File | null>(null);
+  const [demoPreview, setDemoPreview] = useState<string | null>(null);
+  const [demoTab, setDemoTab] = useState("url");
 
   // Frequency fields
   const [frequencyQuantity, setFrequencyQuantity] = useState("1");
@@ -132,6 +136,33 @@ const CreateChallenge = () => {
     if (start <= now && end >= now) status = "active";
     else if (end < now) status = "finished";
 
+    let demoPhotoUrl: string | null = null;
+    let demoVidUrl: string | null = null;
+
+    // Upload demo file if provided
+    if (demoTab === "file" && demoFile) {
+      const fileExt = demoFile.name.split(".").pop();
+      const filePath = `demos/${session.user.id}/${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from("proofs")
+        .upload(filePath, demoFile);
+
+      if (uploadError) {
+        setLoading(false);
+        toast({ variant: "destructive", title: "Demo upload failed", description: uploadError.message });
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from("proofs").getPublicUrl(filePath);
+      if (demoFile.type.startsWith("video/")) {
+        demoVidUrl = urlData.publicUrl;
+      } else {
+        demoPhotoUrl = urlData.publicUrl;
+      }
+    } else if (demoTab === "url" && demoVideoUrl.trim()) {
+      demoVidUrl = demoVideoUrl.trim();
+    }
+
     const { data: challenge, error } = await supabase
       .from("challenges")
       .insert({
@@ -143,7 +174,8 @@ const CreateChallenge = () => {
         start_date: new Date(startDate).toISOString(),
         end_date: new Date(endDate).toISOString(),
         ask_numeric_score: askNumericScore,
-        demo_video_url: demoVideoUrl.trim() || null,
+        demo_video_url: demoVidUrl,
+        demo_photo_url: demoPhotoUrl,
         frequency_quantity: isFrequency ? parseInt(frequencyQuantity) || 1 : null,
         frequency_period: isFrequency ? frequencyPeriod : null,
         quantity_target: isQuantity ? parseInt(quantityTarget) || 10 : null,
@@ -339,13 +371,74 @@ const CreateChallenge = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="demo-video">Demo Video URL (optional)</Label>
-                <Input
-                  id="demo-video"
-                  placeholder="https://youtube.com/..."
-                  value={demoVideoUrl}
-                  onChange={(e) => setDemoVideoUrl(e.target.value)}
-                />
+                <Label>Demo (optional)</Label>
+                <Tabs value={demoTab} onValueChange={setDemoTab}>
+                  <TabsList className="w-full">
+                    <TabsTrigger value="url" className="flex-1 gap-1">
+                      <Link className="h-3 w-3" /> URL
+                    </TabsTrigger>
+                    <TabsTrigger value="file" className="flex-1 gap-1">
+                      <Camera className="h-3 w-3" /> Upload
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="url">
+                    <Input
+                      placeholder="https://youtube.com/..."
+                      value={demoVideoUrl}
+                      onChange={(e) => setDemoVideoUrl(e.target.value)}
+                    />
+                  </TabsContent>
+                  <TabsContent value="file">
+                    {!demoFile ? (
+                      <label className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-muted-foreground/30 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-accent/30 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <Camera className="h-5 w-5 text-muted-foreground" />
+                          <Video className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <span className="text-sm text-muted-foreground">Upload a photo or video</span>
+                        <input
+                          type="file"
+                          accept="image/*,video/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            setDemoFile(file);
+                            if (file.type.startsWith("image/")) {
+                              setDemoPreview(URL.createObjectURL(file));
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                    ) : (
+                      <div className="relative">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setDemoFile(null);
+                            if (demoPreview) {
+                              URL.revokeObjectURL(demoPreview);
+                              setDemoPreview(null);
+                            }
+                          }}
+                          className="absolute top-2 right-2 z-10 h-8 w-8 bg-background/80 hover:bg-background rounded-full"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        {demoPreview ? (
+                          <img src={demoPreview} alt="Demo preview" className="rounded-lg w-full max-h-48 object-cover" />
+                        ) : (
+                          <div className="flex items-center gap-2 p-4 rounded-lg bg-accent/30 border">
+                            <Video className="h-5 w-5 text-primary" />
+                            <span className="text-sm font-medium truncate">{demoFile.name}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
