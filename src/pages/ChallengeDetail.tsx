@@ -66,7 +66,9 @@ interface Proof {
   text: string | null;
   quantity_value: number | null;
   created_at: string;
+  participation_id: string;
   participations: {
+    user_id: string;
     profiles: Profile;
   };
 }
