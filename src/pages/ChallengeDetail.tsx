@@ -88,6 +88,17 @@ const useCountdown = (endDate: string) => {
   }, [endDate, now]);
 };
 
+const CountdownBadge = ({ endDate }: { endDate: string }) => {
+  const countdown = useCountdown(endDate);
+  const isEnded = countdown === "Ended";
+  return (
+    <Badge variant={isEnded ? "secondary" : "default"} className="flex items-center gap-1 text-xs">
+      <Clock className="h-3 w-3" />
+      {countdown}
+    </Badge>
+  );
+};
+
 const ChallengeDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
