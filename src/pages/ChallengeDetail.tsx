@@ -469,6 +469,27 @@ const ChallengeDetail = () => {
         </div>
       </header>
 
+      {/* Report Challenge Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report Challenge</DialogTitle>
+            <DialogDescription>Why are you reporting this challenge?</DialogDescription>
+          </DialogHeader>
+          <RadioGroup value={reportReason} onValueChange={setReportReason} className="space-y-2">
+            {REPORT_REASONS.map((reason) => (
+              <div key={reason} className="flex items-center space-x-2">
+                <RadioGroupItem value={reason} id={reason} />
+                <Label htmlFor={reason} className="cursor-pointer">{reason}</Label>
+              </div>
+            ))}
+          </RadioGroup>
+          <Button onClick={handleReport} disabled={submittingReport || !reportReason} className="w-full" variant="destructive">
+            {submittingReport ? "Submitting..." : "Submit Report"}
+          </Button>
+        </DialogContent>
+      </Dialog>
+
       {/* Edit Challenge Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
