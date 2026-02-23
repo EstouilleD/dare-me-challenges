@@ -13,7 +13,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, User, Lock, Bell } from "lucide-react";
+import { ArrowLeft, User, Lock, Bell, Sun, Moon, Monitor, Palette } from "lucide-react";
+import { useTheme } from "next-themes";
 import avatar1 from "@/assets/avatars/avatar1.jpg";
 import avatar2 from "@/assets/avatars/avatar2.png";
 import avatar4 from "@/assets/avatars/avatar4.png";
@@ -48,6 +49,7 @@ interface NotificationPrefs {
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -242,9 +244,12 @@ const Profile = () => {
 
       <main className="container mx-auto px-4 py-6 max-w-lg">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile" className="gap-1.5">
               <User className="h-4 w-4" /> Profile
+            </TabsTrigger>
+            <TabsTrigger value="appearance" className="gap-1.5">
+              <Palette className="h-4 w-4" /> Theme
             </TabsTrigger>
             <TabsTrigger value="security" className="gap-1.5">
               <Lock className="h-4 w-4" /> Security
@@ -333,6 +338,41 @@ const Profile = () => {
                 <Button onClick={handleSaveProfile} className="w-full" disabled={saving}>
                   {saving ? "Saving..." : "Save profile"}
                 </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Appearance Tab */}
+          <TabsContent value="appearance">
+            <Card>
+              <CardHeader>
+                <CardTitle>Appearance</CardTitle>
+                <CardDescription>Choose your preferred theme</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[
+                  { value: "light", label: "Light", icon: Sun, desc: "Classic light theme" },
+                  { value: "dark", label: "Dark", icon: Moon, desc: "Easy on the eyes" },
+                  { value: "system", label: "System", icon: Monitor, desc: "Follow device settings" },
+                ].map(({ value, label, icon: Icon, desc }) => (
+                  <button
+                    key={value}
+                    onClick={() => setTheme(value)}
+                    className={`w-full flex items-center gap-4 p-4 rounded-lg border-2 transition-all ${
+                      theme === value
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    <div className={`p-2 rounded-full ${theme === value ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-medium">{label}</p>
+                      <p className="text-sm text-muted-foreground">{desc}</p>
+                    </div>
+                  </button>
+                ))}
               </CardContent>
             </Card>
           </TabsContent>
