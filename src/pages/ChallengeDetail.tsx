@@ -347,6 +347,40 @@ const ChallengeDetail = () => {
     setEditDialogOpen(true);
   };
 
+  const REPORT_REASONS = [
+    "Discrimination or hate speech",
+    "Harassment or bullying",
+    "Illegal activity",
+    "Violent or dangerous content",
+    "Sexual or inappropriate content",
+    "Spam or misleading",
+  ];
+
+  const handleReport = async () => {
+    if (!challenge || !reportReason) return;
+    setSubmittingReport(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const { error } = await supabase.from("reports").insert({
+      challenge_id: challenge.id,
+      reporter_id: session.user.id,
+      reason: reportReason,
+    });
+    setSubmittingReport(false);
+    if (error) {
+      if (error.code === "23505") {
+        toast({ variant: "destructive", title: "Already reported", description: "You have already reported this challenge." });
+      } else {
+        toast({ variant: "destructive", title: "Report failed", description: error.message });
+      }
+    } else {
+      toast({ title: "Report submitted", description: "Thank you, we'll review this challenge." });
+      setReportDialogOpen(false);
+      setReportReason("");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
