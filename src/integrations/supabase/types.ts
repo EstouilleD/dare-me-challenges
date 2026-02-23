@@ -135,6 +135,7 @@ export type Database = {
           frequency_quantity: number | null
           id: string
           is_public: boolean | null
+          is_surprise: boolean
           owner_id: string
           quantity_target: number | null
           start_date: string
@@ -155,6 +156,7 @@ export type Database = {
           frequency_quantity?: number | null
           id?: string
           is_public?: boolean | null
+          is_surprise?: boolean
           owner_id: string
           quantity_target?: number | null
           start_date: string
@@ -175,6 +177,7 @@ export type Database = {
           frequency_quantity?: number | null
           id?: string
           is_public?: boolean | null
+          is_surprise?: boolean
           owner_id?: string
           quantity_target?: number | null
           start_date?: string
