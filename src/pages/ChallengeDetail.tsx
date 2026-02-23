@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
-import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus } from "lucide-react";
+import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus, Camera, Video, Upload, X } from "lucide-react";
 import InviteParticipants from "@/components/InviteParticipants";
 import ChallengeProgress from "@/components/ChallengeProgress";
 import {
@@ -118,7 +118,8 @@ const ChallengeDetail = () => {
   const [loading, setLoading] = useState(true);
 
   const [proofText, setProofText] = useState("");
-  const [proofQuantity, setProofQuantity] = useState("");
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [submittingProof, setSubmittingProof] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -218,18 +219,58 @@ const ChallengeDetail = () => {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setProofFile(file);
+    if (file.type.startsWith("image/")) {
+      setProofPreview(URL.createObjectURL(file));
+    } else {
+      setProofPreview(null);
+    }
+  };
+
+  const clearFile = () => {
+    setProofFile(null);
+    if (proofPreview) {
+      URL.revokeObjectURL(proofPreview);
+      setProofPreview(null);
+    }
+  };
+
   const handleSubmitProof = async () => {
     if (!myParticipation) return;
-    if (!proofText.trim() && !proofQuantity) {
-      toast({ variant: "destructive", title: "Missing proof", description: "Please provide proof details." });
+    if (!proofFile) {
+      toast({ variant: "destructive", title: "Missing proof", description: "Please upload a photo or video." });
       return;
     }
     setSubmittingProof(true);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    // Upload file to storage
+    const fileExt = proofFile.name.split(".").pop();
+    const filePath = `${session.user.id}/${Date.now()}.${fileExt}`;
+    const { error: uploadError } = await supabase.storage
+      .from("proofs")
+      .upload(filePath, proofFile);
+
+    if (uploadError) {
+      setSubmittingProof(false);
+      toast({ variant: "destructive", title: "Upload failed", description: uploadError.message });
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from("proofs").getPublicUrl(filePath);
+    const isVideo = proofFile.type.startsWith("video/");
+
     const { error } = await supabase.from("proofs").insert({
       participation_id: myParticipation.id,
       challenge_id: id,
       text: proofText.trim() || null,
-      quantity_value: proofQuantity ? parseInt(proofQuantity) : null,
+      image_url: !isVideo ? urlData.publicUrl : null,
+      video_url: isVideo ? urlData.publicUrl : null,
     });
     setSubmittingProof(false);
     if (error) {
@@ -237,7 +278,7 @@ const ChallengeDetail = () => {
     } else {
       toast({ title: "Proof submitted!", description: "Your proof has been added." });
       setProofText("");
-      setProofQuantity("");
+      clearFile();
       setDialogOpen(false);
       await supabase.from("participations").update({ is_done: true }).eq("id", myParticipation.id);
       loadData();
@@ -541,33 +582,61 @@ const ChallengeDetail = () => {
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Submit Proof</DialogTitle>
-                    <DialogDescription>Prove you completed the challenge</DialogDescription>
+                    <DialogDescription>Upload a photo or video as proof</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="proof-text">Description</Label>
-                      <Textarea
-                        id="proof-text"
-                        placeholder="Describe what you did..."
-                        value={proofText}
-                        onChange={(e) => setProofText(e.target.value)}
-                        rows={4}
-                      />
-                    </div>
-                    {challenge.challenge_types.name !== "Creative" && (
+                    {/* File upload area */}
+                    {!proofFile ? (
                       <div className="space-y-2">
-                        <Label htmlFor="proof-quantity">Quantity/Count</Label>
-                        <Input
-                          id="proof-quantity"
-                          type="number"
-                          placeholder="How many?"
-                          value={proofQuantity}
-                          onChange={(e) => setProofQuantity(e.target.value)}
-                        />
+                        <Label>Photo or Video *</Label>
+                        <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-muted-foreground/30 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-accent/30 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <Camera className="h-6 w-6 text-muted-foreground" />
+                            <Video className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                          <span className="text-sm text-muted-foreground">Tap to take or upload</span>
+                          <input
+                            type="file"
+                            accept="image/*,video/*"
+                            capture="environment"
+                            onChange={handleFileChange}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={clearFile}
+                          className="absolute top-2 right-2 z-10 h-8 w-8 bg-background/80 hover:bg-background rounded-full"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        {proofPreview ? (
+                          <img src={proofPreview} alt="Preview" className="rounded-lg w-full max-h-64 object-cover" />
+                        ) : (
+                          <div className="flex items-center gap-2 p-4 rounded-lg bg-accent/30 border">
+                            <Video className="h-5 w-5 text-primary" />
+                            <span className="text-sm font-medium truncate">{proofFile.name}</span>
+                          </div>
+                        )}
                       </div>
                     )}
-                    <Button onClick={handleSubmitProof} disabled={submittingProof} className="w-full">
-                      {submittingProof ? "Submitting..." : "Submit Proof"}
+
+                    <div className="space-y-2">
+                      <Label htmlFor="proof-text">Description (optional)</Label>
+                      <Textarea
+                        id="proof-text"
+                        placeholder="Add a note..."
+                        value={proofText}
+                        onChange={(e) => setProofText(e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+                    <Button onClick={handleSubmitProof} disabled={submittingProof || !proofFile} className="w-full">
+                      {submittingProof ? "Uploading..." : "Submit Proof"}
                     </Button>
                   </div>
                 </DialogContent>
@@ -619,8 +688,8 @@ const ChallengeDetail = () => {
                         <div className="flex-1 min-w-0">
                           <p className="font-medium">{proof.participations.profiles.display_name}</p>
                           {proof.text && <p className="text-sm text-muted-foreground line-clamp-2">{proof.text}</p>}
-                          {proof.quantity_value && (
-                            <p className="text-sm text-muted-foreground">Quantity: {proof.quantity_value}</p>
+                          {proof.image_url && (
+                            <img src={proof.image_url} alt="Proof" className="mt-2 rounded-md w-full max-h-32 object-cover" />
                           )}
                           <p className="text-xs text-muted-foreground mt-1">
                             {format(new Date(proof.created_at), "MMM d, h:mm a")}
