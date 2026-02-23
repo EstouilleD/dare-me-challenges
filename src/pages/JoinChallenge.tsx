@@ -4,8 +4,9 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, PartyPopper, X } from "lucide-react";
+import { Loader2, PartyPopper, X, Lock, Crown } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { checkParticipationLimit } from "@/hooks/usePremium";
 
 const JoinChallenge = () => {
   const { challengeId } = useParams();
@@ -71,6 +72,18 @@ const JoinChallenge = () => {
   const handleJoin = async () => {
     if (!userId || !challengeId) return;
     setJoining(true);
+
+    // Check participation limit
+    const limitResult = await checkParticipationLimit(userId);
+    if (!limitResult.allowed) {
+      toast({ 
+        variant: "destructive", 
+        title: "Participation limit reached", 
+        description: `You're in ${limitResult.count}/${limitResult.limit} active challenges. Upgrade to Premium for unlimited.` 
+      });
+      setJoining(false);
+      return;
+    }
 
     // Upsert participation
     const { data: existing } = await supabase

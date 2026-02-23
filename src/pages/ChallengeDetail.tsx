@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { checkParticipationLimit } from "@/hooks/usePremium";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +15,7 @@ import ProofFeedItem from "@/components/ProofFeedItem";
 import InviteParticipants from "@/components/InviteParticipants";
 import ChallengeProgress from "@/components/ChallengeProgress";
 import ChallengeRanking from "@/components/ChallengeRanking";
+import CoinBoostActions from "@/components/CoinBoostActions";
 import confetti from "canvas-confetti";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
@@ -48,6 +50,7 @@ interface Challenge {
   end_date: string;
   status: string;
   is_public: boolean;
+  is_surprise: boolean;
   ask_numeric_score: boolean;
   owner_id: string;
   quantity_target: number | null;
@@ -203,6 +206,17 @@ const ChallengeDetail = () => {
   const handleJoin = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
+
+    // Check participation limit
+    const limitResult = await checkParticipationLimit(session.user.id);
+    if (!limitResult.allowed) {
+      toast({
+        variant: "destructive",
+        title: "Participation limit reached",
+        description: `You're in ${limitResult.count}/${limitResult.limit} active challenges. Upgrade to Premium for unlimited.`,
+      });
+      return;
+    }
 
     const { error } = await supabase
       .from("participations")
@@ -734,6 +748,18 @@ const ChallengeDetail = () => {
           </Card>
         )}
 
+        {/* Coin Boost - only for active participants */}
+        {isParticipant && challenge.status === "active" && myParticipation && (
+          <div className="flex gap-2">
+            <CoinBoostActions
+              challengeId={challenge.id}
+              participationId={myParticipation.id}
+              currentUserId={currentUserId}
+              onRefresh={loadData}
+            />
+          </div>
+        )}
+
         {/* Progress tracking for Quantity / Frequency challenges */}
         {isParticipant && challenge && (
           <ChallengeProgress
@@ -813,31 +839,44 @@ const ChallengeDetail = () => {
         <ChallengeRanking challengeId={challenge.id} isFinished={challenge.status === "finished"} />
 
         {/* Social Feed */}
-        <div>
-          <h2 className="text-lg font-semibold mb-3">
-            Proofs Feed ({proofs.length})
-          </h2>
-          {proofs.length === 0 ? (
-            <Card className="shadow-card">
-              <CardContent className="py-8 text-center text-muted-foreground">
-                No proofs submitted yet.
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {[...proofs].reverse().map((proof) => (
-                <ProofFeedItem
-                  key={proof.id}
-                  proof={{ ...proof, challenge_id: challenge.id }}
-                  currentUserId={currentUserId}
-                  askNumericScore={challenge.ask_numeric_score}
-                  challengeStatus={challenge.status}
-                  onRefresh={loadData}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        {challenge.is_surprise && challenge.status !== "finished" ? (
+          <Card className="shadow-card">
+            <CardContent className="py-8 text-center text-muted-foreground space-y-2">
+              <div className="text-4xl">🤫</div>
+              <p className="font-medium">Surprise Challenge!</p>
+              <p className="text-sm">Proofs are hidden until the challenge ends.</p>
+              {isParticipant && (
+                <p className="text-xs">You can still submit your proofs — they just won't be visible to others yet.</p>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <div>
+            <h2 className="text-lg font-semibold mb-3">
+              Proofs Feed ({proofs.length})
+            </h2>
+            {proofs.length === 0 ? (
+              <Card className="shadow-card">
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  No proofs submitted yet.
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {[...proofs].reverse().map((proof) => (
+                  <ProofFeedItem
+                    key={proof.id}
+                    proof={{ ...proof, challenge_id: challenge.id }}
+                    currentUserId={currentUserId}
+                    askNumericScore={challenge.ask_numeric_score}
+                    challengeStatus={challenge.status}
+                    onRefresh={loadData}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );

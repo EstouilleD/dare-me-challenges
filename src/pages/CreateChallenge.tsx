@@ -10,8 +10,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Camera, Video, X, Link } from "lucide-react";
+import { ArrowLeft, Camera, Video, X, Link, Lock, Crown } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { checkCreationLimit } from "@/hooks/usePremium";
+import { Badge } from "@/components/ui/badge";
 
 interface ChallengeType {
   id: string;
@@ -45,6 +47,10 @@ const CreateChallenge = () => {
   const [demoFile, setDemoFile] = useState<File | null>(null);
   const [demoPreview, setDemoPreview] = useState<string | null>(null);
   const [demoTab, setDemoTab] = useState("url");
+  const [isSurprise, setIsSurprise] = useState(false);
+  const [isPremiumUser, setIsPremiumUser] = useState(false);
+  const [creationLimitReached, setCreationLimitReached] = useState(false);
+  const [creationCount, setCreationCount] = useState(0);
 
   // Frequency fields
   const [frequencyQuantity, setFrequencyQuantity] = useState("1");
@@ -55,9 +61,26 @@ const CreateChallenge = () => {
 
   useEffect(() => {
     loadTypes();
+    checkLimits();
     const today = new Date().toISOString().split("T")[0];
     setStartDate(today);
   }, []);
+
+  const checkLimits = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const result = await checkCreationLimit(session.user.id);
+    setCreationLimitReached(!result.allowed);
+    setCreationCount(result.count);
+    // Check premium
+    const { data: sub } = await supabase
+      .from("subscriptions")
+      .select("plan")
+      .eq("user_id", session.user.id)
+      .eq("status", "active")
+      .maybeSingle();
+    setIsPremiumUser(sub?.plan === "premium");
+  };
 
   const loadTypes = async () => {
     const { data } = await supabase
@@ -179,6 +202,7 @@ const CreateChallenge = () => {
         frequency_quantity: isFrequency ? parseInt(frequencyQuantity) || 1 : null,
         frequency_period: isFrequency ? frequencyPeriod : null,
         quantity_target: isQuantity ? parseInt(quantityTarget) || 10 : null,
+        is_surprise: isPremiumUser ? isSurprise : false,
         status,
       })
       .select()
@@ -222,6 +246,20 @@ const CreateChallenge = () => {
             <CardTitle>New Challenge</CardTitle>
           </CardHeader>
           <CardContent>
+            {creationLimitReached && (
+              <div className="mb-6 p-4 rounded-lg bg-accent/50 border border-accent text-center space-y-2">
+                <div className="flex items-center justify-center gap-2 text-sm font-medium">
+                  <Lock className="h-4 w-4" />
+                  Monthly limit reached ({creationCount}/5)
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Upgrade to <span className="font-semibold text-primary">Premium</span> for unlimited challenge creation.
+                </p>
+                <Button size="sm" variant="default" className="gap-1" onClick={() => navigate("/profile")}>
+                  <Crown className="h-3 w-3" /> Go Premium
+                </Button>
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Title *</Label>
@@ -329,6 +367,26 @@ const CreateChallenge = () => {
               <div className="flex items-center justify-between">
                 <Label htmlFor="is-public">Public challenge</Label>
                 <Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="is-surprise">Surprise challenge</Label>
+                    {!isPremiumUser && (
+                      <Badge variant="outline" className="text-xs gap-1">
+                        <Crown className="h-3 w-3" /> Premium
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Hide proofs from other participants until the challenge ends</p>
+                </div>
+                <Switch 
+                  id="is-surprise" 
+                  checked={isSurprise} 
+                  onCheckedChange={setIsSurprise}
+                  disabled={!isPremiumUser}
+                />
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -441,8 +499,8 @@ const CreateChallenge = () => {
                 </Tabs>
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Creating..." : "Create Challenge 🚀"}
+              <Button type="submit" className="w-full" disabled={loading || creationLimitReached}>
+                {loading ? "Creating..." : creationLimitReached ? "Monthly limit reached" : "Create Challenge 🚀"}
               </Button>
             </form>
           </CardContent>
