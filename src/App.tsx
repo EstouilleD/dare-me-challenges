@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import Auth from "./pages/Auth";
 import ProfileSetup from "./pages/ProfileSetup";
 import Home from "./pages/Home";
@@ -23,33 +24,35 @@ import Admin from "./pages/Admin";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/profile-setup" element={<ProfileSetup />} />
-          <Route path="/create-challenge" element={<CreateChallenge />} />
-          <Route path="/challenge/:id" element={<ChallengeDetail />} />
-          <Route path="/proof/:id" element={<ProofDetail />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/my-challenges" element={<MyChallenges />} />
-          <Route path="/created-challenges" element={<CreatedChallenges />} />
-          <Route path="/deleted-challenges" element={<DeletedChallenges />} />
-          <Route path="/challenge-history" element={<ChallengeHistory />} />
-          <Route path="/join/:challengeId" element={<JoinChallenge />} />
-          <Route path="/admin" element={<Admin />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/profile-setup" element={<ProfileSetup />} />
+            <Route path="/create-challenge" element={<CreateChallenge />} />
+            <Route path="/challenge/:id" element={<ChallengeDetail />} />
+            <Route path="/proof/:id" element={<ProofDetail />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/my-challenges" element={<MyChallenges />} />
+            <Route path="/created-challenges" element={<CreatedChallenges />} />
+            <Route path="/deleted-challenges" element={<DeletedChallenges />} />
+            <Route path="/challenge-history" element={<ChallengeHistory />} />
+            <Route path="/join/:challengeId" element={<JoinChallenge />} />
+            <Route path="/admin" element={<Admin />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;
