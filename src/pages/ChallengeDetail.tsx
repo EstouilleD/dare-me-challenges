@@ -442,7 +442,7 @@ const ChallengeDetail = () => {
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
-                <AlertDialog>
+                  <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="text-white hover:bg-destructive/80">
                       <Trash2 className="h-4 w-4" />
