@@ -61,9 +61,26 @@ const CreateChallenge = () => {
 
   useEffect(() => {
     loadTypes();
+    checkLimits();
     const today = new Date().toISOString().split("T")[0];
     setStartDate(today);
   }, []);
+
+  const checkLimits = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const result = await checkCreationLimit(session.user.id);
+    setCreationLimitReached(!result.allowed);
+    setCreationCount(result.count);
+    // Check premium
+    const { data: sub } = await supabase
+      .from("subscriptions")
+      .select("plan")
+      .eq("user_id", session.user.id)
+      .eq("status", "active")
+      .maybeSingle();
+    setIsPremiumUser(sub?.plan === "premium");
+  };
 
   const loadTypes = async () => {
     const { data } = await supabase
