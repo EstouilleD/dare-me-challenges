@@ -131,6 +131,11 @@ const ChallengeDetail = () => {
   const [editDescription, setEditDescription] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Report state
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [submittingReport, setSubmittingReport] = useState(false);
+
   useEffect(() => {
     loadData();
   }, [id]);
