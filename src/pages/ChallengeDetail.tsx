@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
-import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus, Camera, Video, Upload, X, Flag } from "lucide-react";
+import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus, Camera, Video, Upload, X, Flag, DoorOpen } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProofFeedItem from "@/components/ProofFeedItem";
