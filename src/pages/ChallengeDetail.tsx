@@ -176,11 +176,12 @@ const ChallengeDetail = () => {
       .select(`
         *,
         participations!inner(
+          user_id,
           profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)
         )
       `)
       .eq("challenge_id", id)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: true });
 
     setProofs(proofsData as Proof[] || []);
     setLoading(false);
