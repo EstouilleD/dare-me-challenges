@@ -422,16 +422,6 @@ const ChallengeDetail = () => {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              {!isOwner && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setReportDialogOpen(true)}
-                  className="text-white hover:bg-white/20"
-                >
-                  <Flag className="h-4 w-4" />
-                </Button>
-              )}
               {isOwner && (
                 <>
                   <Button
@@ -527,12 +517,24 @@ const ChallengeDetail = () => {
         <Card className="shadow-elevated">
           <CardHeader className="pb-3">
             {/* Creator - small at top */}
-            <div className="flex items-center gap-2 mb-3">
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={getAvatarSrc(challenge.profiles)} />
-                <AvatarFallback className="text-xs">{challenge.profiles.display_name[0]}</AvatarFallback>
-              </Avatar>
-              <span className="text-xs text-muted-foreground">by {challenge.profiles.display_name}</span>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={getAvatarSrc(challenge.profiles)} />
+                  <AvatarFallback className="text-xs">{challenge.profiles.display_name[0]}</AvatarFallback>
+                </Avatar>
+                <span className="text-xs text-muted-foreground">by {challenge.profiles.display_name}</span>
+              </div>
+              {!isOwner && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setReportDialogOpen(true)}
+                  className="text-destructive hover:bg-destructive/10 h-8 w-8"
+                >
+                  <Flag className="h-4 w-4" />
+                </Button>
+              )}
             </div>
 
             {/* Dates + Countdown */}
