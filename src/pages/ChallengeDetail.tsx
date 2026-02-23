@@ -219,18 +219,58 @@ const ChallengeDetail = () => {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setProofFile(file);
+    if (file.type.startsWith("image/")) {
+      setProofPreview(URL.createObjectURL(file));
+    } else {
+      setProofPreview(null);
+    }
+  };
+
+  const clearFile = () => {
+    setProofFile(null);
+    if (proofPreview) {
+      URL.revokeObjectURL(proofPreview);
+      setProofPreview(null);
+    }
+  };
+
   const handleSubmitProof = async () => {
     if (!myParticipation) return;
-    if (!proofText.trim() && !proofQuantity) {
-      toast({ variant: "destructive", title: "Missing proof", description: "Please provide proof details." });
+    if (!proofFile) {
+      toast({ variant: "destructive", title: "Missing proof", description: "Please upload a photo or video." });
       return;
     }
     setSubmittingProof(true);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    // Upload file to storage
+    const fileExt = proofFile.name.split(".").pop();
+    const filePath = `${session.user.id}/${Date.now()}.${fileExt}`;
+    const { error: uploadError } = await supabase.storage
+      .from("proofs")
+      .upload(filePath, proofFile);
+
+    if (uploadError) {
+      setSubmittingProof(false);
+      toast({ variant: "destructive", title: "Upload failed", description: uploadError.message });
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from("proofs").getPublicUrl(filePath);
+    const isVideo = proofFile.type.startsWith("video/");
+
     const { error } = await supabase.from("proofs").insert({
       participation_id: myParticipation.id,
       challenge_id: id,
       text: proofText.trim() || null,
-      quantity_value: proofQuantity ? parseInt(proofQuantity) : null,
+      image_url: !isVideo ? urlData.publicUrl : null,
+      video_url: isVideo ? urlData.publicUrl : null,
     });
     setSubmittingProof(false);
     if (error) {
@@ -238,7 +278,7 @@ const ChallengeDetail = () => {
     } else {
       toast({ title: "Proof submitted!", description: "Your proof has been added." });
       setProofText("");
-      setProofQuantity("");
+      clearFile();
       setDialogOpen(false);
       await supabase.from("participations").update({ is_done: true }).eq("id", myParticipation.id);
       loadData();
