@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      boosts: {
+        Row: {
+          boost_type: string
+          coin_cost: number
+          created_at: string
+          id: string
+          target_challenge_id: string | null
+          target_proof_id: string | null
+          user_id: string
+        }
+        Insert: {
+          boost_type: string
+          coin_cost: number
+          created_at?: string
+          id?: string
+          target_challenge_id?: string | null
+          target_proof_id?: string | null
+          user_id: string
+        }
+        Update: {
+          boost_type?: string
+          coin_cost?: number
+          created_at?: string
+          id?: string
+          target_challenge_id?: string | null
+          target_proof_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boosts_target_challenge_id_fkey"
+            columns: ["target_challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boosts_target_proof_id_fkey"
+            columns: ["target_proof_id"]
+            isOneToOne: false
+            referencedRelation: "proofs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_types: {
         Row: {
           created_at: string
@@ -53,9 +98,12 @@ export type Database = {
           demo_video_url: string | null
           description: string
           end_date: string
+          frequency_period: string | null
+          frequency_quantity: number | null
           id: string
           is_public: boolean | null
           owner_id: string
+          quantity_target: number | null
           start_date: string
           status: string
           title: string
@@ -70,9 +118,12 @@ export type Database = {
           demo_video_url?: string | null
           description: string
           end_date: string
+          frequency_period?: string | null
+          frequency_quantity?: number | null
           id?: string
           is_public?: boolean | null
           owner_id: string
+          quantity_target?: number | null
           start_date: string
           status?: string
           title: string
@@ -87,9 +138,12 @@ export type Database = {
           demo_video_url?: string | null
           description?: string
           end_date?: string
+          frequency_period?: string | null
+          frequency_quantity?: number | null
           id?: string
           is_public?: boolean | null
           owner_id?: string
+          quantity_target?: number | null
           start_date?: string
           status?: string
           title?: string
@@ -112,6 +166,90 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      coin_balances: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      coin_packs: {
+        Row: {
+          coin_amount: number
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          price_cents: number
+          stripe_price_id: string | null
+        }
+        Insert: {
+          coin_amount: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          price_cents: number
+          stripe_price_id?: string | null
+        }
+        Update: {
+          coin_amount?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_cents?: number
+          stripe_price_id?: string | null
+        }
+        Relationships: []
+      }
+      coin_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          reference_id: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       invitations: {
         Row: {
@@ -164,6 +302,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          end_date_hours_before: number
+          end_date_reminder: boolean
+          frequency_reminder: boolean
+          id: string
+          push_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date_hours_before?: number
+          end_date_reminder?: boolean
+          frequency_reminder?: boolean
+          id?: string
+          push_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date_hours_before?: number
+          end_date_reminder?: boolean
+          frequency_reminder?: boolean
+          id?: string
+          push_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       participations: {
         Row: {
@@ -249,6 +420,84 @@ export type Database = {
         }
         Relationships: []
       }
+      proof_comments: {
+        Row: {
+          created_at: string
+          id: string
+          proof_id: string
+          text: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          proof_id: string
+          text: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          proof_id?: string
+          text?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proof_comments_proof_id_fkey"
+            columns: ["proof_id"]
+            isOneToOne: false
+            referencedRelation: "proofs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proof_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proof_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          proof_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          proof_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          proof_id?: string
+          reaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proof_reactions_proof_id_fkey"
+            columns: ["proof_id"]
+            isOneToOne: false
+            referencedRelation: "proofs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proof_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       proofs: {
         Row: {
           challenge_id: string
@@ -297,6 +546,77 @@ export type Database = {
           },
         ]
       }
+      reports: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          id: string
+          reason: string
+          reporter_id: string
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          id?: string
+          reason: string
+          reporter_id: string
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          reporter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       votes: {
         Row: {
           created_at: string
@@ -344,7 +664,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_coin_balance: { Args: { _user_id: string }; Returns: number }
+      is_premium: { Args: { _user_id: string }; Returns: boolean }
+      spend_coins: {
+        Args: {
+          _amount: number
+          _description: string
+          _reference_id?: string
+          _type: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
       update_challenge_status: { Args: never; Returns: undefined }
+      user_participates_in_challenge: {
+        Args: { _challenge_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
