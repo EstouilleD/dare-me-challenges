@@ -118,7 +118,8 @@ const ChallengeDetail = () => {
   const [loading, setLoading] = useState(true);
 
   const [proofText, setProofText] = useState("");
-  const [proofQuantity, setProofQuantity] = useState("");
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [submittingProof, setSubmittingProof] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
