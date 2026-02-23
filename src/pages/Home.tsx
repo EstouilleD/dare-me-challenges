@@ -242,23 +242,6 @@ const Home = () => {
             </div>
           )}
         </section>
-
-        <section className="space-y-4">
-          <h2 className="text-2xl font-bold">Public challenges</h2>
-          {publicChallenges.length === 0 ? (
-            <Card>
-              <CardContent className="py-8 text-center text-muted-foreground">
-                No public challenges available at the moment.
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {publicChallenges.map((challenge) => (
-                <ChallengeCard key={challenge.id} challenge={challenge} />
-              ))}
-            </div>
-          )}
-        </section>
       </main>
     </div>
   );
