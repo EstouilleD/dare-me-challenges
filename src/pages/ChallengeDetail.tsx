@@ -766,19 +766,8 @@ const ChallengeDetail = () => {
           </Card>
         )}
 
-        {challenge.status === "finished" && (
-          <Card className="shadow-elevated border-success">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5" />
-                Ranking
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Challenge completed! Check back for final rankings.</p>
-            </CardContent>
-          </Card>
-        )}
+        {/* Ranking */}
+        <ChallengeRanking challengeId={challenge.id} isFinished={challenge.status === "finished"} />
 
         {/* Social Feed */}
         <div>
