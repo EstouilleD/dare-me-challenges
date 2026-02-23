@@ -11,7 +11,7 @@ interface Notification {
   type: string;
   title: string;
   message: string;
-  data: Record<string, any>;
+  data: any;
   is_read: boolean;
   created_at: string;
 }
