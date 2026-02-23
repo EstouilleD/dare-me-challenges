@@ -510,6 +510,24 @@ const ChallengeDetail = () => {
           </Card>
         )}
 
+        {/* Progress tracking for Quantity / Frequency challenges */}
+        {isParticipant && challenge && (
+          <ChallengeProgress
+            challengeType={challenge.challenge_types.name}
+            quantityTarget={challenge.quantity_target}
+            frequencyQuantity={challenge.frequency_quantity}
+            frequencyPeriod={challenge.frequency_period}
+            startDate={challenge.start_date}
+            endDate={challenge.end_date}
+            myProofs={proofs.filter(
+              (p) => p.participations.user_id === currentUserId
+            )}
+            isParticipant={isParticipant}
+            onSubmitProof={() => setDialogOpen(true)}
+            onViewProof={(proofId) => navigate(`/proof/${proofId}`)}
+          />
+        )}
+
         {isParticipant && (
           <Card className="shadow-elevated border-accent">
             <CardHeader>
