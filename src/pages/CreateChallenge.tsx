@@ -202,6 +202,7 @@ const CreateChallenge = () => {
         frequency_quantity: isFrequency ? parseInt(frequencyQuantity) || 1 : null,
         frequency_period: isFrequency ? frequencyPeriod : null,
         quantity_target: isQuantity ? parseInt(quantityTarget) || 10 : null,
+        is_surprise: isPremiumUser ? isSurprise : false,
         status,
       })
       .select()
