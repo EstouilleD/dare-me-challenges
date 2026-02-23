@@ -6,6 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface UserRow {
   id: string;
@@ -86,6 +90,22 @@ const AdminUsers = () => {
     loadUsers();
   };
 
+  const handleDeleteUser = async (userId: string, displayName: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const { error } = await supabase.functions.invoke("delete-user", {
+      body: { target_user_id: userId, reason: "Deleted by admin" },
+    });
+
+    if (error) {
+      toast({ variant: "destructive", title: "Delete failed", description: error.message });
+    } else {
+      toast({ title: `${displayName} deleted` });
+      loadUsers();
+    }
+  };
+
   const getAvatar = (u: UserRow) => {
     if (u.use_avatar && u.avatar_url) return u.avatar_url;
     if (u.profile_photo_url) return u.profile_photo_url;
@@ -154,6 +174,30 @@ const AdminUsers = () => {
                     Activate
                   </Button>
                 )}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="destructive" className="text-xs h-8 bg-destructive/70">
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete {u.display_name}?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This permanently deletes the user account and all their data. The user will be archived in the deleted users table.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDeleteUser(u.id, u.display_name)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete permanently
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           </CardContent>

@@ -1,12 +1,13 @@
 import { useAdmin } from "@/hooks/useAdmin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, LayoutDashboard, Flag, Users, FileText } from "lucide-react";
+import { ArrowLeft, LayoutDashboard, Flag, Users, FileText, UserX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminReports from "@/components/admin/AdminReports";
 import AdminUsers from "@/components/admin/AdminUsers";
 import AdminContent from "@/components/admin/AdminContent";
+import AdminDeletedUsers from "@/components/admin/AdminDeletedUsers";
 
 const Admin = () => {
   const { isAdmin, loading } = useAdmin();
@@ -45,7 +46,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-6 max-w-5xl">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview" className="flex items-center gap-1.5 text-xs sm:text-sm">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -62,6 +63,10 @@ const Admin = () => {
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Content</span>
             </TabsTrigger>
+            <TabsTrigger value="deleted" className="flex items-center gap-1.5 text-xs sm:text-sm">
+              <UserX className="h-4 w-4" />
+              <span className="hidden sm:inline">Deleted</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -75,6 +80,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="content">
             <AdminContent />
+          </TabsContent>
+          <TabsContent value="deleted">
+            <AdminDeletedUsers />
           </TabsContent>
         </Tabs>
       </main>

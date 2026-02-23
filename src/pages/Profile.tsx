@@ -9,6 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { ArrowLeft, User, Lock, Bell } from "lucide-react";
 import avatar1 from "@/assets/avatars/avatar1.jpg";
 import avatar2 from "@/assets/avatars/avatar2.png";
@@ -73,6 +77,7 @@ const Profile = () => {
     end_date_hours_before: 24,
   });
   const [savingNotifs, setSavingNotifs] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -193,6 +198,24 @@ const Profile = () => {
       toast({ variant: "destructive", title: "Failed to save preferences", description: error.message });
     } else {
       toast({ title: "Preferences saved! 🔔" });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { navigate("/auth"); return; }
+
+    const { error } = await supabase.functions.invoke("delete-user", {
+      body: { target_user_id: session.user.id, reason: "Self-deletion" },
+    });
+
+    setDeletingAccount(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Failed to delete account", description: error.message });
+    } else {
+      await supabase.auth.signOut();
+      navigate("/auth");
     }
   };
 
@@ -344,6 +367,39 @@ const Profile = () => {
                 <Button onClick={handleUpdatePassword} className="w-full" disabled={savingPassword}>
                   {savingPassword ? "Updating..." : "Update password"}
                 </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-destructive/50 mt-6">
+              <CardHeader>
+                <CardTitle className="text-destructive">Delete Account</CardTitle>
+                <CardDescription>Permanently delete your account and all your data</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full" disabled={deletingAccount}>
+                      {deletingAccount ? "Deleting..." : "Delete my account"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete your account, all your challenges, proofs, and data. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteAccount}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Yes, delete my account
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </CardContent>
             </Card>
           </TabsContent>
