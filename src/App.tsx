@@ -17,6 +17,7 @@ import MyChallenges from "./pages/MyChallenges";
 import CreatedChallenges from "./pages/CreatedChallenges";
 import DeletedChallenges from "./pages/DeletedChallenges";
 import ChallengeHistory from "./pages/ChallengeHistory";
+import JoinChallenge from "./pages/JoinChallenge";
 
 const queryClient = new QueryClient();
 
