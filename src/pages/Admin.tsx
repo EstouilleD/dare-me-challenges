@@ -1,12 +1,13 @@
 import { useAdmin } from "@/hooks/useAdmin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, LayoutDashboard, Flag, Users, FileText } from "lucide-react";
+import { ArrowLeft, LayoutDashboard, Flag, Users, FileText, UserX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminReports from "@/components/admin/AdminReports";
 import AdminUsers from "@/components/admin/AdminUsers";
 import AdminContent from "@/components/admin/AdminContent";
+import AdminDeletedUsers from "@/components/admin/AdminDeletedUsers";
 
 const Admin = () => {
   const { isAdmin, loading } = useAdmin();
