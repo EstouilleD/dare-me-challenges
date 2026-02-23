@@ -328,7 +328,7 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="honor" id={`honor-${proof.id}`} />
               <Label htmlFor={`honor-${proof.id}`} className="flex items-center gap-2 cursor-pointer text-sm">
-                <Award className="h-4 w-4 text-amber-500" /> Validated with Honor (10pts)
+                <Award className="h-4 w-4 text-accent-foreground" /> Validated with Honor (10pts)
               </Label>
             </div>
             <div className="flex items-center space-x-2">
