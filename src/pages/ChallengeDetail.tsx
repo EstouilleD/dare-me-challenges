@@ -391,7 +391,24 @@ const ChallengeDetail = () => {
 
       <main className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
         <Card className="shadow-elevated">
-          <CardHeader>
+          <CardHeader className="pb-3">
+            {/* Creator - small at top */}
+            <div className="flex items-center gap-2 mb-3">
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={getAvatarSrc(challenge.profiles)} />
+                <AvatarFallback className="text-xs">{challenge.profiles.display_name[0]}</AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-muted-foreground">by {challenge.profiles.display_name}</span>
+            </div>
+
+            {/* Dates + Countdown */}
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <p className="text-sm text-muted-foreground">
+                {format(new Date(challenge.start_date), "MMM d")} → {format(new Date(challenge.end_date), "MMM d, yyyy")}
+              </p>
+              <CountdownBadge endDate={challenge.end_date} />
+            </div>
+
             <div className="flex items-start justify-between">
               <div>
                 <CardTitle>Challenge Details</CardTitle>
@@ -403,24 +420,6 @@ const ChallengeDetail = () => {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Created by</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={getAvatarSrc(challenge.profiles)} />
-                    <AvatarFallback>{challenge.profiles.display_name[0]}</AvatarFallback>
-                  </Avatar>
-                  <span className="font-medium">{challenge.profiles.display_name}</span>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Duration</p>
-                <p className="font-medium mt-1">
-                  {format(new Date(challenge.start_date), "MMM d")} - {format(new Date(challenge.end_date), "MMM d, yyyy")}
-                </p>
-              </div>
-            </div>
 
             <div className="flex items-center gap-2 text-sm">
               <Users className="h-4 w-4" />
