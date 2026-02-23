@@ -246,9 +246,16 @@ const Home = () => {
             </Card>
           ) : (
             <div className="grid gap-4">
-              {createdChallenges.map((challenge) => (
+              {createdChallenges.slice(0, createdVisible).map((challenge) => (
                 <ChallengeCard key={challenge.id} challenge={challenge} />
               ))}
+            </div>
+          )}
+          {createdChallenges.length > createdVisible && (
+            <div className="flex justify-center">
+              <Button variant="ghost" onClick={() => setCreatedVisible((v) => v + 5)} className="gap-1">
+                <ChevronDown className="h-4 w-4" /> Show more ({createdChallenges.length - createdVisible} remaining)
+              </Button>
             </div>
           )}
         </section>
