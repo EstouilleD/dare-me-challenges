@@ -111,6 +111,14 @@ const Profile = () => {
       setNotifPrefs(notifsRes.data);
     }
 
+    // Load badges
+    const [badgesRes, userBadgesRes] = await Promise.all([
+      supabase.from("badges").select("*").order("sort_order"),
+      supabase.from("user_badges").select("badge_id, earned_at").eq("user_id", session.user.id),
+    ]);
+    setBadges(badgesRes.data || []);
+    setUserBadges(userBadgesRes.data || []);
+
     setLoading(false);
   };
 
