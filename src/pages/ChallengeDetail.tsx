@@ -481,23 +481,60 @@ const ChallengeDetail = () => {
       </header>
 
       {/* Report Challenge Dialog */}
-      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+      <Dialog open={reportDialogOpen} onOpenChange={(open) => {
+        setReportDialogOpen(open);
+        if (!open) {
+          setReportSubmitted(false);
+          setReportCategory("");
+          setReportDetails("");
+        }
+      }}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Report Challenge</DialogTitle>
-            <DialogDescription>Why are you reporting this challenge?</DialogDescription>
-          </DialogHeader>
-          <RadioGroup value={reportReason} onValueChange={setReportReason} className="space-y-2">
-            {REPORT_REASONS.map((reason) => (
-              <div key={reason} className="flex items-center space-x-2">
-                <RadioGroupItem value={reason} id={reason} />
-                <Label htmlFor={reason} className="cursor-pointer">{reason}</Label>
+          {reportSubmitted ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Thank you</DialogTitle>
+                <DialogDescription>We will review this content.</DialogDescription>
+              </DialogHeader>
+              <Button onClick={() => setReportDialogOpen(false)} className="w-full">Close</Button>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>Report Challenge</DialogTitle>
+                <DialogDescription>Why are you reporting this challenge?</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Category *</Label>
+                  <Select value={reportCategory} onValueChange={setReportCategory}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a reason" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {REPORT_CATEGORIES.map((cat) => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="report-details">Additional details (optional)</Label>
+                  <Textarea
+                    id="report-details"
+                    placeholder="Provide more context..."
+                    value={reportDetails}
+                    onChange={(e) => setReportDetails(e.target.value)}
+                    rows={3}
+                    maxLength={500}
+                  />
+                </div>
+                <Button onClick={handleReport} disabled={submittingReport || !reportCategory} className="w-full" variant="destructive">
+                  {submittingReport ? "Submitting..." : "Submit Report"}
+                </Button>
               </div>
-            ))}
-          </RadioGroup>
-          <Button onClick={handleReport} disabled={submittingReport || !reportReason} className="w-full" variant="destructive">
-            {submittingReport ? "Submitting..." : "Submit Report"}
-          </Button>
+            </>
+          )}
         </DialogContent>
       </Dialog>
 
