@@ -7,8 +7,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { ArrowLeft, Users, Trophy } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -70,11 +76,17 @@ const ChallengeDetail = () => {
   const [myParticipation, setMyParticipation] = useState<Participation | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [loading, setLoading] = useState(true);
-  
+
   const [proofText, setProofText] = useState("");
   const [proofQuantity, setProofQuantity] = useState("");
   const [submittingProof, setSubmittingProof] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Owner edit state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -88,7 +100,6 @@ const ChallengeDetail = () => {
     }
     setCurrentUserId(session.user.id);
 
-    // Load challenge
     const { data: challengeData } = await supabase
       .from("challenges")
       .select(`
@@ -100,35 +111,26 @@ const ChallengeDetail = () => {
       .single();
 
     if (!challengeData) {
-      toast({
-        variant: "destructive",
-        title: "Challenge not found",
-      });
+      toast({ variant: "destructive", title: "Challenge not found" });
       navigate("/");
       return;
     }
 
     setChallenge(challengeData as Challenge);
 
-    // Load participants
     const { data: parts } = await supabase
       .from("participations")
       .select(`
-        id,
-        user_id,
-        is_active,
+        id, user_id, is_active,
         profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)
       `)
       .eq("challenge_id", id)
       .eq("is_active", true);
 
     setParticipants(parts as Participation[] || []);
-
-    // Check if current user is participating
     const myPart = parts?.find(p => p.user_id === session.user.id);
     setMyParticipation(myPart || null);
 
-    // Load proofs
     const { data: proofsData } = await supabase
       .from("proofs")
       .select(`
@@ -141,7 +143,6 @@ const ChallengeDetail = () => {
       .order("created_at", { ascending: false });
 
     setProofs(proofsData as Proof[] || []);
-
     setLoading(false);
   };
 
@@ -151,96 +152,53 @@ const ChallengeDetail = () => {
 
     const { error } = await supabase
       .from("participations")
-      .insert({
-        challenge_id: id,
-        user_id: session.user.id,
-        is_active: true,
-      });
+      .insert({ challenge_id: id, user_id: session.user.id, is_active: true });
 
     if (error) {
-      toast({
-        variant: "destructive",
-        title: "Failed to join",
-        description: error.message,
-      });
+      toast({ variant: "destructive", title: "Failed to join", description: error.message });
     } else {
-      toast({
-        title: "Joined!",
-        description: "You're now part of this challenge.",
-      });
+      toast({ title: "Joined!", description: "You're now part of this challenge." });
       loadData();
     }
   };
 
   const handleQuit = async () => {
     if (!myParticipation) return;
-
     const { error } = await supabase
       .from("participations")
       .update({ is_active: false })
       .eq("id", myParticipation.id);
 
     if (error) {
-      toast({
-        variant: "destructive",
-        title: "Failed to quit",
-        description: error.message,
-      });
+      toast({ variant: "destructive", title: "Failed to quit", description: error.message });
     } else {
-      toast({
-        title: "Left challenge",
-        description: "You've quit this challenge.",
-      });
+      toast({ title: "Left challenge", description: "You've quit this challenge." });
       loadData();
     }
   };
 
   const handleSubmitProof = async () => {
     if (!myParticipation) return;
-    
     if (!proofText.trim() && !proofQuantity) {
-      toast({
-        variant: "destructive",
-        title: "Missing proof",
-        description: "Please provide proof details.",
-      });
+      toast({ variant: "destructive", title: "Missing proof", description: "Please provide proof details." });
       return;
     }
-
     setSubmittingProof(true);
-
-    const { error } = await supabase
-      .from("proofs")
-      .insert({
-        participation_id: myParticipation.id,
-        challenge_id: id,
-        text: proofText.trim() || null,
-        quantity_value: proofQuantity ? parseInt(proofQuantity) : null,
-      });
-
+    const { error } = await supabase.from("proofs").insert({
+      participation_id: myParticipation.id,
+      challenge_id: id,
+      text: proofText.trim() || null,
+      quantity_value: proofQuantity ? parseInt(proofQuantity) : null,
+    });
     setSubmittingProof(false);
-
     if (error) {
-      toast({
-        variant: "destructive",
-        title: "Failed to submit",
-        description: error.message,
-      });
+      toast({ variant: "destructive", title: "Failed to submit", description: error.message });
     } else {
-      toast({
-        title: "Proof submitted!",
-        description: "Your proof has been added.",
-      });
+      toast({ title: "Proof submitted!", description: "Your proof has been added." });
       setProofText("");
       setProofQuantity("");
       setDialogOpen(false);
-      
-      // Update is_done flag
-      await supabase
-        .from("participations")
-        .update({ is_done: true })
-        .eq("id", myParticipation.id);
-      
+      await supabase.from("participations").update({ is_done: true }).eq("id", myParticipation.id);
       loadData();
     }
   };
@@ -249,6 +207,55 @@ const ChallengeDetail = () => {
     if (prof.use_avatar && prof.avatar_url) return prof.avatar_url;
     if (prof.profile_photo_url) return prof.profile_photo_url;
     return "";
+  };
+
+  // Owner actions
+  const handleEditChallenge = async () => {
+    if (!challenge) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("challenges")
+      .update({ title: editTitle.trim(), description: editDescription.trim() })
+      .eq("id", challenge.id);
+    setSaving(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Failed to update", description: error.message });
+    } else {
+      toast({ title: "Challenge updated!" });
+      setEditDialogOpen(false);
+      loadData();
+    }
+  };
+
+  const handleDeleteChallenge = async () => {
+    if (!challenge) return;
+    const { error } = await supabase.from("challenges").delete().eq("id", challenge.id);
+    if (error) {
+      toast({ variant: "destructive", title: "Failed to delete", description: error.message });
+    } else {
+      toast({ title: "Challenge deleted" });
+      navigate("/");
+    }
+  };
+
+  const handleRemoveParticipant = async (participationId: string, displayName: string) => {
+    const { error } = await supabase
+      .from("participations")
+      .update({ is_active: false })
+      .eq("id", participationId);
+    if (error) {
+      toast({ variant: "destructive", title: "Failed to remove", description: error.message });
+    } else {
+      toast({ title: `${displayName} removed from the challenge` });
+      loadData();
+    }
+  };
+
+  const openEditDialog = () => {
+    if (!challenge) return;
+    setEditTitle(challenge.title);
+    setEditDescription(challenge.description);
+    setEditDialogOpen(true);
   };
 
   if (loading) {
@@ -291,9 +298,74 @@ const ChallengeDetail = () => {
                 </Badge>
               </div>
             </div>
+            {isOwner && (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={openEditDialog}
+                  className="text-white hover:bg-white/20"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="text-white hover:bg-destructive/80">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this challenge?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. All participants and proofs will be affected.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteChallenge} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
           </div>
         </div>
       </header>
+
+      {/* Edit Challenge Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Challenge</DialogTitle>
+            <DialogDescription>Update the challenge title and description.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Title</Label>
+              <Input
+                id="edit-title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-desc">Description</Label>
+              <Textarea
+                id="edit-desc"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                rows={4}
+              />
+            </div>
+            <Button onClick={handleEditChallenge} disabled={saving || !editTitle.trim()} className="w-full">
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <main className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
         <Card className="shadow-elevated">
@@ -333,12 +405,42 @@ const ChallengeDetail = () => {
               <span>{participants.length} participant{participants.length !== 1 ? "s" : ""}</span>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            {/* Participant list with remove button for owner */}
+            <div className="space-y-2">
               {participants.map((p) => (
-                <Avatar key={p.id} className="h-10 w-10">
-                  <AvatarImage src={getAvatarSrc(p.profiles)} />
-                  <AvatarFallback>{p.profiles.display_name[0]}</AvatarFallback>
-                </Avatar>
+                <div key={p.id} className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={getAvatarSrc(p.profiles)} />
+                    <AvatarFallback>{p.profiles.display_name[0]}</AvatarFallback>
+                  </Avatar>
+                  <span className="flex-1 text-sm font-medium">{p.profiles.display_name}</span>
+                  {isOwner && p.user_id !== currentUserId && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10">
+                          <UserMinus className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Remove {p.profiles.display_name}?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will remove them from the challenge. They can rejoin if the challenge is public.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleRemoveParticipant(p.id, p.profiles.display_name)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Remove
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
               ))}
             </div>
           </CardContent>
@@ -371,9 +473,7 @@ const ChallengeDetail = () => {
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Submit Proof</DialogTitle>
-                    <DialogDescription>
-                      Prove you completed the challenge
-                    </DialogDescription>
+                    <DialogDescription>Prove you completed the challenge</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div className="space-y-2">
@@ -437,8 +537,8 @@ const ChallengeDetail = () => {
             ) : (
               <div className="space-y-4">
                 {proofs.map((proof) => (
-                  <Card 
-                    key={proof.id} 
+                  <Card
+                    key={proof.id}
                     className="cursor-pointer hover:shadow-elevated transition-all"
                     onClick={() => navigate(`/proof/${proof.id}`)}
                   >
