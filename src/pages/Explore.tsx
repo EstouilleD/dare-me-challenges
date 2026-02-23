@@ -124,9 +124,10 @@ const Explore = () => {
     setSearchQuery("");
     setSelectedType("all");
     setStartDate(undefined);
+    setEndDate(undefined);
   };
 
-  const hasActiveFilters = searchQuery || selectedType !== "all" || startDate;
+  const hasActiveFilters = searchQuery || selectedType !== "all" || startDate || endDate;
 
   return (
     <div className="min-h-screen bg-background">
