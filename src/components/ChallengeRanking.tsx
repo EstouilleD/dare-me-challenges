@@ -120,7 +120,46 @@ const ChallengeRanking = ({ challengeId, isFinished }: ChallengeRankingProps) =>
     return null;
   };
 
+  const handleDownloadDiploma = async () => {
+    setDownloadingDiploma(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-diploma", {
+        body: { challengeId, userId: currentUserId },
+      });
+
+      if (error || data?.error) {
+        toast({
+          variant: "destructive",
+          title: "Diploma unavailable",
+          description: data?.error || error?.message || "Could not generate diploma.",
+        });
+        setDownloadingDiploma(false);
+        return;
+      }
+
+      // Convert SVG to downloadable file
+      const blob = new Blob([data.svg], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `diploma-${data.challengeTitle?.replace(/\s+/g, "-")}.svg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({ title: "🎓 Diploma downloaded!", description: "Your official certificate has been saved." });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Error", description: err.message });
+    }
+    setDownloadingDiploma(false);
+  };
+
   if (loading || ranking.length === 0) return null;
+
+  // Check if current user is in top 3
+  const myRank = ranking.findIndex(r => r.user_id === currentUserId);
+  const isTop3 = myRank >= 0 && myRank < 3;
 
   return (
     <Card className={`shadow-elevated ${isFinished ? "border-primary" : "border-accent"}`}>
@@ -163,6 +202,31 @@ const ChallengeRanking = ({ challengeId, isFinished }: ChallengeRankingProps) =>
             </div>
           );
         })}
+
+        {/* Diploma download for top 3 in finished challenges */}
+        {isFinished && isTop3 && (
+          <div className="pt-3 border-t mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2"
+              onClick={handleDownloadDiploma}
+              disabled={downloadingDiploma}
+            >
+              {downloadingDiploma ? (
+                "Generating..."
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  Download Diploma
+                  <Badge variant="outline" className="text-xs gap-1 ml-1">
+                    <Crown className="h-3 w-3" /> Premium
+                  </Badge>
+                </>
+              )}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
