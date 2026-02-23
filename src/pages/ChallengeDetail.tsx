@@ -446,6 +446,29 @@ const ChallengeDetail = () => {
               </div>
             </div>
             <div className="flex items-center gap-1">
+              {isParticipant && !isOwner && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" title="Quit challenge">
+                      <DoorOpen className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Quit this challenge?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        You will lose your progress and proofs will remain visible.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleQuit} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Quit
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
               {isOwner && (
                 <>
                   <Button
