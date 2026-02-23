@@ -334,7 +334,7 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="validated" id={`validated-${proof.id}`} />
               <Label htmlFor={`validated-${proof.id}`} className="flex items-center gap-2 cursor-pointer text-sm">
-                <ThumbsUp className="h-4 w-4 text-green-500" /> Validated {askNumericScore ? "" : "(5pts)"}
+                <ThumbsUp className="h-4 w-4 text-primary" /> Validated {askNumericScore ? "" : "(5pts)"}
               </Label>
             </div>
             <div className="flex items-center space-x-2">
