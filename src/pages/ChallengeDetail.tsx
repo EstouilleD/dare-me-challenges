@@ -570,7 +570,7 @@ const ChallengeDetail = () => {
           />
         )}
 
-        {isParticipant && (
+        {isParticipant && challenge.challenge_types.name !== "Frequency" && challenge.challenge_types.name !== "Quantity" && (
           <Card className="shadow-elevated border-accent">
             <CardHeader>
               <CardTitle>My Participation</CardTitle>
@@ -586,7 +586,6 @@ const ChallengeDetail = () => {
                     <DialogDescription>Upload a photo or video as proof</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
-                    {/* File upload area */}
                     {!proofFile ? (
                       <div className="space-y-2">
                         <Label>Photo or Video *</Label>
@@ -596,23 +595,12 @@ const ChallengeDetail = () => {
                             <Video className="h-6 w-6 text-muted-foreground" />
                           </div>
                           <span className="text-sm text-muted-foreground">Tap to take or upload</span>
-                          <input
-                            type="file"
-                            accept="image/*,video/*"
-                            capture="environment"
-                            onChange={handleFileChange}
-                            className="hidden"
-                          />
+                          <input type="file" accept="image/*,video/*" capture="environment" onChange={handleFileChange} className="hidden" />
                         </label>
                       </div>
                     ) : (
                       <div className="relative">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={clearFile}
-                          className="absolute top-2 right-2 z-10 h-8 w-8 bg-background/80 hover:bg-background rounded-full"
-                        >
+                        <Button variant="ghost" size="icon" onClick={clearFile} className="absolute top-2 right-2 z-10 h-8 w-8 bg-background/80 hover:bg-background rounded-full">
                           <X className="h-4 w-4" />
                         </Button>
                         {proofPreview ? (
@@ -625,16 +613,9 @@ const ChallengeDetail = () => {
                         )}
                       </div>
                     )}
-
                     <div className="space-y-2">
                       <Label htmlFor="proof-text">Description (optional)</Label>
-                      <Textarea
-                        id="proof-text"
-                        placeholder="Add a note..."
-                        value={proofText}
-                        onChange={(e) => setProofText(e.target.value)}
-                        rows={3}
-                      />
+                      <Textarea id="proof-text" placeholder="Add a note..." value={proofText} onChange={(e) => setProofText(e.target.value)} rows={3} />
                     </div>
                     <Button onClick={handleSubmitProof} disabled={submittingProof || !proofFile} className="w-full">
                       {submittingProof ? "Uploading..." : "Submit Proof"}
@@ -642,7 +623,6 @@ const ChallengeDetail = () => {
                   </div>
                 </DialogContent>
               </Dialog>
-
               <Button variant="outline" onClick={handleQuit} className="w-full">
                 Quit Challenge
               </Button>
