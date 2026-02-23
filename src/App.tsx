@@ -22,6 +22,7 @@ import ChallengeHistory from "./pages/ChallengeHistory";
 import JoinChallenge from "./pages/JoinChallenge";
 import Admin from "./pages/Admin";
 import Badges from "./pages/Badges";
+import Notifications from "./pages/Notifications";
 
 const queryClient = new QueryClient();
 
