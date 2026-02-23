@@ -42,6 +42,9 @@ const CreateChallenge = () => {
   const [endDate, setEndDate] = useState("");
   const [askNumericScore, setAskNumericScore] = useState(false);
   const [demoVideoUrl, setDemoVideoUrl] = useState("");
+  const [demoFile, setDemoFile] = useState<File | null>(null);
+  const [demoPreview, setDemoPreview] = useState<string | null>(null);
+  const [demoTab, setDemoTab] = useState("url");
 
   // Frequency fields
   const [frequencyQuantity, setFrequencyQuantity] = useState("1");
