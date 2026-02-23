@@ -343,6 +343,41 @@ const Profile = () => {
             </Card>
           </TabsContent>
 
+          {/* Appearance Tab */}
+          <TabsContent value="appearance">
+            <Card>
+              <CardHeader>
+                <CardTitle>Appearance</CardTitle>
+                <CardDescription>Choose your preferred theme</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[
+                  { value: "light", label: "Light", icon: Sun, desc: "Classic light theme" },
+                  { value: "dark", label: "Dark", icon: Moon, desc: "Easy on the eyes" },
+                  { value: "system", label: "System", icon: Monitor, desc: "Follow device settings" },
+                ].map(({ value, label, icon: Icon, desc }) => (
+                  <button
+                    key={value}
+                    onClick={() => setTheme(value)}
+                    className={`w-full flex items-center gap-4 p-4 rounded-lg border-2 transition-all ${
+                      theme === value
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    <div className={`p-2 rounded-full ${theme === value ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-medium">{label}</p>
+                      <p className="text-sm text-muted-foreground">{desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Security Tab */}
           <TabsContent value="security">
             <Card>
