@@ -463,9 +463,9 @@ const ChallengeDetail = () => {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-              </div>
-            )}
-          </div>
+                </>
+              )}
+            </div>
         </div>
       </header>
 
