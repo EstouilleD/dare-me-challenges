@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Plus, LogOut } from "lucide-react";
+import { Plus, LogOut, Compass } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 interface Profile {
