@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
 
 interface ChallengeType {
@@ -16,14 +17,22 @@ interface ChallengeType {
   name: string;
   description: string;
   icon: string;
+  has_quantity: boolean;
 }
+
+const FREQUENCY_PERIODS = [
+  { value: "day", label: "Per day", minDays: 1 },
+  { value: "week", label: "Per week", minDays: 7 },
+  { value: "month", label: "Per month", minDays: 30 },
+  { value: "year", label: "Per year", minDays: 365 },
+];
 
 const CreateChallenge = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [types, setTypes] = useState<ChallengeType[]>([]);
-  
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedTypeId, setSelectedTypeId] = useState("");
@@ -33,9 +42,15 @@ const CreateChallenge = () => {
   const [askNumericScore, setAskNumericScore] = useState(false);
   const [demoVideoUrl, setDemoVideoUrl] = useState("");
 
+  // Frequency fields
+  const [frequencyQuantity, setFrequencyQuantity] = useState("1");
+  const [frequencyPeriod, setFrequencyPeriod] = useState("week");
+
+  // Quantity fields
+  const [quantityTarget, setQuantityTarget] = useState("10");
+
   useEffect(() => {
     loadTypes();
-    // Set default start date to today
     const today = new Date().toISOString().split("T")[0];
     setStartDate(today);
   }, []);
@@ -54,6 +69,26 @@ const CreateChallenge = () => {
     }
   };
 
+  const selectedType = types.find((t) => t.id === selectedTypeId);
+  const isFrequency = selectedType?.name === "Frequency";
+  const isQuantity = selectedType?.name === "Quantity";
+
+  const getMinEndDate = () => {
+    if (!startDate) return "";
+    const start = new Date(startDate);
+    if (isFrequency) {
+      const period = FREQUENCY_PERIODS.find((p) => p.value === frequencyPeriod);
+      if (period) {
+        const min = new Date(start);
+        min.setDate(min.getDate() + period.minDays);
+        return min.toISOString().split("T")[0];
+      }
+    }
+    const next = new Date(start);
+    next.setDate(next.getDate() + 1);
+    return next.toISOString().split("T")[0];
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -66,11 +101,17 @@ const CreateChallenge = () => {
       return;
     }
 
-    if (!endDate || new Date(endDate) <= new Date(startDate)) {
+    const minEnd = getMinEndDate();
+    if (!endDate || endDate < minEnd) {
+      const periodLabel = isFrequency
+        ? FREQUENCY_PERIODS.find((p) => p.value === frequencyPeriod)?.label.toLowerCase()
+        : "";
       toast({
         variant: "destructive",
         title: "Invalid dates",
-        description: "End date must be after start date.",
+        description: isFrequency
+          ? `End date must be at least one ${frequencyPeriod} after start date.`
+          : "End date must be after start date.",
       });
       return;
     }
@@ -86,13 +127,10 @@ const CreateChallenge = () => {
     const now = new Date();
     const start = new Date(startDate);
     const end = new Date(endDate);
-    
+
     let status = "upcoming";
-    if (start <= now && end >= now) {
-      status = "active";
-    } else if (end < now) {
-      status = "finished";
-    }
+    if (start <= now && end >= now) status = "active";
+    else if (end < now) status = "finished";
 
     const { data: challenge, error } = await supabase
       .from("challenges")
@@ -106,6 +144,9 @@ const CreateChallenge = () => {
         end_date: new Date(endDate).toISOString(),
         ask_numeric_score: askNumericScore,
         demo_video_url: demoVideoUrl.trim() || null,
+        frequency_quantity: isFrequency ? parseInt(frequencyQuantity) || 1 : null,
+        frequency_period: isFrequency ? frequencyPeriod : null,
+        quantity_target: isQuantity ? parseInt(quantityTarget) || 10 : null,
         status,
       })
       .select()
@@ -120,10 +161,7 @@ const CreateChallenge = () => {
         description: error.message,
       });
     } else {
-      toast({
-        title: "Challenge created!",
-        description: "Your challenge is ready.",
-      });
+      toast({ title: "Challenge created!", description: "Your challenge is ready." });
       navigate(`/challenge/${challenge.id}`);
     }
   };
@@ -194,13 +232,71 @@ const CreateChallenge = () => {
                 </RadioGroup>
               </div>
 
+              {/* Frequency-specific fields */}
+              {isFrequency && (
+                <Card className="border-dashed">
+                  <CardContent className="pt-4 space-y-4">
+                    <p className="text-sm font-medium">📅 Frequency settings</p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="freq-qty">How many times *</Label>
+                        <Input
+                          id="freq-qty"
+                          type="number"
+                          min={1}
+                          value={frequencyQuantity}
+                          onChange={(e) => setFrequencyQuantity(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Period *</Label>
+                        <Select value={frequencyPeriod} onValueChange={setFrequencyPeriod}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {FREQUENCY_PERIODS.map((p) => (
+                              <SelectItem key={p.value} value={p.value}>
+                                {p.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      e.g. {frequencyQuantity} time{parseInt(frequencyQuantity) !== 1 ? "s" : ""} {FREQUENCY_PERIODS.find(p => p.value === frequencyPeriod)?.label.toLowerCase()}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Quantity-specific fields */}
+              {isQuantity && (
+                <Card className="border-dashed">
+                  <CardContent className="pt-4 space-y-4">
+                    <p className="text-sm font-medium">📊 Quantity target</p>
+                    <div className="space-y-2">
+                      <Label htmlFor="qty-target">How many to complete *</Label>
+                      <Input
+                        id="qty-target"
+                        type="number"
+                        min={1}
+                        max={100}
+                        value={quantityTarget}
+                        onChange={(e) => setQuantityTarget(e.target.value)}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Each participant needs to submit {quantityTarget} proofs to complete.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
               <div className="flex items-center justify-between">
                 <Label htmlFor="is-public">Public challenge</Label>
-                <Switch
-                  id="is-public"
-                  checked={isPublic}
-                  onCheckedChange={setIsPublic}
-                />
+                <Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} />
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -214,13 +310,20 @@ const CreateChallenge = () => {
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="end-date">End Date *</Label>
+                  <Label htmlFor="end-date">
+                    End Date *
+                    {isFrequency && (
+                      <span className="text-xs text-muted-foreground ml-1">
+                        (min: 1 {frequencyPeriod})
+                      </span>
+                    )}
+                  </Label>
                   <Input
                     id="end-date"
                     type="date"
                     value={endDate}
+                    min={getMinEndDate()}
                     onChange={(e) => setEndDate(e.target.value)}
                     required
                   />
@@ -232,11 +335,7 @@ const CreateChallenge = () => {
                   <Label htmlFor="ask-score">Ask for numeric score (1-10)</Label>
                   <p className="text-sm text-muted-foreground">Voters rate proofs with a score</p>
                 </div>
-                <Switch
-                  id="ask-score"
-                  checked={askNumericScore}
-                  onCheckedChange={setAskNumericScore}
-                />
+                <Switch id="ask-score" checked={askNumericScore} onCheckedChange={setAskNumericScore} />
               </div>
 
               <div className="space-y-2">
