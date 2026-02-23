@@ -192,7 +192,6 @@ const Home = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {profile && <BurgerMenu profile={profile} />}
-              </div>
             </div>
             <button onClick={() => navigate("/profile")} className="rounded-full hover:ring-2 hover:ring-white/50 transition-all">
               <Avatar className="h-10 w-10 border-2 border-white">
