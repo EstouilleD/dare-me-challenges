@@ -735,56 +735,56 @@ const ChallengeDetail = () => {
               <CardTitle>My Participation</CardTitle>
             </CardHeader>
             <CardContent>
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="w-full">Submit Proof</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Submit Proof</DialogTitle>
-                    <DialogDescription>Upload a photo or video as proof</DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    {!proofFile ? (
-                      <div className="space-y-2">
-                        <Label>Photo or Video *</Label>
-                        <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-muted-foreground/30 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-accent/30 transition-colors">
-                          <div className="flex items-center gap-3">
-                            <Camera className="h-6 w-6 text-muted-foreground" />
-                            <Video className="h-6 w-6 text-muted-foreground" />
-                          </div>
-                          <span className="text-sm text-muted-foreground">Tap to take or upload</span>
-                          <input type="file" accept="image/*,video/*" capture="environment" onChange={handleFileChange} className="hidden" />
-                        </label>
-                      </div>
-                    ) : (
-                      <div className="relative">
-                        <Button variant="ghost" size="icon" onClick={clearFile} className="absolute top-2 right-2 z-10 h-8 w-8 bg-background/80 hover:bg-background rounded-full">
-                          <X className="h-4 w-4" />
-                        </Button>
-                        {proofPreview ? (
-                          <img src={proofPreview} alt="Preview" className="rounded-lg w-full max-h-64 object-cover" />
-                        ) : (
-                          <div className="flex items-center gap-2 p-4 rounded-lg bg-accent/30 border">
-                            <Video className="h-5 w-5 text-primary" />
-                            <span className="text-sm font-medium truncate">{proofFile.name}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                      <Label htmlFor="proof-text">Description (optional)</Label>
-                      <Textarea id="proof-text" placeholder="Add a note..." value={proofText} onChange={(e) => setProofText(e.target.value)} rows={3} />
-                    </div>
-                    <Button onClick={handleSubmitProof} disabled={submittingProof || !proofFile} className="w-full">
-                      {submittingProof ? "Uploading..." : "Submit Proof"}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button className="w-full" onClick={() => setDialogOpen(true)}>Submit Proof</Button>
             </CardContent>
           </Card>
         )}
+
+        {/* Proof submission dialog (shared across all challenge types) */}
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Submit Proof</DialogTitle>
+              <DialogDescription>Upload a photo or video as proof</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {!proofFile ? (
+                <div className="space-y-2">
+                  <Label>Photo or Video *</Label>
+                  <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-muted-foreground/30 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-accent/30 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Camera className="h-6 w-6 text-muted-foreground" />
+                      <Video className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <span className="text-sm text-muted-foreground">Tap to take or upload</span>
+                    <input type="file" accept="image/*,video/*" capture="environment" onChange={handleFileChange} className="hidden" />
+                  </label>
+                </div>
+              ) : (
+                <div className="relative">
+                  <Button variant="ghost" size="icon" onClick={clearFile} className="absolute top-2 right-2 z-10 h-8 w-8 bg-background/80 hover:bg-background rounded-full">
+                    <X className="h-4 w-4" />
+                  </Button>
+                  {proofPreview ? (
+                    <img src={proofPreview} alt="Preview" className="rounded-lg w-full max-h-64 object-cover" />
+                  ) : (
+                    <div className="flex items-center gap-2 p-4 rounded-lg bg-accent/30 border">
+                      <Video className="h-5 w-5 text-primary" />
+                      <span className="text-sm font-medium truncate">{proofFile.name}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="proof-text">Description (optional)</Label>
+                <Textarea id="proof-text" placeholder="Add a note..." value={proofText} onChange={(e) => setProofText(e.target.value)} rows={3} />
+              </div>
+              <Button onClick={handleSubmitProof} disabled={submittingProof || !proofFile} className="w-full">
+                {submittingProof ? "Uploading..." : "Submit Proof"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Ranking */}
         <ChallengeRanking challengeId={challenge.id} isFinished={challenge.status === "finished"} />
