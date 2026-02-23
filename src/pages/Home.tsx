@@ -192,10 +192,7 @@ const Home = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {profile && <BurgerMenu profile={profile} />}
-              <div>
-                <img src={logo} alt="Dare Me" className="h-10" />
-                <p className="text-sm text-white/80">Hi, {profile?.display_name}! 👋</p>
-              </div>
+              <p className="text-sm text-white/80">Hi, {profile?.display_name}! 👋</p>
             </div>
             <button onClick={() => navigate("/profile")} className="rounded-full hover:ring-2 hover:ring-white/50 transition-all">
               <Avatar className="h-10 w-10 border-2 border-white">
@@ -203,6 +200,9 @@ const Home = () => {
                 <AvatarFallback>{profile?.display_name[0]}</AvatarFallback>
               </Avatar>
             </button>
+          </div>
+          <div className="flex justify-center mt-2">
+            <img src={logo} alt="Dare Me" className="h-16" />
           </div>
         </div>
       </header>
