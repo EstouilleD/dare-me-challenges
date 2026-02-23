@@ -43,6 +43,8 @@ const Home = () => {
   const [myChallenges, setMyChallenges] = useState<Challenge[]>([]);
   const [createdChallenges, setCreatedChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [myVisible, setMyVisible] = useState(5);
+  const [createdVisible, setCreatedVisible] = useState(5);
 
   useEffect(() => {
     loadData();
