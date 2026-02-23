@@ -14,7 +14,7 @@ import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import Explore from "./pages/Explore";
 import Profile from "./pages/Profile";
-import MyChallenges from "./pages/MyChallenges";
+import MyProfile from "./pages/MyProfile";
 import CreatedChallenges from "./pages/CreatedChallenges";
 import DeletedChallenges from "./pages/DeletedChallenges";
 import ChallengeHistory from "./pages/ChallengeHistory";
