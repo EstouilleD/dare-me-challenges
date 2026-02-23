@@ -13,7 +13,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, User, Lock, Bell } from "lucide-react";
+import { ArrowLeft, User, Lock, Bell, Sun, Moon, Monitor, Palette } from "lucide-react";
+import { useTheme } from "next-themes";
 import avatar1 from "@/assets/avatars/avatar1.jpg";
 import avatar2 from "@/assets/avatars/avatar2.png";
 import avatar4 from "@/assets/avatars/avatar4.png";
