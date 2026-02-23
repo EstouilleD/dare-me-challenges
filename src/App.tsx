@@ -51,6 +51,7 @@ const App = () => (
             <Route path="/join/:challengeId" element={<JoinChallenge />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/badges" element={<Badges />} />
+            <Route path="/notifications" element={<Notifications />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

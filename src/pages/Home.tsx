@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { Plus, Compass, ChevronDown } from "lucide-react";
 import logo from "@/assets/logo.png";
 import BurgerMenu from "@/components/BurgerMenu";
+import NotificationBell from "@/components/NotificationBell";
 
 interface Profile {
   id: string;
