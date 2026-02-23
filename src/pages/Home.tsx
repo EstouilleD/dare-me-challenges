@@ -7,10 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Plus, Compass, ChevronDown, Trophy } from "lucide-react";
+import { Plus, Compass, ChevronDown } from "lucide-react";
 import logo from "@/assets/logo.png";
 import BurgerMenu from "@/components/BurgerMenu";
-import BadgeCard from "@/components/BadgeCard";
 
 interface Profile {
   id: string;
@@ -46,8 +45,6 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [myVisible, setMyVisible] = useState(5);
   const [createdVisible, setCreatedVisible] = useState(5);
-  const [recentBadges, setRecentBadges] = useState<{ icon: string; name: string; description: string; earned_at: string }[]>([]);
-  const [badgeStats, setBadgeStats] = useState({ earned: 0, total: 0 });
 
   useEffect(() => {
     loadData();
