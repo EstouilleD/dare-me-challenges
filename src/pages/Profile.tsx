@@ -255,20 +255,17 @@ const Profile = () => {
 
       <main className="container mx-auto px-4 py-6 max-w-lg">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="profile" className="gap-1.5 text-xs">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="profile" className="gap-1.5">
               <User className="h-4 w-4" /> Profile
             </TabsTrigger>
-            <TabsTrigger value="badges" className="gap-1.5 text-xs">
-              <Award className="h-4 w-4" /> Badges
-            </TabsTrigger>
-            <TabsTrigger value="appearance" className="gap-1.5 text-xs">
+            <TabsTrigger value="appearance" className="gap-1.5">
               <Palette className="h-4 w-4" /> Theme
             </TabsTrigger>
-            <TabsTrigger value="security" className="gap-1.5 text-xs">
+            <TabsTrigger value="security" className="gap-1.5">
               <Lock className="h-4 w-4" /> Security
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-1.5 text-xs">
+            <TabsTrigger value="notifications" className="gap-1.5">
               <Bell className="h-4 w-4" /> Notifs
             </TabsTrigger>
           </TabsList>
@@ -356,50 +353,6 @@ const Profile = () => {
             </Card>
           </TabsContent>
 
-          {/* Badges Tab */}
-          <TabsContent value="badges">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Trophy className="h-5 w-5 text-primary" /> Badges
-                    </CardTitle>
-                    <CardDescription>
-                      {userBadges.length} / {badges.length} earned
-                    </CardDescription>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => navigate("/badges")}>
-                    View all →
-                  </Button>
-                </div>
-                <div className="h-3 rounded-full bg-muted overflow-hidden mt-2">
-                  <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
-                    style={{ width: `${badges.length > 0 ? (userBadges.length / badges.length) * 100 : 0}%` }}
-                  />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-3">
-                  {badges.map(badge => {
-                    const earned = userBadges.find(ub => ub.badge_id === badge.id);
-                    return (
-                      <BadgeCard
-                        key={badge.id}
-                        icon={badge.icon}
-                        name={badge.name}
-                        description={badge.description}
-                        earned={!!earned}
-                        earnedAt={earned?.earned_at}
-                        size="sm"
-                      />
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           {/* Appearance Tab */}
           <TabsContent value="appearance">
