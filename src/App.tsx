@@ -18,6 +18,7 @@ import CreatedChallenges from "./pages/CreatedChallenges";
 import DeletedChallenges from "./pages/DeletedChallenges";
 import ChallengeHistory from "./pages/ChallengeHistory";
 import JoinChallenge from "./pages/JoinChallenge";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
