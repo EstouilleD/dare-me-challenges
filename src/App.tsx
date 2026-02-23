@@ -36,6 +36,10 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/my-challenges" element={<MyChallenges />} />
+          <Route path="/created-challenges" element={<CreatedChallenges />} />
+          <Route path="/deleted-challenges" element={<DeletedChallenges />} />
+          <Route path="/challenge-history" element={<ChallengeHistory />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
