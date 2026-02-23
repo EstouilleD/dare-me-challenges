@@ -81,6 +81,8 @@ const Profile = () => {
   });
   const [savingNotifs, setSavingNotifs] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [badges, setBadges] = useState<any[]>([]);
+  const [userBadges, setUserBadges] = useState<any[]>([]);
 
   useEffect(() => {
     loadProfile();
