@@ -205,6 +205,17 @@ const ChallengeDetail = () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
+    // Check participation limit
+    const limitResult = await checkParticipationLimit(session.user.id);
+    if (!limitResult.allowed) {
+      toast({
+        variant: "destructive",
+        title: "Participation limit reached",
+        description: `You're in ${limitResult.count}/${limitResult.limit} active challenges. Upgrade to Premium for unlimited.`,
+      });
+      return;
+    }
+
     const { error } = await supabase
       .from("participations")
       .insert({ challenge_id: id, user_id: session.user.id, is_active: true });
