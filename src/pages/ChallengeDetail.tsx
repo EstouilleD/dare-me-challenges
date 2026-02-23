@@ -7,7 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
-import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus, Camera, Video, Upload, X } from "lucide-react";
+import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus, Camera, Video, Upload, X, Flag } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import ProofFeedItem from "@/components/ProofFeedItem";
 import InviteParticipants from "@/components/InviteParticipants";
 import ChallengeProgress from "@/components/ChallengeProgress";
@@ -129,6 +130,11 @@ const ChallengeDetail = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Report state
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [submittingReport, setSubmittingReport] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -341,6 +347,40 @@ const ChallengeDetail = () => {
     setEditDialogOpen(true);
   };
 
+  const REPORT_REASONS = [
+    "Discrimination or hate speech",
+    "Harassment or bullying",
+    "Illegal activity",
+    "Violent or dangerous content",
+    "Sexual or inappropriate content",
+    "Spam or misleading",
+  ];
+
+  const handleReport = async () => {
+    if (!challenge || !reportReason) return;
+    setSubmittingReport(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const { error } = await supabase.from("reports").insert({
+      challenge_id: challenge.id,
+      reporter_id: session.user.id,
+      reason: reportReason,
+    });
+    setSubmittingReport(false);
+    if (error) {
+      if (error.code === "23505") {
+        toast({ variant: "destructive", title: "Already reported", description: "You have already reported this challenge." });
+      } else {
+        toast({ variant: "destructive", title: "Report failed", description: error.message });
+      }
+    } else {
+      toast({ title: "Report submitted", description: "Thank you, we'll review this challenge." });
+      setReportDialogOpen(false);
+      setReportReason("");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -381,17 +421,28 @@ const ChallengeDetail = () => {
                 </Badge>
               </div>
             </div>
-            {isOwner && (
-              <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1">
+              {!isOwner && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={openEditDialog}
+                  onClick={() => setReportDialogOpen(true)}
                   className="text-white hover:bg-white/20"
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Flag className="h-4 w-4" />
                 </Button>
-                <AlertDialog>
+              )}
+              {isOwner && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={openEditDialog}
+                    className="text-white hover:bg-white/20"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="text-white hover:bg-destructive/80">
                       <Trash2 className="h-4 w-4" />
@@ -412,11 +463,33 @@ const ChallengeDetail = () => {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-              </div>
-            )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>
+
+      {/* Report Challenge Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report Challenge</DialogTitle>
+            <DialogDescription>Why are you reporting this challenge?</DialogDescription>
+          </DialogHeader>
+          <RadioGroup value={reportReason} onValueChange={setReportReason} className="space-y-2">
+            {REPORT_REASONS.map((reason) => (
+              <div key={reason} className="flex items-center space-x-2">
+                <RadioGroupItem value={reason} id={reason} />
+                <Label htmlFor={reason} className="cursor-pointer">{reason}</Label>
+              </div>
+            ))}
+          </RadioGroup>
+          <Button onClick={handleReport} disabled={submittingReport || !reportReason} className="w-full" variant="destructive">
+            {submittingReport ? "Submitting..." : "Submit Report"}
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Challenge Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
