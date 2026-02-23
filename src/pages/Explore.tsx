@@ -150,22 +150,22 @@ const Explore = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
+      <main className="container mx-auto px-4 py-4 space-y-4">
         {/* Search & Filters */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by keyword..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-9 text-sm"
             />
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             <Select value={selectedType} onValueChange={setSelectedType}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[140px] h-8 text-xs">
                 <SelectValue placeholder="All types" />
               </SelectTrigger>
               <SelectContent>
@@ -182,13 +182,14 @@ const Explore = () => {
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
+                  size="sm"
                   className={cn(
-                    "w-[180px] justify-start text-left font-normal",
+                    "h-8 text-xs px-2.5",
                     !startDate && "text-muted-foreground"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PPP") : "Start date"}
+                  <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
+                  {startDate ? format(startDate, "MM/dd") : "From"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -206,13 +207,14 @@ const Explore = () => {
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
+                  size="sm"
                   className={cn(
-                    "w-[180px] justify-start text-left font-normal",
+                    "h-8 text-xs px-2.5",
                     !endDate && "text-muted-foreground"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "PPP") : "End date"}
+                  <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
+                  {endDate ? format(endDate, "MM/dd") : "To"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -227,9 +229,9 @@ const Explore = () => {
             </Popover>
 
             {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={clearFilters}>
-                <X className="h-4 w-4 mr-1" />
-                Clear filters
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 text-xs px-2">
+                <X className="h-3.5 w-3.5 mr-1" />
+                Clear
               </Button>
             )}
           </div>
