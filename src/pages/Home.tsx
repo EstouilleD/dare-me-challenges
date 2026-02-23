@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Plus, Compass } from "lucide-react";
+import { Plus, Compass, ChevronDown } from "lucide-react";
 import logo from "@/assets/logo.png";
 import BurgerMenu from "@/components/BurgerMenu";
 
@@ -43,6 +43,8 @@ const Home = () => {
   const [myChallenges, setMyChallenges] = useState<Challenge[]>([]);
   const [createdChallenges, setCreatedChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [myVisible, setMyVisible] = useState(5);
+  const [createdVisible, setCreatedVisible] = useState(5);
 
   useEffect(() => {
     loadData();
@@ -220,9 +222,16 @@ const Home = () => {
             </Card>
           ) : (
             <div className="grid gap-4">
-              {myChallenges.map((challenge) => (
+              {myChallenges.slice(0, myVisible).map((challenge) => (
                 <ChallengeCard key={challenge.id} challenge={challenge} />
               ))}
+            </div>
+          )}
+          {myChallenges.length > myVisible && (
+            <div className="flex justify-center">
+              <Button variant="ghost" onClick={() => setMyVisible((v) => v + 5)} className="gap-1">
+                <ChevronDown className="h-4 w-4" /> Show more ({myChallenges.length - myVisible} remaining)
+              </Button>
             </div>
           )}
         </section>
@@ -237,9 +246,16 @@ const Home = () => {
             </Card>
           ) : (
             <div className="grid gap-4">
-              {createdChallenges.map((challenge) => (
+              {createdChallenges.slice(0, createdVisible).map((challenge) => (
                 <ChallengeCard key={challenge.id} challenge={challenge} />
               ))}
+            </div>
+          )}
+          {createdChallenges.length > createdVisible && (
+            <div className="flex justify-center">
+              <Button variant="ghost" onClick={() => setCreatedVisible((v) => v + 5)} className="gap-1">
+                <ChevronDown className="h-4 w-4" /> Show more ({createdChallenges.length - createdVisible} remaining)
+              </Button>
             </div>
           )}
         </section>
