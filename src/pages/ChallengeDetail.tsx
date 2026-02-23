@@ -688,8 +688,8 @@ const ChallengeDetail = () => {
                         <div className="flex-1 min-w-0">
                           <p className="font-medium">{proof.participations.profiles.display_name}</p>
                           {proof.text && <p className="text-sm text-muted-foreground line-clamp-2">{proof.text}</p>}
-                          {proof.quantity_value && (
-                            <p className="text-sm text-muted-foreground">Quantity: {proof.quantity_value}</p>
+                          {proof.image_url && (
+                            <img src={proof.image_url} alt="Proof" className="mt-2 rounded-md w-full max-h-32 object-cover" />
                           )}
                           <p className="text-xs text-muted-foreground mt-1">
                             {format(new Date(proof.created_at), "MMM d, h:mm a")}
