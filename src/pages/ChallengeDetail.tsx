@@ -433,9 +433,19 @@ const ChallengeDetail = () => {
           </CardHeader>
           <CardContent className="space-y-4">
 
-            <div className="flex items-center gap-2 text-sm">
-              <Users className="h-4 w-4" />
-              <span>{participants.length} participant{participants.length !== 1 ? "s" : ""}</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm">
+                <Users className="h-4 w-4" />
+                <span>{participants.length} participant{participants.length !== 1 ? "s" : ""}</span>
+              </div>
+              {isOwner && challenge.status === "active" && (
+                <InviteParticipants
+                  challengeId={challenge.id}
+                  currentUserId={currentUserId}
+                  existingParticipantIds={participants.map(p => p.user_id)}
+                  onInviteSent={loadData}
+                />
+              )}
             </div>
 
             {/* Participant list with remove button for owner */}
