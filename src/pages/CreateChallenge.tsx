@@ -498,8 +498,8 @@ const CreateChallenge = () => {
                 </Tabs>
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Creating..." : "Create Challenge 🚀"}
+              <Button type="submit" className="w-full" disabled={loading || creationLimitReached}>
+                {loading ? "Creating..." : creationLimitReached ? "Monthly limit reached" : "Create Challenge 🚀"}
               </Button>
             </form>
           </CardContent>
