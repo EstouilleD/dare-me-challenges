@@ -1,0 +1,2 @@
+ALTER TABLE public.challenges DROP CONSTRAINT challenges_status_check;
+ALTER TABLE public.challenges ADD CONSTRAINT challenges_status_check CHECK (status = ANY (ARRAY['upcoming'::text, 'active'::text, 'finished'::text, 'cancelled'::text, 'under_review'::text]));
