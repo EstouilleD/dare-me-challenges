@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Plus, LogOut } from "lucide-react";
+import { Plus, LogOut, Compass } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 interface Profile {
@@ -41,7 +41,6 @@ const Home = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [myChallenges, setMyChallenges] = useState<Challenge[]>([]);
   const [createdChallenges, setCreatedChallenges] = useState<Challenge[]>([]);
-  const [publicChallenges, setPublicChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -104,24 +103,6 @@ const Home = () => {
       .order("created_at", { ascending: false });
 
     setCreatedChallenges(created as Challenge[] || []);
-
-    // Load public challenges (not participating)
-    const { data: publicChalls } = await supabase
-      .from("challenges")
-      .select(`
-        *,
-        challenge_types(id, name, icon),
-        profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)
-      `)
-      .eq("is_public", true)
-      .neq("owner_id", session.user.id)
-      .order("created_at", { ascending: false })
-      .limit(10);
-
-    // Filter out challenges user is already participating in
-    const participatingIds = new Set(myActiveChallenges.map(c => c.id));
-    const filteredPublic = (publicChalls || []).filter(c => !participatingIds.has(c.id));
-    setPublicChallenges(filteredPublic as Challenge[]);
 
     setLoading(false);
   };
@@ -218,6 +199,14 @@ const Home = () => {
             <Plus className="h-5 w-5 mr-2" />
             Create a new challenge
           </Button>
+          <Button 
+            size="lg" 
+            variant="outline"
+            onClick={() => navigate("/explore")}
+          >
+            <Compass className="h-5 w-5 mr-2" />
+            Explore
+          </Button>
         </div>
 
         <section className="space-y-4">
@@ -248,23 +237,6 @@ const Home = () => {
           ) : (
             <div className="grid gap-4">
               {createdChallenges.map((challenge) => (
-                <ChallengeCard key={challenge.id} challenge={challenge} />
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="space-y-4">
-          <h2 className="text-2xl font-bold">Public challenges</h2>
-          {publicChallenges.length === 0 ? (
-            <Card>
-              <CardContent className="py-8 text-center text-muted-foreground">
-                No public challenges available at the moment.
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {publicChallenges.map((challenge) => (
                 <ChallengeCard key={challenge.id} challenge={challenge} />
               ))}
             </div>
