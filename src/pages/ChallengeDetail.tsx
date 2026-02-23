@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
 import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus, Camera, Video, Upload, X } from "lucide-react";
+import ProofFeedItem from "@/components/ProofFeedItem";
 import InviteParticipants from "@/components/InviteParticipants";
 import ChallengeProgress from "@/components/ChallengeProgress";
 import {
@@ -663,46 +664,32 @@ const ChallengeDetail = () => {
           </Card>
         )}
 
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle>Participants' Proofs</CardTitle>
-            <CardDescription>{proofs.length} proof{proofs.length !== 1 ? "s" : ""} submitted</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {proofs.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">No proofs submitted yet.</p>
-            ) : (
-              <div className="space-y-4">
-                {proofs.map((proof) => (
-                  <Card
-                    key={proof.id}
-                    className="cursor-pointer hover:shadow-elevated transition-all"
-                    onClick={() => navigate(`/proof/${proof.id}`)}
-                  >
-                    <CardContent className="py-4">
-                      <div className="flex items-start gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={getAvatarSrc(proof.participations.profiles)} />
-                          <AvatarFallback>{proof.participations.profiles.display_name[0]}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium">{proof.participations.profiles.display_name}</p>
-                          {proof.text && <p className="text-sm text-muted-foreground line-clamp-2">{proof.text}</p>}
-                          {proof.image_url && (
-                            <img src={proof.image_url} alt="Proof" className="mt-2 rounded-md w-full max-h-32 object-cover" />
-                          )}
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {format(new Date(proof.created_at), "MMM d, h:mm a")}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Social Feed */}
+        <div>
+          <h2 className="text-lg font-semibold mb-3">
+            Proofs Feed ({proofs.length})
+          </h2>
+          {proofs.length === 0 ? (
+            <Card className="shadow-card">
+              <CardContent className="py-8 text-center text-muted-foreground">
+                No proofs submitted yet.
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {[...proofs].reverse().map((proof) => (
+                <ProofFeedItem
+                  key={proof.id}
+                  proof={{ ...proof, challenge_id: challenge.id }}
+                  currentUserId={currentUserId}
+                  askNumericScore={challenge.ask_numeric_score}
+                  challengeStatus={challenge.status}
+                  onRefresh={loadData}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
