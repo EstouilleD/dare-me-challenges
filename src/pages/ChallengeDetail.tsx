@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
 import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus } from "lucide-react";
 import InviteParticipants from "@/components/InviteParticipants";
+import ChallengeProgress from "@/components/ChallengeProgress";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
