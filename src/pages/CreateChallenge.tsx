@@ -136,6 +136,33 @@ const CreateChallenge = () => {
     if (start <= now && end >= now) status = "active";
     else if (end < now) status = "finished";
 
+    let demoPhotoUrl: string | null = null;
+    let demoVidUrl: string | null = null;
+
+    // Upload demo file if provided
+    if (demoTab === "file" && demoFile) {
+      const fileExt = demoFile.name.split(".").pop();
+      const filePath = `demos/${session.user.id}/${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from("proofs")
+        .upload(filePath, demoFile);
+
+      if (uploadError) {
+        setLoading(false);
+        toast({ variant: "destructive", title: "Demo upload failed", description: uploadError.message });
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from("proofs").getPublicUrl(filePath);
+      if (demoFile.type.startsWith("video/")) {
+        demoVidUrl = urlData.publicUrl;
+      } else {
+        demoPhotoUrl = urlData.publicUrl;
+      }
+    } else if (demoTab === "url" && demoVideoUrl.trim()) {
+      demoVidUrl = demoVideoUrl.trim();
+    }
+
     const { data: challenge, error } = await supabase
       .from("challenges")
       .insert({
@@ -147,7 +174,8 @@ const CreateChallenge = () => {
         start_date: new Date(startDate).toISOString(),
         end_date: new Date(endDate).toISOString(),
         ask_numeric_score: askNumericScore,
-        demo_video_url: demoVideoUrl.trim() || null,
+        demo_video_url: demoVidUrl,
+        demo_photo_url: demoPhotoUrl,
         frequency_quantity: isFrequency ? parseInt(frequencyQuantity) || 1 : null,
         frequency_period: isFrequency ? frequencyPeriod : null,
         quantity_target: isQuantity ? parseInt(quantityTarget) || 10 : null,
