@@ -195,12 +195,15 @@ const Home = () => {
               {profile && <BurgerMenu profile={profile} />}
             </div>
             <img src={logo} alt="Dare Me" className="h-14" />
-            <button onClick={() => navigate("/profile")} className="rounded-full hover:ring-2 hover:ring-white/50 transition-all">
-              <Avatar className="h-9 w-9 border-2 border-white">
-                <AvatarImage src={getAvatarSrc(profile!)} />
-                <AvatarFallback>{profile?.display_name[0]}</AvatarFallback>
-              </Avatar>
-            </button>
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              <button onClick={() => navigate("/profile")} className="rounded-full hover:ring-2 hover:ring-white/50 transition-all">
+                <Avatar className="h-9 w-9 border-2 border-white">
+                  <AvatarImage src={getAvatarSrc(profile!)} />
+                  <AvatarFallback>{profile?.display_name[0]}</AvatarFallback>
+                </Avatar>
+              </button>
+            </div>
           </div>
         </div>
       </header>
