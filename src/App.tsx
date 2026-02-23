@@ -11,6 +11,7 @@ import ChallengeDetail from "./pages/ChallengeDetail";
 import ProofDetail from "./pages/ProofDetail";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
+import Explore from "./pages/Explore";
 
 const queryClient = new QueryClient();
 
