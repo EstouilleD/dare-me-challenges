@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
 import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus, Camera, Video, Upload, X, Flag } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProofFeedItem from "@/components/ProofFeedItem";
 import InviteParticipants from "@/components/InviteParticipants";
 import ChallengeProgress from "@/components/ChallengeProgress";
@@ -133,8 +134,10 @@ const ChallengeDetail = () => {
 
   // Report state
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
-  const [reportReason, setReportReason] = useState("");
+  const [reportCategory, setReportCategory] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
   const [submittingReport, setSubmittingReport] = useState(false);
+  const [reportSubmitted, setReportSubmitted] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -347,7 +350,7 @@ const ChallengeDetail = () => {
     setEditDialogOpen(true);
   };
 
-  const REPORT_REASONS = [
+  const REPORT_CATEGORIES = [
     "Discrimination or hate speech",
     "Harassment or bullying",
     "Illegal activity",
@@ -357,15 +360,34 @@ const ChallengeDetail = () => {
   ];
 
   const handleReport = async () => {
-    if (!challenge || !reportReason) return;
+    if (!challenge || !reportCategory) return;
     setSubmittingReport(true);
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    if (!session) {
+      setSubmittingReport(false);
+      return;
+    }
+
+    // Rate limit: max 5 reports per day
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const { count } = await supabase
+      .from("reports")
+      .select("*", { count: "exact", head: true })
+      .eq("reporter_id", session.user.id)
+      .gte("created_at", todayStart.toISOString());
+
+    if ((count ?? 0) >= 5) {
+      setSubmittingReport(false);
+      toast({ variant: "destructive", title: "Rate limit reached", description: "You can submit a maximum of 5 reports per day." });
+      return;
+    }
 
     const { error } = await supabase.from("reports").insert({
       challenge_id: challenge.id,
       reporter_id: session.user.id,
-      reason: reportReason,
+      reason: reportCategory,
+      details: reportDetails.trim() || null,
     });
     setSubmittingReport(false);
     if (error) {
@@ -375,9 +397,7 @@ const ChallengeDetail = () => {
         toast({ variant: "destructive", title: "Report failed", description: error.message });
       }
     } else {
-      toast({ title: "Report submitted", description: "Thank you, we'll review this challenge." });
-      setReportDialogOpen(false);
-      setReportReason("");
+      setReportSubmitted(true);
     }
   };
 
@@ -461,23 +481,60 @@ const ChallengeDetail = () => {
       </header>
 
       {/* Report Challenge Dialog */}
-      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+      <Dialog open={reportDialogOpen} onOpenChange={(open) => {
+        setReportDialogOpen(open);
+        if (!open) {
+          setReportSubmitted(false);
+          setReportCategory("");
+          setReportDetails("");
+        }
+      }}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Report Challenge</DialogTitle>
-            <DialogDescription>Why are you reporting this challenge?</DialogDescription>
-          </DialogHeader>
-          <RadioGroup value={reportReason} onValueChange={setReportReason} className="space-y-2">
-            {REPORT_REASONS.map((reason) => (
-              <div key={reason} className="flex items-center space-x-2">
-                <RadioGroupItem value={reason} id={reason} />
-                <Label htmlFor={reason} className="cursor-pointer">{reason}</Label>
+          {reportSubmitted ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Thank you</DialogTitle>
+                <DialogDescription>We will review this content.</DialogDescription>
+              </DialogHeader>
+              <Button onClick={() => setReportDialogOpen(false)} className="w-full">Close</Button>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>Report Challenge</DialogTitle>
+                <DialogDescription>Why are you reporting this challenge?</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Category *</Label>
+                  <Select value={reportCategory} onValueChange={setReportCategory}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a reason" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {REPORT_CATEGORIES.map((cat) => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="report-details">Additional details (optional)</Label>
+                  <Textarea
+                    id="report-details"
+                    placeholder="Provide more context..."
+                    value={reportDetails}
+                    onChange={(e) => setReportDetails(e.target.value)}
+                    rows={3}
+                    maxLength={500}
+                  />
+                </div>
+                <Button onClick={handleReport} disabled={submittingReport || !reportCategory} className="w-full" variant="destructive">
+                  {submittingReport ? "Submitting..." : "Submit Report"}
+                </Button>
               </div>
-            ))}
-          </RadioGroup>
-          <Button onClick={handleReport} disabled={submittingReport || !reportReason} className="w-full" variant="destructive">
-            {submittingReport ? "Submitting..." : "Submit Report"}
-          </Button>
+            </>
+          )}
         </DialogContent>
       </Dialog>
 

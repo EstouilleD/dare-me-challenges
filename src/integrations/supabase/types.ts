@@ -550,6 +550,7 @@ export type Database = {
         Row: {
           challenge_id: string
           created_at: string
+          details: string | null
           id: string
           reason: string
           reporter_id: string
@@ -557,6 +558,7 @@ export type Database = {
         Insert: {
           challenge_id: string
           created_at?: string
+          details?: string | null
           id?: string
           reason: string
           reporter_id: string
@@ -564,6 +566,7 @@ export type Database = {
         Update: {
           challenge_id?: string
           created_at?: string
+          details?: string | null
           id?: string
           reason?: string
           reporter_id?: string
