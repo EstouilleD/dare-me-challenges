@@ -729,12 +729,12 @@ const ChallengeDetail = () => {
           />
         )}
 
-        {isParticipant && challenge.challenge_types.name !== "Frequency" && challenge.challenge_types.name !== "Quantity" && (
+        {isParticipant && challenge.challenge_types.name !== "Frequency" && challenge.challenge_types.name !== "Quantity" && !proofs.some(p => p.participations.user_id === currentUserId) && (
           <Card className="shadow-elevated border-accent">
             <CardHeader>
               <CardTitle>My Participation</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="w-full">Submit Proof</Button>
@@ -782,9 +782,6 @@ const ChallengeDetail = () => {
                   </div>
                 </DialogContent>
               </Dialog>
-              <Button variant="outline" onClick={handleQuit} className="w-full">
-                Quit Challenge
-              </Button>
             </CardContent>
           </Card>
         )}
