@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, User, Lock, Bell, Sun, Moon, Monitor, Palette } from "lucide-react";
 import { useTheme } from "next-themes";
-import avatar1 from "@/assets/avatars/avatar1.jpg";
+import avatar1 from "@/assets/avatars/avatar1.png";
 import avatar2 from "@/assets/avatars/avatar2.png";
 import avatar4 from "@/assets/avatars/avatar4.png";
 import avatar5 from "@/assets/avatars/avatar5.png";
