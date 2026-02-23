@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
-import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus } from "lucide-react";
+import { format, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
+import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock } from "lucide-react";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -65,6 +65,39 @@ interface Proof {
     profiles: Profile;
   };
 }
+
+const useCountdown = (endDate: string) => {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return useMemo(() => {
+    const end = new Date(endDate);
+    if (now >= end) return "Ended";
+    const days = differenceInDays(end, now);
+    if (days >= 1) return `${days}D left`;
+    const hours = differenceInHours(end, now);
+    if (hours >= 1) return `${hours}H left`;
+    const mins = differenceInMinutes(end, now);
+    if (mins >= 1) return `${mins}min left`;
+    const secs = differenceInSeconds(end, now);
+    return `${secs}s left`;
+  }, [endDate, now]);
+};
+
+const CountdownBadge = ({ endDate }: { endDate: string }) => {
+  const countdown = useCountdown(endDate);
+  const isEnded = countdown === "Ended";
+  return (
+    <Badge variant={isEnded ? "secondary" : "default"} className="flex items-center gap-1 text-xs">
+      <Clock className="h-3 w-3" />
+      {countdown}
+    </Badge>
+  );
+};
 
 const ChallengeDetail = () => {
   const { id } = useParams();
@@ -369,7 +402,24 @@ const ChallengeDetail = () => {
 
       <main className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
         <Card className="shadow-elevated">
-          <CardHeader>
+          <CardHeader className="pb-3">
+            {/* Creator - small at top */}
+            <div className="flex items-center gap-2 mb-3">
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={getAvatarSrc(challenge.profiles)} />
+                <AvatarFallback className="text-xs">{challenge.profiles.display_name[0]}</AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-muted-foreground">by {challenge.profiles.display_name}</span>
+            </div>
+
+            {/* Dates + Countdown */}
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <p className="text-sm text-muted-foreground">
+                {format(new Date(challenge.start_date), "MMM d")} → {format(new Date(challenge.end_date), "MMM d, yyyy")}
+              </p>
+              <CountdownBadge endDate={challenge.end_date} />
+            </div>
+
             <div className="flex items-start justify-between">
               <div>
                 <CardTitle>Challenge Details</CardTitle>
@@ -381,24 +431,6 @@ const ChallengeDetail = () => {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Created by</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={getAvatarSrc(challenge.profiles)} />
-                    <AvatarFallback>{challenge.profiles.display_name[0]}</AvatarFallback>
-                  </Avatar>
-                  <span className="font-medium">{challenge.profiles.display_name}</span>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Duration</p>
-                <p className="font-medium mt-1">
-                  {format(new Date(challenge.start_date), "MMM d")} - {format(new Date(challenge.end_date), "MMM d, yyyy")}
-                </p>
-              </div>
-            </div>
 
             <div className="flex items-center gap-2 text-sm">
               <Users className="h-4 w-4" />
