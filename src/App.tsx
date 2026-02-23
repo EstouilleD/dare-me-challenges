@@ -20,6 +20,7 @@ import DeletedChallenges from "./pages/DeletedChallenges";
 import ChallengeHistory from "./pages/ChallengeHistory";
 import JoinChallenge from "./pages/JoinChallenge";
 import Admin from "./pages/Admin";
+import Badges from "./pages/Badges";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/challenge-history" element={<ChallengeHistory />} />
             <Route path="/join/:challengeId" element={<JoinChallenge />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/badges" element={<Badges />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          key: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description: string
+          icon: string
+          id?: string
+          key: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          key?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       boosts: {
         Row: {
           boost_type: string
@@ -662,6 +695,35 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -730,6 +792,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_and_award_badges: { Args: { _user_id: string }; Returns: undefined }
       get_coin_balance: { Args: { _user_id: string }; Returns: number }
       has_role: {
         Args: {
