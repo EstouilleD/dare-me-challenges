@@ -46,6 +46,7 @@ const BurgerMenu = ({ profile }: BurgerMenuProps) => {
     { icon: PlusCircle, label: "Challenges Created", path: "/created-challenges" },
     { icon: Trash2, label: "Deleted Challenges", path: "/deleted-challenges" },
     { icon: Trophy, label: "Old Challenges", path: "/challenge-history" },
+    { icon: Award, label: "Badges", path: "/badges" },
     { icon: Settings, label: "Parameters", path: "/profile" },
   ];
 
