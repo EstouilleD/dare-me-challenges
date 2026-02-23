@@ -153,9 +153,6 @@ const ChallengeRanking = ({ challengeId, isFinished }: ChallengeRankingProps) =>
                     {r.avgScore.toFixed(1)}
                   </Badge>
                 )}
-                <Badge variant="outline" className="text-xs">
-                  {r.proofCount} proof{r.proofCount !== 1 ? "s" : ""}
-                </Badge>
               </div>
             </div>
           );
