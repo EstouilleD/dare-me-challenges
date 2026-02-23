@@ -421,16 +421,27 @@ const ChallengeDetail = () => {
                 </Badge>
               </div>
             </div>
-            {isOwner && (
-              <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1">
+              {!isOwner && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={openEditDialog}
+                  onClick={() => setReportDialogOpen(true)}
                   className="text-white hover:bg-white/20"
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Flag className="h-4 w-4" />
                 </Button>
+              )}
+              {isOwner && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={openEditDialog}
+                    className="text-white hover:bg-white/20"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="text-white hover:bg-destructive/80">
