@@ -286,7 +286,9 @@ const ChallengeDetail = () => {
               <div className="flex items-center gap-2 text-white/80 text-sm">
                 <span>{challenge.challenge_types.icon}</span>
                 <span>{challenge.challenge_types.name}</span>
-                {challenge.is_public && <Badge variant="secondary" className="text-xs">Public</Badge>}
+                <Badge variant={challenge.is_public ? "secondary" : "outline"} className="text-xs">
+                  {challenge.is_public ? "🌍 Public" : "🔒 Private"}
+                </Badge>
               </div>
             </div>
           </div>
