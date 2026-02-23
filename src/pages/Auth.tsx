@@ -163,6 +163,13 @@ const Auth = () => {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Logging in..." : "Log in"}
                 </Button>
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="w-full text-sm text-muted-foreground hover:text-primary underline mt-2"
+                >
+                  I forgot my password
+                </button>
               </form>
             </TabsContent>
 
