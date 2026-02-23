@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import ProofFeedItem from "@/components/ProofFeedItem";
 import InviteParticipants from "@/components/InviteParticipants";
 import ChallengeProgress from "@/components/ChallengeProgress";
+import ChallengeRanking from "@/components/ChallengeRanking";
+import confetti from "canvas-confetti";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -291,6 +293,8 @@ const ChallengeDetail = () => {
       clearFile();
       setDialogOpen(false);
       await supabase.from("participations").update({ is_done: true }).eq("id", myParticipation.id);
+      // 🎉 Confetti!
+      confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
       loadData();
     }
   };
@@ -762,19 +766,8 @@ const ChallengeDetail = () => {
           </Card>
         )}
 
-        {challenge.status === "finished" && (
-          <Card className="shadow-elevated border-success">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5" />
-                Ranking
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Challenge completed! Check back for final rankings.</p>
-            </CardContent>
-          </Card>
-        )}
+        {/* Ranking */}
+        <ChallengeRanking challengeId={challenge.id} isFinished={challenge.status === "finished"} />
 
         {/* Social Feed */}
         <div>
