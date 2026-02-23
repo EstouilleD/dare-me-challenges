@@ -58,7 +58,7 @@ const Explore = () => {
 
   useEffect(() => {
     loadChallenges();
-  }, [selectedType, startDate]);
+  }, [selectedType, startDate, endDate]);
 
   const loadChallengeTypes = async () => {
     const { data } = await supabase.from("challenge_types").select("*");
