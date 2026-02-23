@@ -188,12 +188,12 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-10 bg-gradient-primary border-b shadow-card">
-        <div className="container mx-auto px-4 py-2">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {profile && <BurgerMenu profile={profile} />}
             </div>
-            <img src={logo} alt="Dare Me" className="h-10" />
+            <img src={logo} alt="Dare Me" className="h-12" />
             <button onClick={() => navigate("/profile")} className="rounded-full hover:ring-2 hover:ring-white/50 transition-all">
               <Avatar className="h-9 w-9 border-2 border-white">
                 <AvatarImage src={getAvatarSrc(profile!)} />
