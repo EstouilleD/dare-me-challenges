@@ -20,6 +20,7 @@ import DeletedChallenges from "./pages/DeletedChallenges";
 import ChallengeHistory from "./pages/ChallengeHistory";
 import JoinChallenge from "./pages/JoinChallenge";
 import Admin from "./pages/Admin";
+import Badges from "./pages/Badges";
 
 const queryClient = new QueryClient();
 
