@@ -40,7 +40,8 @@ const App = () => (
             <Route path="/proof/:id" element={<ProofDetail />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/explore" element={<Explore />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={<MyProfile />} />
+            <Route path="/settings" element={<Profile />} />
             <Route path="/my-challenges" element={<MyChallenges />} />
             <Route path="/created-challenges" element={<CreatedChallenges />} />
             <Route path="/deleted-challenges" element={<DeletedChallenges />} />
