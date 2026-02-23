@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { Menu, User, Swords, PlusCircle, Trash2, Trophy, Settings, LogOut } from "lucide-react";
+import { Menu, User, Swords, PlusCircle, Trash2, Trophy, Settings, LogOut, Compass } from "lucide-react";
 import { useState } from "react";
 
 interface Profile {
