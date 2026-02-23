@@ -32,6 +32,9 @@ interface ChallengeRankingProps {
 const ChallengeRanking = ({ challengeId, isFinished }: ChallengeRankingProps) => {
   const [ranking, setRanking] = useState<RankedParticipant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
+  const [downloadingDiploma, setDownloadingDiploma] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     loadRanking();
