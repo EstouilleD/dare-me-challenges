@@ -480,7 +480,7 @@ const ChallengeDetail = () => {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Quit this challenge?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        You will lose your progress and proofs will remain visible.
+                        Your proofs and votes will be permanently deleted.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
