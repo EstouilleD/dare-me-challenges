@@ -371,13 +371,74 @@ const CreateChallenge = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="demo-video">Demo Video URL (optional)</Label>
-                <Input
-                  id="demo-video"
-                  placeholder="https://youtube.com/..."
-                  value={demoVideoUrl}
-                  onChange={(e) => setDemoVideoUrl(e.target.value)}
-                />
+                <Label>Demo (optional)</Label>
+                <Tabs value={demoTab} onValueChange={setDemoTab}>
+                  <TabsList className="w-full">
+                    <TabsTrigger value="url" className="flex-1 gap-1">
+                      <Link className="h-3 w-3" /> URL
+                    </TabsTrigger>
+                    <TabsTrigger value="file" className="flex-1 gap-1">
+                      <Camera className="h-3 w-3" /> Upload
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="url">
+                    <Input
+                      placeholder="https://youtube.com/..."
+                      value={demoVideoUrl}
+                      onChange={(e) => setDemoVideoUrl(e.target.value)}
+                    />
+                  </TabsContent>
+                  <TabsContent value="file">
+                    {!demoFile ? (
+                      <label className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-muted-foreground/30 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-accent/30 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <Camera className="h-5 w-5 text-muted-foreground" />
+                          <Video className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <span className="text-sm text-muted-foreground">Upload a photo or video</span>
+                        <input
+                          type="file"
+                          accept="image/*,video/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            setDemoFile(file);
+                            if (file.type.startsWith("image/")) {
+                              setDemoPreview(URL.createObjectURL(file));
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                    ) : (
+                      <div className="relative">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setDemoFile(null);
+                            if (demoPreview) {
+                              URL.revokeObjectURL(demoPreview);
+                              setDemoPreview(null);
+                            }
+                          }}
+                          className="absolute top-2 right-2 z-10 h-8 w-8 bg-background/80 hover:bg-background rounded-full"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        {demoPreview ? (
+                          <img src={demoPreview} alt="Demo preview" className="rounded-lg w-full max-h-48 object-cover" />
+                        ) : (
+                          <div className="flex items-center gap-2 p-4 rounded-lg bg-accent/30 border">
+                            <Video className="h-5 w-5 text-primary" />
+                            <span className="text-sm font-medium truncate">{demoFile.name}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
