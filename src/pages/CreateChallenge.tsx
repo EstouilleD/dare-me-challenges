@@ -368,6 +368,26 @@ const CreateChallenge = () => {
                 <Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} />
               </div>
 
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="is-surprise">Surprise challenge</Label>
+                    {!isPremiumUser && (
+                      <Badge variant="outline" className="text-xs gap-1">
+                        <Crown className="h-3 w-3" /> Premium
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Hide proofs from other participants until the challenge ends</p>
+                </div>
+                <Switch 
+                  id="is-surprise" 
+                  checked={isSurprise} 
+                  onCheckedChange={setIsSurprise}
+                  disabled={!isPremiumUser}
+                />
+              </div>
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="start-date">Start Date *</Label>
