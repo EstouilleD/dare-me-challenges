@@ -748,6 +748,18 @@ const ChallengeDetail = () => {
           </Card>
         )}
 
+        {/* Coin Boost - only for active participants */}
+        {isParticipant && challenge.status === "active" && myParticipation && (
+          <div className="flex gap-2">
+            <CoinBoostActions
+              challengeId={challenge.id}
+              participationId={myParticipation.id}
+              currentUserId={currentUserId}
+              onRefresh={loadData}
+            />
+          </div>
+        )}
+
         {/* Progress tracking for Quantity / Frequency challenges */}
         {isParticipant && challenge && (
           <ChallengeProgress
