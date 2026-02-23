@@ -177,10 +177,12 @@ const Home = () => {
               <p className="text-sm text-white/80">Hi, {profile?.display_name}! 👋</p>
             </div>
             <div className="flex items-center gap-2">
-              <Avatar className="h-10 w-10 border-2 border-white">
-                <AvatarImage src={getAvatarSrc(profile!)} />
-                <AvatarFallback>{profile?.display_name[0]}</AvatarFallback>
-              </Avatar>
+              <button onClick={() => navigate("/profile")} className="rounded-full hover:ring-2 hover:ring-white/50 transition-all">
+                <Avatar className="h-10 w-10 border-2 border-white">
+                  <AvatarImage src={getAvatarSrc(profile!)} />
+                  <AvatarFallback>{profile?.display_name[0]}</AvatarFallback>
+                </Avatar>
+              </button>
               <Button variant="ghost" size="icon" onClick={handleLogout} className="text-white hover:bg-white/20">
                 <LogOut className="h-5 w-5" />
               </Button>
