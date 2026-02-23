@@ -86,6 +86,10 @@ const Explore = () => {
       query = query.gte("start_date", startDate.toISOString());
     }
 
+    if (endDate) {
+      query = query.lte("end_date", endDate.toISOString());
+    }
+
     const { data, error } = await query;
 
     if (error) {
