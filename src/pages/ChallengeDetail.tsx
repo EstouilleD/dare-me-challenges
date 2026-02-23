@@ -218,6 +218,29 @@ const ChallengeDetail = () => {
 
   const handleQuit = async () => {
     if (!myParticipation) return;
+
+    // Delete votes cast by this user on proofs in this challenge
+    const { data: challengeProofs } = await supabase
+      .from("proofs")
+      .select("id")
+      .eq("challenge_id", challenge!.id);
+
+    if (challengeProofs && challengeProofs.length > 0) {
+      const proofIds = challengeProofs.map((p) => p.id);
+      await supabase
+        .from("votes")
+        .delete()
+        .in("proof_id", proofIds)
+        .eq("voter_id", myParticipation.user_id);
+    }
+
+    // Delete proofs submitted by this user for this challenge
+    await supabase
+      .from("proofs")
+      .delete()
+      .eq("participation_id", myParticipation.id);
+
+    // Deactivate participation
     const { error } = await supabase
       .from("participations")
       .update({ is_active: false })
