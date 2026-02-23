@@ -350,7 +350,7 @@ const ChallengeDetail = () => {
     setEditDialogOpen(true);
   };
 
-  const REPORT_REASONS = [
+  const REPORT_CATEGORIES = [
     "Discrimination or hate speech",
     "Harassment or bullying",
     "Illegal activity",
@@ -360,15 +360,34 @@ const ChallengeDetail = () => {
   ];
 
   const handleReport = async () => {
-    if (!challenge || !reportReason) return;
+    if (!challenge || !reportCategory) return;
     setSubmittingReport(true);
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    if (!session) {
+      setSubmittingReport(false);
+      return;
+    }
+
+    // Rate limit: max 5 reports per day
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const { count } = await supabase
+      .from("reports")
+      .select("*", { count: "exact", head: true })
+      .eq("reporter_id", session.user.id)
+      .gte("created_at", todayStart.toISOString());
+
+    if ((count ?? 0) >= 5) {
+      setSubmittingReport(false);
+      toast({ variant: "destructive", title: "Rate limit reached", description: "You can submit a maximum of 5 reports per day." });
+      return;
+    }
 
     const { error } = await supabase.from("reports").insert({
       challenge_id: challenge.id,
       reporter_id: session.user.id,
-      reason: reportReason,
+      reason: reportCategory,
+      details: reportDetails.trim() || null,
     });
     setSubmittingReport(false);
     if (error) {
@@ -378,9 +397,7 @@ const ChallengeDetail = () => {
         toast({ variant: "destructive", title: "Report failed", description: error.message });
       }
     } else {
-      toast({ title: "Report submitted", description: "Thank you, we'll review this challenge." });
-      setReportDialogOpen(false);
-      setReportReason("");
+      setReportSubmitted(true);
     }
   };
 
