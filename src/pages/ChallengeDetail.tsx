@@ -15,6 +15,7 @@ import ProofFeedItem from "@/components/ProofFeedItem";
 import InviteParticipants from "@/components/InviteParticipants";
 import ChallengeProgress from "@/components/ChallengeProgress";
 import ChallengeRanking from "@/components/ChallengeRanking";
+import CoinBoostActions from "@/components/CoinBoostActions";
 import confetti from "canvas-confetti";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
