@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
 import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus } from "lucide-react";
 import InviteParticipants from "@/components/InviteParticipants";
+import ChallengeProgress from "@/components/ChallengeProgress";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -44,6 +45,9 @@ interface Challenge {
   is_public: boolean;
   ask_numeric_score: boolean;
   owner_id: string;
+  quantity_target: number | null;
+  frequency_quantity: number | null;
+  frequency_period: string | null;
   challenge_types: ChallengeType;
   profiles: Profile;
 }
@@ -62,7 +66,9 @@ interface Proof {
   text: string | null;
   quantity_value: number | null;
   created_at: string;
+  participation_id: string;
   participations: {
+    user_id: string;
     profiles: Profile;
   };
 }
@@ -170,11 +176,12 @@ const ChallengeDetail = () => {
       .select(`
         *,
         participations!inner(
+          user_id,
           profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)
         )
       `)
       .eq("challenge_id", id)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: true });
 
     setProofs(proofsData as Proof[] || []);
     setLoading(false);
@@ -501,6 +508,24 @@ const ChallengeDetail = () => {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Progress tracking for Quantity / Frequency challenges */}
+        {isParticipant && challenge && (
+          <ChallengeProgress
+            challengeType={challenge.challenge_types.name}
+            quantityTarget={challenge.quantity_target}
+            frequencyQuantity={challenge.frequency_quantity}
+            frequencyPeriod={challenge.frequency_period}
+            startDate={challenge.start_date}
+            endDate={challenge.end_date}
+            myProofs={proofs.filter(
+              (p) => p.participations.user_id === currentUserId
+            )}
+            isParticipant={isParticipant}
+            onSubmitProof={() => setDialogOpen(true)}
+            onViewProof={(proofId) => navigate(`/proof/${proofId}`)}
+          />
         )}
 
         {isParticipant && (
