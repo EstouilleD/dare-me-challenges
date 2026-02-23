@@ -105,24 +105,6 @@ const Home = () => {
 
     setCreatedChallenges(created as Challenge[] || []);
 
-    // Load public challenges (not participating)
-    const { data: publicChalls } = await supabase
-      .from("challenges")
-      .select(`
-        *,
-        challenge_types(id, name, icon),
-        profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)
-      `)
-      .eq("is_public", true)
-      .neq("owner_id", session.user.id)
-      .order("created_at", { ascending: false })
-      .limit(10);
-
-    // Filter out challenges user is already participating in
-    const participatingIds = new Set(myActiveChallenges.map(c => c.id));
-    const filteredPublic = (publicChalls || []).filter(c => !participatingIds.has(c.id));
-    setPublicChallenges(filteredPublic as Challenge[]);
-
     setLoading(false);
   };
 
