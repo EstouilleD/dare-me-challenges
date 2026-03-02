@@ -35,7 +35,9 @@ const ChallengeRanking = ({ challengeId, isFinished }: ChallengeRankingProps) =>
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [downloadingDiploma, setDownloadingDiploma] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadRanking();
