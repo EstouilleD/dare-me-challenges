@@ -189,7 +189,28 @@ const Store = () => {
               <span className="text-lg">⭐</span>
               <div>
                 <p className="font-medium">Honor Vote (10 🪙)</p>
-                <p className="text-muted-foreground">Automatically get an honor vote on your latest proof</p>
+                <p className="text-muted-foreground">Auto honor vote on your latest proof</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-lg">⚡</span>
+              <div>
+                <p className="font-medium">Double Points (15 🪙)</p>
+                <p className="text-muted-foreground">Your next proof counts for 2× score</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-lg">🛡️</span>
+              <div>
+                <p className="font-medium">Shield (12 🪙)</p>
+                <p className="text-muted-foreground">Block the next negative vote on your proof</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-lg">🕵️</span>
+              <div>
+                <p className="font-medium">Spy (8 🪙)</p>
+                <p className="text-muted-foreground">See who voted what on your latest proof</p>
               </div>
             </div>
           </CardContent>
