@@ -157,17 +157,6 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
       }
     }
 
-    if (boostType === "double_points") {
-      const { data: part } = await supabase
-        .from("participations")
-        .select("score")
-        .eq("id", participationId)
-        .single();
-      await supabase
-        .from("participations")
-        .update({ score: (part?.score ?? 0) + 2 })
-        .eq("id", participationId);
-    }
 
     const labels: Record<string, string> = {};
     BOOSTS.forEach((b) => { labels[b.type] = b.label; });
