@@ -53,16 +53,12 @@ const PREMIUM_PERKS = [
 const ALL_BOOSTERS = [
   { emoji: "📈", name: "Score Boost", cost: 5, desc: "Add +1 to your participation score" },
   { emoji: "⭐", name: "Honor Vote", cost: 10, desc: "Auto honor vote on your latest proof" },
-  { emoji: "⚡", name: "Double Points", cost: 15, desc: "Your next proof counts for 2× score" },
-  { emoji: "🛡️", name: "Shield", cost: 12, desc: "Block the next negative vote on your proof" },
-  { emoji: "🕵️", name: "Spy", cost: 8, desc: "See who voted what on your latest proof" },
   { emoji: "🗳️", name: "Vote Twice", cost: 10, desc: "Vote a second time on any proof" },
-  { emoji: "👤", name: "Extra Participation +1", cost: 10, desc: "Get +1 extra active participation slot" },
-  { emoji: "👥", name: "Extra Participation +3", cost: 25, desc: "Get +3 extra active participation slots" },
+  { emoji: "👤", name: "Extra Participation +1", cost: 10, desc: "Join one more active challenge" },
+  { emoji: "👥", name: "Extra Participation +3", cost: 25, desc: "Join 3 more active challenges" },
   { emoji: "✏️", name: "Extra Creation +1", cost: 20, desc: "Create one additional challenge this month" },
-  { emoji: "💫", name: "Highlighted Proof", cost: 15, desc: "Your next proof gets a golden highlight in the feed" },
+  { emoji: "💫", name: "Highlighted Proof", cost: 15, desc: "Your proof goes to the top of the feed (marked as boosted)" },
   { emoji: "✖️", name: "Vote Multiplier", cost: 20, desc: "Your next vote counts double weight" },
-  { emoji: "🔄", name: "Second Try", cost: 15, desc: "Resubmit a proof that got rejected" },
   { emoji: "📅", name: "Extend +3 Days", cost: 20, desc: "Extend the challenge deadline by 3 days (owner only)" },
 ];
 
