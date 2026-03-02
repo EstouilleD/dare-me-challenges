@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Coins, TrendingUp, Award, Shield, Zap, Eye, Copy,
-  UserPlus, Users, PenTool, Sparkles, RotateCcw, CalendarPlus, Star,
+  Coins, TrendingUp, Award, Copy,
+  UserPlus, Users, PenTool, Sparkles, CalendarPlus, Star,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
