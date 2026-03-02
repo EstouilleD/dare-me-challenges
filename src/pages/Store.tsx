@@ -213,6 +213,13 @@ const Store = () => {
                 <p className="text-muted-foreground">See who voted what on your latest proof</p>
               </div>
             </div>
+            <div className="flex items-start gap-3">
+              <span className="text-lg">🗳️</span>
+              <div>
+                <p className="font-medium">Vote Twice (10 🪙)</p>
+                <p className="text-muted-foreground">Vote a second time on any proof</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </main>
