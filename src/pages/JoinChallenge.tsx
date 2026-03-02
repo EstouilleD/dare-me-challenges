@@ -79,7 +79,7 @@ const JoinChallenge = () => {
       toast({ 
         variant: "destructive", 
         title: "Participation limit reached", 
-        description: `You're in ${limitResult.count}/${limitResult.limit} active challenges. Upgrade to Premium for unlimited.` 
+        description: `You're in ${limitResult.count}/${limitResult.limit} active challenges. Visit the Store to upgrade to Premium for unlimited.` 
       });
       setJoining(false);
       return;
