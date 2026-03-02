@@ -154,6 +154,7 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
       double_points: "Double Points",
       shield: "Shield",
       spy: "Spy",
+      vote_twice: "Vote Twice",
     };
 
     toast({ title: "Boost activated! 🚀", description: `${labels[boostType] || boostType} applied.` });
