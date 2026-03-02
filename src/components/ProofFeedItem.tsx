@@ -178,6 +178,7 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
     setSubmittingVote(false);
     setShowVotePanel(false);
     loadInteractions();
+    onRefresh();
   };
 
   // Delete proof
