@@ -207,6 +207,10 @@ const Home = () => {
             <img src={logo} alt="Dare Me" className="h-14" />
             <div className="flex items-center gap-2">
               <NotificationBell />
+              <button onClick={() => navigate("/store")} className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/20 text-white text-sm font-medium hover:bg-white/30 transition-colors">
+                <Coins className="h-3.5 w-3.5" />
+                {coinBalance}
+              </button>
               <button onClick={() => navigate("/profile")} className="rounded-full hover:ring-2 hover:ring-white/50 transition-all">
                 <Avatar className="h-9 w-9 border-2 border-white">
                   <AvatarImage src={getAvatarSrc(profile!)} />
