@@ -62,6 +62,7 @@ const Home = () => {
       navigate("/auth");
       return;
     }
+    setUserId(session.user.id);
 
     // Load profile
     const { data: profileData } = await supabase
