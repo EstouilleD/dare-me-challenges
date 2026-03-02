@@ -45,7 +45,11 @@ const ChallengeRanking = ({ challengeId, isFinished }: ChallengeRankingProps) =>
 
   const loadRanking = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (session) setCurrentUserId(session.user.id);
+    if (session) {
+      setCurrentUserId(session.user.id);
+      const { data } = await supabase.rpc("is_premium", { _user_id: session.user.id });
+      setIsPremium(!!data);
+    }
     const { data: participations } = await supabase
       .from("participations")
       .select("id, user_id, profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)")
