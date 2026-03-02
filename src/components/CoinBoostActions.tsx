@@ -52,6 +52,13 @@ const BOOSTS = [
     icon: Eye,
     cost: 8,
   },
+  {
+    type: "vote_twice",
+    label: "Vote Twice",
+    description: "Vote a second time on any proof",
+    icon: Copy,
+    cost: 10,
+  },
 ];
 
 const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefresh }: CoinBoostActionsProps) => {
