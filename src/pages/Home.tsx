@@ -242,6 +242,9 @@ const Home = () => {
           </Button>
         </div>
 
+        {!isPremium && (
+          <PremiumBanner compact title="Unlock unlimited challenges & more" />
+        )}
 
 
         <section className="space-y-4">
