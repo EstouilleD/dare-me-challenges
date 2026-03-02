@@ -78,6 +78,10 @@ const Home = () => {
 
     setProfile(profileData);
 
+    // Load coin balance
+    const { data: balData } = await supabase.rpc("get_coin_balance", { _user_id: session.user.id });
+    setCoinBalance(balData ?? 0);
+
     // Load challenges to complete (user participations)
     const { data: participations } = await supabase
       .from("participations")
