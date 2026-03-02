@@ -7,10 +7,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Plus, Compass, ChevronDown } from "lucide-react";
+import { Plus, Compass, ChevronDown, Coins } from "lucide-react";
 import logo from "@/assets/logo.png";
 import BurgerMenu from "@/components/BurgerMenu";
 import NotificationBell from "@/components/NotificationBell";
+import PremiumBanner from "@/components/PremiumBanner";
+import { usePremium } from "@/hooks/usePremium";
 
 interface Profile {
   id: string;
@@ -46,6 +48,9 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [myVisible, setMyVisible] = useState(5);
   const [createdVisible, setCreatedVisible] = useState(5);
+  const [coinBalance, setCoinBalance] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
+  const { isPremium } = usePremium(userId);
 
   useEffect(() => {
     loadData();
@@ -57,6 +62,7 @@ const Home = () => {
       navigate("/auth");
       return;
     }
+    setUserId(session.user.id);
 
     // Load profile
     const { data: profileData } = await supabase
@@ -71,6 +77,10 @@ const Home = () => {
     }
 
     setProfile(profileData);
+
+    // Load coin balance
+    const { data: balData } = await supabase.rpc("get_coin_balance", { _user_id: session.user.id });
+    setCoinBalance(balData ?? 0);
 
     // Load challenges to complete (user participations)
     const { data: participations } = await supabase
@@ -197,6 +207,10 @@ const Home = () => {
             <img src={logo} alt="Dare Me" className="h-14" />
             <div className="flex items-center gap-2">
               <NotificationBell />
+              <button onClick={() => navigate("/store")} className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/20 text-white text-sm font-medium hover:bg-white/30 transition-colors">
+                <Coins className="h-3.5 w-3.5" />
+                {coinBalance}
+              </button>
               <button onClick={() => navigate("/profile")} className="rounded-full hover:ring-2 hover:ring-white/50 transition-all">
                 <Avatar className="h-9 w-9 border-2 border-white">
                   <AvatarImage src={getAvatarSrc(profile!)} />
@@ -228,6 +242,9 @@ const Home = () => {
           </Button>
         </div>
 
+        {!isPremium && (
+          <PremiumBanner compact title="Unlock unlimited challenges & more" />
+        )}
 
 
         <section className="space-y-4">

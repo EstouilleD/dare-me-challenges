@@ -4,8 +4,10 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Settings, Trophy, Target, CheckCircle, Star } from "lucide-react";
+import { ArrowLeft, Settings, Trophy, Target, CheckCircle, Star, Coins } from "lucide-react";
 import BadgeCard from "@/components/BadgeCard";
+import PremiumBanner from "@/components/PremiumBanner";
+import { usePremium } from "@/hooks/usePremium";
 
 interface ProfileData {
   display_name: string;
@@ -30,6 +32,9 @@ const MyProfile = () => {
   const [badges, setBadges] = useState<any[]>([]);
   const [userBadges, setUserBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uid, setUid] = useState<string | null>(null);
+  const { isPremium } = usePremium(uid);
+  const [coinBalance, setCoinBalance] = useState<number>(0);
 
   useEffect(() => {
     loadProfile();
@@ -39,8 +44,9 @@ const MyProfile = () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { navigate("/auth"); return; }
     const userId = session.user.id;
+    setUid(userId);
 
-    const [profileRes, participationsRes, completedRes, createdRes, proofsRes, badgesRes, userBadgesRes] = await Promise.all([
+    const [profileRes, participationsRes, completedRes, createdRes, proofsRes, badgesRes, userBadgesRes, balanceRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).single(),
       supabase.from("participations").select("id", { count: "exact", head: true }).eq("user_id", userId),
       supabase.from("participations").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("is_done", true),
@@ -48,9 +54,11 @@ const MyProfile = () => {
       supabase.from("proofs").select("id, participations!inner(user_id)", { count: "exact", head: true }).eq("participations.user_id", userId),
       supabase.from("badges").select("*").order("sort_order"),
       supabase.from("user_badges").select("badge_id, earned_at").eq("user_id", userId),
+      supabase.rpc("get_coin_balance", { _user_id: userId }),
     ]);
 
     if (profileRes.data) setProfile(profileRes.data);
+    setCoinBalance(balanceRes.data ?? 0);
 
     // Count wins
     const { data: finishedParts } = await supabase
@@ -153,6 +161,25 @@ const MyProfile = () => {
             </Card>
           ))}
         </div>
+
+        {/* Coin balance + Store link */}
+        <Card className="cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate("/store")}>
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Coins className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">My Coins</span>
+            </div>
+            <span className="text-lg font-bold text-primary">{coinBalance} 🪙</span>
+          </CardContent>
+        </Card>
+
+        {/* Premium banner */}
+        {!isPremium && (
+          <PremiumBanner
+            title="Go Premium"
+            description="Unlimited challenges, surprise mode, branded diplomas & more."
+          />
+        )}
 
         {/* Proofs stat */}
         <Card>

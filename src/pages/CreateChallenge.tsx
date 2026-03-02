@@ -255,7 +255,7 @@ const CreateChallenge = () => {
                 <p className="text-xs text-muted-foreground">
                   Upgrade to <span className="font-semibold text-primary">Premium</span> for unlimited challenge creation.
                 </p>
-                <Button size="sm" variant="default" className="gap-1" onClick={() => navigate("/profile")}>
+                <Button size="sm" variant="default" className="gap-1" onClick={() => navigate("/store")}>
                   <Crown className="h-3 w-3" /> Go Premium
                 </Button>
               </div>

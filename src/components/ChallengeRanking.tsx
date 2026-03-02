@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, Medal, Download, Crown } from "lucide-react";
+import { Trophy, Medal, Download, Crown, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface Profile {
   id: string;
@@ -34,7 +35,9 @@ const ChallengeRanking = ({ challengeId, isFinished }: ChallengeRankingProps) =>
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [downloadingDiploma, setDownloadingDiploma] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadRanking();
@@ -42,7 +45,11 @@ const ChallengeRanking = ({ challengeId, isFinished }: ChallengeRankingProps) =>
 
   const loadRanking = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (session) setCurrentUserId(session.user.id);
+    if (session) {
+      setCurrentUserId(session.user.id);
+      const { data } = await supabase.rpc("is_premium", { _user_id: session.user.id });
+      setIsPremium(!!data);
+    }
     const { data: participations } = await supabase
       .from("participations")
       .select("id, user_id, profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)")
@@ -203,28 +210,39 @@ const ChallengeRanking = ({ challengeId, isFinished }: ChallengeRankingProps) =>
           );
         })}
 
-        {/* Diploma download for top 3 in finished challenges */}
         {isFinished && isTop3 && (
           <div className="pt-3 border-t mt-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full gap-2"
-              onClick={handleDownloadDiploma}
-              disabled={downloadingDiploma}
-            >
-              {downloadingDiploma ? (
-                "Generating..."
-              ) : (
-                <>
-                  <Download className="h-4 w-4" />
-                  Download Diploma
-                  <Badge variant="outline" className="text-xs gap-1 ml-1">
-                    <Crown className="h-3 w-3" /> Premium
-                  </Badge>
-                </>
-              )}
-            </Button>
+            {isPremium ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={handleDownloadDiploma}
+                disabled={downloadingDiploma}
+              >
+                {downloadingDiploma ? (
+                  "Generating..."
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" />
+                    Download Diploma
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => navigate("/store")}
+              >
+                <Lock className="h-4 w-4" />
+                Download Diploma
+                <Badge variant="outline" className="text-xs gap-1 ml-1">
+                  <Crown className="h-3 w-3" /> Premium
+                </Badge>
+              </Button>
+            )}
           </div>
         )}
       </CardContent>
