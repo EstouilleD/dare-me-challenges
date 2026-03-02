@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Coins, TrendingUp, Award, Shield, Zap, Eye } from "lucide-react";
+import { Coins, TrendingUp, Award, Shield, Zap, Eye, Copy } from "lucide-react";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -51,6 +51,13 @@ const BOOSTS = [
     description: "See who voted what on your latest proof",
     icon: Eye,
     cost: 8,
+  },
+  {
+    type: "vote_twice",
+    label: "Vote Twice",
+    description: "Vote a second time on any proof",
+    icon: Copy,
+    cost: 10,
   },
 ];
 
@@ -147,6 +154,7 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
       double_points: "Double Points",
       shield: "Shield",
       spy: "Spy",
+      vote_twice: "Vote Twice",
     };
 
     toast({ title: "Boost activated! 🚀", description: `${labels[boostType] || boostType} applied.` });
@@ -169,7 +177,7 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
           </Button>
         </div>
 
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {BOOSTS.map((boost) => (
             <button
               key={boost.type}
