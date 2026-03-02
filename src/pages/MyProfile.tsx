@@ -54,6 +54,7 @@ const MyProfile = () => {
       supabase.from("proofs").select("id, participations!inner(user_id)", { count: "exact", head: true }).eq("participations.user_id", userId),
       supabase.from("badges").select("*").order("sort_order"),
       supabase.from("user_badges").select("badge_id, earned_at").eq("user_id", userId),
+      supabase.rpc("get_coin_balance", { _user_id: userId }),
     ]);
 
     if (profileRes.data) setProfile(profileRes.data);
