@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Crown, Coins, Sparkles, Zap, Trophy, Eye, Gift } from "lucide-react";
+import { ArrowLeft, Crown, Coins, Sparkles, Zap, Trophy, Eye, Gift, Check, Settings } from "lucide-react";
 import { usePremium } from "@/hooks/usePremium";
 
 interface CoinPack {
@@ -14,6 +14,33 @@ interface CoinPack {
   coin_amount: number;
   price_cents: number;
 }
+
+const PREMIUM_TIERS = [
+  {
+    name: "Monthly",
+    priceId: "price_1T6bmTIsSHrHtrFi7gSk0Jxf",
+    price: "€4.99",
+    period: "/month",
+    highlight: false,
+    badge: null,
+  },
+  {
+    name: "Quarterly",
+    priceId: "price_1T6bmsIsSHrHtrFiLjbtyfb4",
+    price: "€12.99",
+    period: "/3 months",
+    highlight: true,
+    badge: "Save 13%",
+  },
+  {
+    name: "Yearly",
+    priceId: "price_1T6bnBIsSHrHtrFihx3bNQa0",
+    price: "€39.99",
+    period: "/year",
+    highlight: false,
+    badge: "Save 33%",
+  },
+];
 
 const PREMIUM_PERKS = [
   { icon: Zap, label: "Unlimited challenge creation" },
@@ -41,16 +68,29 @@ const ALL_BOOSTERS = [
 
 const Store = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [coinPacks, setCoinPacks] = useState<CoinPack[]>([]);
   const [balance, setBalance] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const [checkingOut, setCheckingOut] = useState<string | null>(null);
   const { isPremium } = usePremium(userId);
 
   useEffect(() => {
     loadStore();
   }, []);
+
+  useEffect(() => {
+    if (searchParams.get("success") === "true") {
+      toast({ title: "🎉 Welcome to Premium!", description: "Your subscription is now active." });
+      // Sync subscription status
+      supabase.functions.invoke("check-subscription");
+    }
+    if (searchParams.get("canceled") === "true") {
+      toast({ title: "Checkout canceled", description: "No charges were made." });
+    }
+  }, [searchParams]);
 
   const loadStore = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -70,15 +110,37 @@ const Store = () => {
   const handleBuyCoins = (pack: CoinPack) => {
     toast({
       title: "Coming soon!",
-      description: `Purchasing ${pack.coin_amount} coins will be available soon via Stripe.`,
+      description: `Purchasing ${pack.coin_amount} coins will be available soon.`,
     });
   };
 
-  const handleUpgradePremium = () => {
-    toast({
-      title: "Coming soon!",
-      description: "Premium subscription will be available soon via Stripe.",
-    });
+  const handleCheckout = async (priceId: string) => {
+    setCheckingOut(priceId);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Checkout failed", description: err.message });
+    } finally {
+      setCheckingOut(null);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Error", description: err.message });
+    }
   };
 
   if (loading) {
@@ -122,18 +184,20 @@ const Store = () => {
         </Card>
 
         {/* Premium subscription */}
-        {!isPremium && (
-          <Card className="shadow-elevated border-primary overflow-hidden">
-            <div className="h-1 bg-gradient-to-r from-primary to-accent" />
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2">
+        {!isPremium ? (
+          <section className="space-y-4">
+            <div className="text-center space-y-1">
+              <h2 className="text-xl font-bold flex items-center justify-center gap-2">
                 <Crown className="h-5 w-5 text-primary" />
-                Premium
-              </CardTitle>
-              <CardDescription>Unlock all features, remove limits & get monthly boosters</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2.5">
+                Go Premium
+              </h2>
+              <p className="text-sm text-muted-foreground">Unlock all features & remove limits</p>
+            </div>
+
+            {/* Perks */}
+            <Card className="shadow-elevated border-primary/30 overflow-hidden">
+              <div className="h-1 bg-gradient-to-r from-primary to-accent" />
+              <CardContent className="py-4 space-y-2.5">
                 {PREMIUM_PERKS.map(({ icon: Icon, label }) => (
                   <div key={label} className="flex items-center gap-2.5 text-sm">
                     <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -142,29 +206,63 @@ const Store = () => {
                     {label}
                   </div>
                 ))}
-              </div>
-              <Button className="w-full gap-2" size="lg" onClick={handleUpgradePremium}>
-                <Crown className="h-4 w-4" />
-                Upgrade to Premium
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
 
-        {/* Premium booster info for premium users */}
-        {isPremium && (
+            {/* Pricing tiers */}
+            <div className="grid gap-3">
+              {PREMIUM_TIERS.map((tier) => (
+                <Card
+                  key={tier.priceId}
+                  className={`shadow-card transition-shadow hover:shadow-elevated ${
+                    tier.highlight ? "border-primary ring-1 ring-primary/20" : ""
+                  }`}
+                >
+                  <CardContent className="p-4 flex items-center gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold">{tier.name}</p>
+                        {tier.badge && (
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                            {tier.badge}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        <span className="text-lg font-bold text-foreground">{tier.price}</span>
+                        {tier.period}
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => handleCheckout(tier.priceId)}
+                      disabled={checkingOut === tier.priceId}
+                      variant={tier.highlight ? "default" : "outline"}
+                      size="sm"
+                    >
+                      {checkingOut === tier.priceId ? "..." : "Subscribe"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        ) : (
           <Card className="shadow-elevated border-primary/30 overflow-hidden">
             <div className="h-1 bg-gradient-to-r from-primary to-accent" />
-            <CardContent className="py-5">
+            <CardContent className="py-5 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Gift className="h-5 w-5 text-primary" />
+                  <Crown className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm">Monthly Free Booster</p>
-                  <p className="text-xs text-muted-foreground">As a Premium member, you get 1 free booster of your choice each month!</p>
+                  <p className="font-semibold">Premium Active</p>
+                  <p className="text-xs text-muted-foreground">You have access to all features + 1 free booster/month</p>
                 </div>
               </div>
+              <Button variant="outline" size="sm" className="w-full gap-2" onClick={handleManageSubscription}>
+                <Settings className="h-4 w-4" />
+                Manage Subscription
+              </Button>
             </CardContent>
           </Card>
         )}
@@ -198,7 +296,7 @@ const Store = () => {
                       <p className="text-sm text-muted-foreground">{pack.coin_amount} coins</p>
                     </div>
                     <Button variant="default" size="sm" onClick={() => handleBuyCoins(pack)}>
-                      ${(pack.price_cents / 100).toFixed(2)}
+                      €{(pack.price_cents / 100).toFixed(2)}
                     </Button>
                   </CardContent>
                 </Card>
