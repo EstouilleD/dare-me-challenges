@@ -48,6 +48,9 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [myVisible, setMyVisible] = useState(5);
   const [createdVisible, setCreatedVisible] = useState(5);
+  const [coinBalance, setCoinBalance] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
+  const { isPremium } = usePremium(userId);
 
   useEffect(() => {
     loadData();
