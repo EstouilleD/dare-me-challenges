@@ -3,10 +3,14 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Coins, TrendingUp, Award, Shield, Zap, Eye, Copy } from "lucide-react";
+import {
+  Coins, TrendingUp, Award, Shield, Zap, Eye, Copy,
+  UserPlus, Users, PenTool, Sparkles, RotateCcw, CalendarPlus, Star,
+} from "lucide-react";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNavigate } from "react-router-dom";
 
 interface CoinBoostActionsProps {
@@ -59,6 +63,55 @@ const BOOSTS = [
     icon: Copy,
     cost: 10,
   },
+  {
+    type: "extra_participation",
+    label: "Extra Participation +1",
+    description: "Get +1 extra active participation slot",
+    icon: UserPlus,
+    cost: 10,
+  },
+  {
+    type: "extra_participation_3",
+    label: "Extra Participation +3",
+    description: "Get +3 extra active participation slots",
+    icon: Users,
+    cost: 25,
+  },
+  {
+    type: "extra_creation",
+    label: "Extra Creation +1",
+    description: "Create one additional challenge this month",
+    icon: PenTool,
+    cost: 20,
+  },
+  {
+    type: "highlighted_proof",
+    label: "Highlighted Proof",
+    description: "Your next proof gets a golden highlight in the feed",
+    icon: Star,
+    cost: 15,
+  },
+  {
+    type: "vote_multiplier",
+    label: "Vote Multiplier",
+    description: "Your next vote counts double weight",
+    icon: Sparkles,
+    cost: 20,
+  },
+  {
+    type: "second_try",
+    label: "Second Try",
+    description: "Resubmit a proof that got rejected",
+    icon: RotateCcw,
+    cost: 15,
+  },
+  {
+    type: "challenge_extend",
+    label: "Extend +3 Days",
+    description: "Extend the challenge deadline by 3 days (owner only)",
+    icon: CalendarPlus,
+    cost: 20,
+  },
 ];
 
 const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefresh }: CoinBoostActionsProps) => {
@@ -109,7 +162,6 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
         .select("score")
         .eq("id", participationId)
         .single();
-
       await supabase
         .from("participations")
         .update({ score: (part?.score ?? 0) + 1 })
@@ -124,7 +176,6 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-
       if (latestProof) {
         await supabase.from("votes").insert({
           proof_id: latestProof.id,
@@ -140,28 +191,23 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
         .select("score")
         .eq("id", participationId)
         .single();
-
       await supabase
         .from("participations")
         .update({ score: (part?.score ?? 0) + 2 })
         .eq("id", participationId);
     }
 
-    // shield & spy are recorded as boosts, logic handled elsewhere
-    const labels: Record<string, string> = {
-      score_boost: "+1 Score",
-      honor_vote: "Honor Vote",
-      double_points: "Double Points",
-      shield: "Shield",
-      spy: "Spy",
-      vote_twice: "Vote Twice",
-    };
+    const labels: Record<string, string> = {};
+    BOOSTS.forEach((b) => { labels[b.type] = b.label; });
 
     toast({ title: "Boost activated! 🚀", description: `${labels[boostType] || boostType} applied.` });
     setLoading(null);
     await loadBalance();
     onRefresh();
   };
+
+  // Show first 6 boosters in the quick grid, all in dialog
+  const quickBoosts = BOOSTS.slice(0, 6);
 
   return (
     <Card className="w-full shadow-card">
@@ -178,7 +224,7 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          {BOOSTS.map((boost) => (
+          {quickBoosts.map((boost) => (
             <button
               key={boost.type}
               onClick={handleOpen}
@@ -192,42 +238,48 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
             </button>
           ))}
         </div>
+
+        <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground" onClick={handleOpen}>
+          View all {BOOSTS.length} boosters →
+        </Button>
       </CardContent>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm max-h-[85vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Coins className="h-5 w-5 text-primary" />
-              Coin Boosts
+              All Boosters
             </DialogTitle>
             <DialogDescription>
               Balance: <span className="font-bold text-foreground">{balance ?? "..."} 🪙</span>
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            {BOOSTS.map((boost) => (
-              <div key={boost.type} className="flex items-center gap-3 p-3 rounded-lg border">
-                <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <boost.icon className="h-4 w-4 text-primary" />
+          <ScrollArea className="flex-1 -mx-1 px-1">
+            <div className="space-y-2 pb-2">
+              {BOOSTS.map((boost) => (
+                <div key={boost.type} className="flex items-center gap-3 p-3 rounded-lg border">
+                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <boost.icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">{boost.label}</p>
+                    <p className="text-xs text-muted-foreground">{boost.description}</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    disabled={loading === boost.type || (balance !== null && balance < boost.cost)}
+                    onClick={() => handleBoost(boost.type, boost.cost)}
+                    className="gap-1 flex-shrink-0"
+                  >
+                    {loading === boost.type ? "..." : `${boost.cost} 🪙`}
+                  </Button>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm">{boost.label}</p>
-                  <p className="text-xs text-muted-foreground">{boost.description}</p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="default"
-                  disabled={loading === boost.type || (balance !== null && balance < boost.cost)}
-                  onClick={() => handleBoost(boost.type, boost.cost)}
-                  className="gap-1 flex-shrink-0"
-                >
-                  {loading === boost.type ? "..." : `${boost.cost} 🪙`}
-                </Button>
-              </div>
-            ))}
-          </div>
-          <Button variant="outline" className="w-full gap-2 mt-1" onClick={() => { setOpen(false); navigate("/store"); }}>
+              ))}
+            </div>
+          </ScrollArea>
+          <Button variant="outline" className="w-full gap-2" onClick={() => { setOpen(false); navigate("/store"); }}>
             <Coins className="h-4 w-4" />
             Get more coins
           </Button>
