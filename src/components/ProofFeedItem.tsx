@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import {
-  ThumbsUp, ThumbsDown, Award, Heart, Laugh, Trash2, Pencil, MessageCircle,
+  ThumbsUp, ThumbsDown, Award, Trash2, Pencil, MessageCircle,
   Camera, Video, X, Send,
 } from "lucide-react";
 import {
@@ -18,6 +18,9 @@ import {
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -93,6 +96,7 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
 
   // Reactions
   const [reactions, setReactions] = useState<Reaction[]>([]);
+  const [showReactions, setShowReactions] = useState(false);
   // Comments
   const [comments, setComments] = useState<Comment[]>([]);
   const [showComments, setShowComments] = useState(false);
@@ -100,6 +104,7 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
   const [submittingComment, setSubmittingComment] = useState(false);
   // Vote
   const [myVote, setMyVote] = useState<Vote | null>(null);
+  const [allVotes, setAllVotes] = useState<Vote[]>([]);
   const [voteType, setVoteType] = useState("");
   const [numericScore, setNumericScore] = useState<number[]>([5]);
   const [showVotePanel, setShowVotePanel] = useState(false);
@@ -110,19 +115,23 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
   const [editFile, setEditFile] = useState<File | null>(null);
   const [editPreview, setEditPreview] = useState<string | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
+  // Long press
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     loadInteractions();
   }, [proof.id]);
 
   const loadInteractions = async () => {
-    const [reactionsRes, commentsRes, voteRes] = await Promise.all([
+    const [reactionsRes, commentsRes, voteRes, allVotesRes] = await Promise.all([
       supabase.from("proof_reactions").select("*").eq("proof_id", proof.id),
       supabase.from("proof_comments").select("*, profiles:user_id(id, display_name, avatar_url, profile_photo_url, use_avatar)").eq("proof_id", proof.id).order("created_at", { ascending: true }),
       supabase.from("votes").select("*").eq("proof_id", proof.id).eq("voter_id", currentUserId).maybeSingle(),
+      supabase.from("votes").select("*").eq("proof_id", proof.id),
     ]);
     setReactions(reactionsRes.data || []);
     setComments(commentsRes.data as Comment[] || []);
+    setAllVotes(allVotesRes.data || []);
     if (voteRes.data) {
       setMyVote(voteRes.data);
       setVoteType(voteRes.data.vote_type);
@@ -139,6 +148,20 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
       await supabase.from("proof_reactions").insert({ proof_id: proof.id, user_id: currentUserId, reaction_type: type });
     }
     loadInteractions();
+  };
+
+  // Long press handlers
+  const handlePointerDown = () => {
+    longPressTimer.current = setTimeout(() => {
+      setShowReactions(true);
+    }, 500);
+  };
+
+  const handlePointerUp = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
   };
 
   // Comments
@@ -225,13 +248,19 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
     }
   };
 
+  // Computed
   const reactionCounts = REACTION_EMOJIS.map(r => ({
     ...r,
     count: reactions.filter(rx => rx.reaction_type === r.type).length,
     myReaction: reactions.some(rx => rx.reaction_type === r.type && rx.user_id === currentUserId),
   }));
+  const totalReactions = reactions.length;
 
-  const voteLabel = myVote
+  const honorCount = allVotes.filter(v => v.vote_type === "honor").length;
+  const validatedCount = allVotes.filter(v => v.vote_type === "validated").length;
+  const rejectedCount = allVotes.filter(v => v.vote_type === "rejected").length;
+
+  const myVoteLabel = myVote
     ? myVote.vote_type === "honor" ? "🏆 Honor" : myVote.vote_type === "validated" ? "✅ Validated" : "❌ Not validated"
     : null;
 
@@ -280,28 +309,78 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
         </div>
       )}
 
-      {/* Media */}
-      {proof.image_url && (
-        <img src={proof.image_url} alt="Proof" className="w-full max-h-96 object-cover" />
-      )}
-      {proof.video_url && (
-        <video src={proof.video_url} controls className="w-full max-h-96" />
+      {/* Media - long press for reactions */}
+      <div
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+        onContextMenu={(e) => e.preventDefault()}
+        className="relative select-none"
+      >
+        {proof.image_url && (
+          <img src={proof.image_url} alt="Proof" className="w-full max-h-96 object-cover" draggable={false} />
+        )}
+        {proof.video_url && (
+          <video src={proof.video_url} controls className="w-full max-h-96" />
+        )}
+        {!proof.image_url && !proof.video_url && (
+          <div className="h-12" />
+        )}
+      </div>
+
+      {/* Vote summary badges - always visible */}
+      {allVotes.length > 0 && (
+        <div className="px-4 py-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+          {honorCount > 0 && <span>🏆 {honorCount}</span>}
+          {validatedCount > 0 && <span>✅ {validatedCount}</span>}
+          {rejectedCount > 0 && <span>❌ {rejectedCount}</span>}
+          {totalReactions > 0 && (
+            <>
+              <span className="mx-1">·</span>
+              {reactionCounts.filter(r => r.count > 0).map(r => (
+                <span key={r.type}>{r.icon} {r.count}</span>
+              ))}
+            </>
+          )}
+        </div>
       )}
 
-      {/* Reactions bar */}
-      <div className="px-4 py-2 flex items-center gap-1 flex-wrap border-t">
-        {reactionCounts.map(r => (
-          <Button
-            key={r.type}
-            variant={r.myReaction ? "secondary" : "ghost"}
-            size="sm"
-            className="h-8 px-2 text-xs gap-1"
-            onClick={() => toggleReaction(r.type)}
-          >
-            <span>{r.icon}</span>
-            {r.count > 0 && <span>{r.count}</span>}
-          </Button>
-        ))}
+      {/* Action bar: vote buttons directly, comments, long-press hint */}
+      <div className="px-4 py-2 flex items-center gap-1.5 border-t">
+        {/* Direct vote buttons for non-authors */}
+        {!isAuthor ? (
+          <>
+            <Button
+              variant={myVote?.vote_type === "honor" ? "default" : "ghost"}
+              size="sm"
+              className="h-8 px-2.5 text-xs gap-1"
+              onClick={() => { setVoteType("honor"); setShowVotePanel(true); }}
+              title="Validated with Honor"
+            >
+              <Award className="h-4 w-4" /> Honor
+            </Button>
+            <Button
+              variant={myVote?.vote_type === "validated" ? "default" : "ghost"}
+              size="sm"
+              className="h-8 px-2.5 text-xs gap-1"
+              onClick={() => { setVoteType("validated"); setShowVotePanel(true); }}
+              title="Validated"
+            >
+              <ThumbsUp className="h-4 w-4" /> Valid
+            </Button>
+            <Button
+              variant={myVote?.vote_type === "rejected" ? "destructive" : "ghost"}
+              size="sm"
+              className="h-8 px-2.5 text-xs gap-1"
+              onClick={() => { setVoteType("rejected"); setShowVotePanel(true); }}
+              title="Not Validated"
+            >
+              <ThumbsDown className="h-4 w-4" />
+            </Button>
+          </>
+        ) : (
+          <span className="text-xs text-muted-foreground">Your proof</span>
+        )}
 
         <div className="flex-1" />
 
@@ -309,20 +388,9 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
           <MessageCircle className="h-4 w-4" />
           {comments.length > 0 && <span>{comments.length}</span>}
         </Button>
-
-        {!isAuthor && (
-          <Button
-            variant={myVote ? "secondary" : "ghost"}
-            size="sm"
-            className="h-8 px-2 text-xs gap-1"
-            onClick={() => setShowVotePanel(!showVotePanel)}
-          >
-            {voteLabel || "Vote"}
-          </Button>
-        )}
       </div>
 
-      {/* Vote panel */}
+      {/* Vote confirmation panel (for numeric score on "validated") */}
       {showVotePanel && !isAuthor && (
         <div className="px-4 py-3 border-t bg-muted/30 space-y-3">
           <RadioGroup value={voteType} onValueChange={setVoteType} className="space-y-2">
@@ -359,6 +427,34 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
           </Button>
         </div>
       )}
+
+      {/* Reaction popover (long press) */}
+      <Dialog open={showReactions} onOpenChange={setShowReactions}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="text-base">React</DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center justify-center gap-3 py-2">
+            {REACTION_EMOJIS.map(r => {
+              const mine = reactions.some(rx => rx.reaction_type === r.type && rx.user_id === currentUserId);
+              const count = reactions.filter(rx => rx.reaction_type === r.type).length;
+              return (
+                <button
+                  key={r.type}
+                  onClick={() => { toggleReaction(r.type); setShowReactions(false); }}
+                  className={`flex flex-col items-center gap-1 p-3 rounded-xl transition-colors ${
+                    mine ? "bg-primary/10 ring-2 ring-primary" : "hover:bg-muted"
+                  }`}
+                >
+                  <span className="text-2xl">{r.icon}</span>
+                  {count > 0 && <span className="text-xs text-muted-foreground">{count}</span>}
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-xs text-center text-muted-foreground">Tap to toggle reaction</p>
+        </DialogContent>
+      </Dialog>
 
       {/* Comments section */}
       {showComments && (
@@ -403,7 +499,6 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
             <DialogDescription>Update your proof description or media</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Current/new media preview */}
             {!editFile && proof.image_url && (
               <img src={proof.image_url} alt="Current" className="rounded-lg w-full max-h-48 object-cover" />
             )}
