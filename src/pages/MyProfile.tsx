@@ -162,6 +162,25 @@ const MyProfile = () => {
           ))}
         </div>
 
+        {/* Coin balance + Store link */}
+        <Card className="cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate("/store")}>
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Coins className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">My Coins</span>
+            </div>
+            <span className="text-lg font-bold text-primary">{coinBalance} 🪙</span>
+          </CardContent>
+        </Card>
+
+        {/* Premium banner */}
+        {!isPremium && (
+          <PremiumBanner
+            title="Go Premium"
+            description="Unlimited challenges, surprise mode, branded diplomas & more."
+          />
+        )}
+
         {/* Proofs stat */}
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
