@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Coins, TrendingUp, Award, Shield, Zap, Eye, Copy,
-  UserPlus, Users, PenTool, Sparkles, RotateCcw, CalendarPlus, Star,
+  Coins, TrendingUp, Award, Copy,
+  UserPlus, Users, PenTool, Sparkles, CalendarPlus, Star,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
@@ -36,27 +36,6 @@ const BOOSTS = [
     cost: 10,
   },
   {
-    type: "double_points",
-    label: "Double Points",
-    description: "Your next proof counts for 2× score",
-    icon: Zap,
-    cost: 15,
-  },
-  {
-    type: "shield",
-    label: "Shield",
-    description: "Block the next negative vote on your proof",
-    icon: Shield,
-    cost: 12,
-  },
-  {
-    type: "spy",
-    label: "Spy",
-    description: "See who voted what on your latest proof",
-    icon: Eye,
-    cost: 8,
-  },
-  {
     type: "vote_twice",
     label: "Vote Twice",
     description: "Vote a second time on any proof",
@@ -66,14 +45,14 @@ const BOOSTS = [
   {
     type: "extra_participation",
     label: "Extra Participation +1",
-    description: "Get +1 extra active participation slot",
+    description: "Join one more active challenge",
     icon: UserPlus,
     cost: 10,
   },
   {
     type: "extra_participation_3",
     label: "Extra Participation +3",
-    description: "Get +3 extra active participation slots",
+    description: "Join 3 more active challenges",
     icon: Users,
     cost: 25,
   },
@@ -87,7 +66,7 @@ const BOOSTS = [
   {
     type: "highlighted_proof",
     label: "Highlighted Proof",
-    description: "Your next proof gets a golden highlight in the feed",
+    description: "Your proof goes to the top of the feed (marked as boosted)",
     icon: Star,
     cost: 15,
   },
@@ -97,13 +76,6 @@ const BOOSTS = [
     description: "Your next vote counts double weight",
     icon: Sparkles,
     cost: 20,
-  },
-  {
-    type: "second_try",
-    label: "Second Try",
-    description: "Resubmit a proof that got rejected",
-    icon: RotateCcw,
-    cost: 15,
   },
   {
     type: "challenge_extend",
@@ -185,17 +157,6 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
       }
     }
 
-    if (boostType === "double_points") {
-      const { data: part } = await supabase
-        .from("participations")
-        .select("score")
-        .eq("id", participationId)
-        .single();
-      await supabase
-        .from("participations")
-        .update({ score: (part?.score ?? 0) + 2 })
-        .eq("id", participationId);
-    }
 
     const labels: Record<string, string> = {};
     BOOSTS.forEach((b) => { labels[b.type] = b.label; });
