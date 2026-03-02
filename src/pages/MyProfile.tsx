@@ -4,8 +4,10 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Settings, Trophy, Target, CheckCircle, Star } from "lucide-react";
+import { ArrowLeft, Settings, Trophy, Target, CheckCircle, Star, Coins } from "lucide-react";
 import BadgeCard from "@/components/BadgeCard";
+import PremiumBanner from "@/components/PremiumBanner";
+import { usePremium } from "@/hooks/usePremium";
 
 interface ProfileData {
   display_name: string;
