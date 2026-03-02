@@ -32,6 +32,9 @@ const MyProfile = () => {
   const [badges, setBadges] = useState<any[]>([]);
   const [userBadges, setUserBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uid, setUid] = useState<string | null>(null);
+  const { isPremium } = usePremium(uid);
+  const [coinBalance, setCoinBalance] = useState<number>(0);
 
   useEffect(() => {
     loadProfile();
