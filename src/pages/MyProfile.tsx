@@ -44,8 +44,9 @@ const MyProfile = () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { navigate("/auth"); return; }
     const userId = session.user.id;
+    setUid(userId);
 
-    const [profileRes, participationsRes, completedRes, createdRes, proofsRes, badgesRes, userBadgesRes] = await Promise.all([
+    const [profileRes, participationsRes, completedRes, createdRes, proofsRes, badgesRes, userBadgesRes, balanceRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).single(),
       supabase.from("participations").select("id", { count: "exact", head: true }).eq("user_id", userId),
       supabase.from("participations").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("is_done", true),
