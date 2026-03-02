@@ -58,6 +58,7 @@ const MyProfile = () => {
     ]);
 
     if (profileRes.data) setProfile(profileRes.data);
+    setCoinBalance(balanceRes.data ?? 0);
 
     // Count wins
     const { data: finishedParts } = await supabase
