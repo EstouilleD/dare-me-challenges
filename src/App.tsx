@@ -23,6 +23,7 @@ import JoinChallenge from "./pages/JoinChallenge";
 import Admin from "./pages/Admin";
 import Badges from "./pages/Badges";
 import Notifications from "./pages/Notifications";
+import Store from "./pages/Store";
 
 const queryClient = new QueryClient();
 
