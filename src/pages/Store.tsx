@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Crown, Coins, Check, Sparkles, Zap, Trophy, Eye } from "lucide-react";
+import { ArrowLeft, Crown, Coins, Sparkles, Zap, Trophy, Eye, Gift } from "lucide-react";
 import { usePremium } from "@/hooks/usePremium";
 
 interface CoinPack {
@@ -20,6 +20,23 @@ const PREMIUM_PERKS = [
   { icon: Trophy, label: "Unlimited active participations" },
   { icon: Eye, label: "Surprise challenges (hidden proofs)" },
   { icon: Sparkles, label: "Official branded diplomas (top 3)" },
+  { icon: Gift, label: "1 free booster per month (your choice!)" },
+];
+
+const ALL_BOOSTERS = [
+  { emoji: "📈", name: "Score Boost", cost: 5, desc: "Add +1 to your participation score" },
+  { emoji: "⭐", name: "Honor Vote", cost: 10, desc: "Auto honor vote on your latest proof" },
+  { emoji: "⚡", name: "Double Points", cost: 15, desc: "Your next proof counts for 2× score" },
+  { emoji: "🛡️", name: "Shield", cost: 12, desc: "Block the next negative vote on your proof" },
+  { emoji: "🕵️", name: "Spy", cost: 8, desc: "See who voted what on your latest proof" },
+  { emoji: "🗳️", name: "Vote Twice", cost: 10, desc: "Vote a second time on any proof" },
+  { emoji: "👤", name: "Extra Participation +1", cost: 10, desc: "Get +1 extra active participation slot" },
+  { emoji: "👥", name: "Extra Participation +3", cost: 25, desc: "Get +3 extra active participation slots" },
+  { emoji: "✏️", name: "Extra Creation +1", cost: 20, desc: "Create one additional challenge this month" },
+  { emoji: "💫", name: "Highlighted Proof", cost: 15, desc: "Your next proof gets a golden highlight in the feed" },
+  { emoji: "✖️", name: "Vote Multiplier", cost: 20, desc: "Your next vote counts double weight" },
+  { emoji: "🔄", name: "Second Try", cost: 15, desc: "Resubmit a proof that got rejected" },
+  { emoji: "📅", name: "Extend +3 Days", cost: 20, desc: "Extend the challenge deadline by 3 days (owner only)" },
 ];
 
 const Store = () => {
@@ -113,7 +130,7 @@ const Store = () => {
                 <Crown className="h-5 w-5 text-primary" />
                 Premium
               </CardTitle>
-              <CardDescription>Unlock all features and remove limits</CardDescription>
+              <CardDescription>Unlock all features, remove limits & get monthly boosters</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2.5">
@@ -134,6 +151,24 @@ const Store = () => {
           </Card>
         )}
 
+        {/* Premium booster info for premium users */}
+        {isPremium && (
+          <Card className="shadow-elevated border-primary/30 overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-primary to-accent" />
+            <CardContent className="py-5">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Gift className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Monthly Free Booster</p>
+                  <p className="text-xs text-muted-foreground">As a Premium member, you get 1 free booster of your choice each month!</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Coin packs */}
         <section className="space-y-3">
           <h2 className="text-lg font-bold flex items-center gap-2">
@@ -141,7 +176,7 @@ const Store = () => {
             Coin Packs
           </h2>
           <p className="text-sm text-muted-foreground">
-            Use coins for boosts: +1 score or automatic honor votes.
+            Use coins to activate boosters in your challenges.
           </p>
 
           {coinPacks.length === 0 ? (
@@ -172,54 +207,23 @@ const Store = () => {
           )}
         </section>
 
-        {/* What coins do */}
+        {/* All boosters catalog */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">What can you do with coins?</CardTitle>
+            <CardTitle className="text-base">All Boosters</CardTitle>
+            <CardDescription>Spend coins for competitive advantages</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
-              <span className="text-lg">📈</span>
-              <div>
-                <p className="font-medium">Score Boost (5 🪙)</p>
-                <p className="text-muted-foreground">Add +1 to your participation score</p>
+          <CardContent className="space-y-2.5 text-sm">
+            {ALL_BOOSTERS.map((b) => (
+              <div key={b.name} className="flex items-center gap-3 p-2.5 rounded-lg border">
+                <span className="text-lg flex-shrink-0">{b.emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium">{b.name}</p>
+                  <p className="text-xs text-muted-foreground">{b.desc}</p>
+                </div>
+                <span className="text-xs font-semibold text-primary flex-shrink-0">{b.cost} 🪙</span>
               </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="text-lg">⭐</span>
-              <div>
-                <p className="font-medium">Honor Vote (10 🪙)</p>
-                <p className="text-muted-foreground">Auto honor vote on your latest proof</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="text-lg">⚡</span>
-              <div>
-                <p className="font-medium">Double Points (15 🪙)</p>
-                <p className="text-muted-foreground">Your next proof counts for 2× score</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="text-lg">🛡️</span>
-              <div>
-                <p className="font-medium">Shield (12 🪙)</p>
-                <p className="text-muted-foreground">Block the next negative vote on your proof</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="text-lg">🕵️</span>
-              <div>
-                <p className="font-medium">Spy (8 🪙)</p>
-                <p className="text-muted-foreground">See who voted what on your latest proof</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="text-lg">🗳️</span>
-              <div>
-                <p className="font-medium">Vote Twice (10 🪙)</p>
-                <p className="text-muted-foreground">Vote a second time on any proof</p>
-              </div>
-            </div>
+            ))}
           </CardContent>
         </Card>
       </main>
