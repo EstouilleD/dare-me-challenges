@@ -210,28 +210,39 @@ const ChallengeRanking = ({ challengeId, isFinished }: ChallengeRankingProps) =>
           );
         })}
 
-        {/* Diploma download for top 3 in finished challenges */}
         {isFinished && isTop3 && (
           <div className="pt-3 border-t mt-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full gap-2"
-              onClick={handleDownloadDiploma}
-              disabled={downloadingDiploma}
-            >
-              {downloadingDiploma ? (
-                "Generating..."
-              ) : (
-                <>
-                  <Download className="h-4 w-4" />
-                  Download Diploma
-                  <Badge variant="outline" className="text-xs gap-1 ml-1">
-                    <Crown className="h-3 w-3" /> Premium
-                  </Badge>
-                </>
-              )}
-            </Button>
+            {isPremium ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={handleDownloadDiploma}
+                disabled={downloadingDiploma}
+              >
+                {downloadingDiploma ? (
+                  "Generating..."
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" />
+                    Download Diploma
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => navigate("/store")}
+              >
+                <Lock className="h-4 w-4" />
+                Download Diploma
+                <Badge variant="outline" className="text-xs gap-1 ml-1">
+                  <Crown className="h-3 w-3" /> Premium
+                </Badge>
+              </Button>
+            )}
           </div>
         )}
       </CardContent>
