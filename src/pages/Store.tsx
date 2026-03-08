@@ -287,7 +287,7 @@ const Store = () => {
         )}
 
         {/* Coin packs */}
-        <section className="space-y-3">
+        <section id="coin-packs" className="space-y-3">
           <h2 className="text-lg font-bold flex items-center gap-2">
             <Coins className="h-5 w-5 text-primary" />
             Coin Packs
