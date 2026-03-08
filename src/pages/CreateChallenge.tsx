@@ -346,7 +346,24 @@ const CreateChallenge = () => {
                 </RadioGroup>
               </div>
 
-              {/* Frequency-specific fields */}
+              {/* Category */}
+              <div className="space-y-2">
+                <Label>Category (optional)</Label>
+                <Select value={categoryId || "none"} onValueChange={(v) => setCategoryId(v === "none" ? null : v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No category</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.icon} {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {isFrequency && (
                 <Card className="border-dashed">
                   <CardContent className="pt-4 space-y-4">
