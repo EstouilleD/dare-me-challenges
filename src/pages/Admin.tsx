@@ -1,7 +1,7 @@
 import { useAdmin } from "@/hooks/useAdmin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, LayoutDashboard, Flag, Users, FileText, UserX, BarChart3 } from "lucide-react";
+import { ArrowLeft, LayoutDashboard, Flag, Users, FileText, UserX, BarChart3, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import HeaderLogo from "@/components/HeaderLogo";
