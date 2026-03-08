@@ -74,6 +74,33 @@ export type Database = {
         }
         Relationships: []
       }
+      beta_feedback: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          message: string
+          page_url: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          message: string
+          page_url?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          page_url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       boosts: {
         Row: {
           boost_type: string
