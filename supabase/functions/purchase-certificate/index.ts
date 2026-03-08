@@ -27,6 +27,25 @@ serve(async (req) => {
     const { challengeId } = await req.json();
     if (!challengeId) throw new Error("challengeId is required");
 
+    // Check if already purchased
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    const { data: existing } = await serviceClient
+      .from("certificate_purchases")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("challenge_id", challengeId)
+      .maybeSingle();
+
+    if (existing) {
+      return new Response(JSON.stringify({ error: "Certificate already purchased" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
@@ -49,6 +68,12 @@ serve(async (req) => {
         challenge_id: challengeId,
         type: "certificate_purchase",
       },
+    });
+
+    // Record purchase immediately (Stripe will handle payment confirmation)
+    await serviceClient.from("certificate_purchases").insert({
+      user_id: user.id,
+      challenge_id: challengeId,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {

@@ -35,6 +35,7 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState("");
   const [isPremium, setIsPremium] = useState(false);
+  const [hasPurchasedCert, setHasPurchasedCert] = useState(false);
   const [downloadingDiploma, setDownloadingDiploma] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
   const { toast } = useToast();
@@ -62,6 +63,15 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
       setCurrentUserId(session.user.id);
       const { data } = await supabase.rpc("is_premium", { _user_id: session.user.id });
       setIsPremium(!!data);
+      
+      // Check if user purchased certificate for this challenge
+      const { data: purchase } = await supabase
+        .from("certificate_purchases")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .eq("challenge_id", challengeId)
+        .maybeSingle();
+      setHasPurchasedCert(!!purchase);
     }
 
     const { data: participations } = await supabase
@@ -209,9 +219,7 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
   const myRank = ranking.findIndex(r => r.user_id === currentUserId);
   const isTop3 = myRank >= 0 && myRank < 3;
 
-  // After purchase redirect, allow download even for non-premium
-  const hasPurchased = searchParams.get("certificate") === "purchased";
-  const canDownload = isPremium || hasPurchased;
+  const canDownload = isPremium || hasPurchasedCert || searchParams.get("certificate") === "purchased";
 
   // Podium order: 2nd, 1st, 3rd
   const podiumOrder = top3.length >= 3

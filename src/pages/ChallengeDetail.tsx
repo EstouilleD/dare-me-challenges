@@ -234,9 +234,13 @@ const ChallengeDetail = () => {
       return;
     }
 
+    // Use upsert to handle rejoining after quitting
     const { error } = await supabase
       .from("participations")
-      .insert({ challenge_id: id, user_id: session.user.id, is_active: true });
+      .upsert(
+        { challenge_id: id, user_id: session.user.id, is_active: true, is_done: false, score: 0 },
+        { onConflict: "challenge_id,user_id", ignoreDuplicates: false }
+      );
 
     if (error) {
       toast({ variant: "destructive", title: "Failed to join", description: error.message });
