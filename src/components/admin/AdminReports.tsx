@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { usePagination } from "@/hooks/usePagination";
+import ShowMoreButton from "@/components/ShowMoreButton";
 
 interface Report {
   id: string;
@@ -29,6 +31,7 @@ const AdminReports = () => {
   const { toast } = useToast();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
+  const { visibleItems, hasMore, showMore, totalCount, visibleCount } = usePagination(reports, { pageSize: 15 });
 
   const loadReports = async () => {
     setLoading(true);
@@ -81,7 +84,8 @@ const AdminReports = () => {
 
   return (
     <div className="space-y-4">
-      {reports.map((r) => (
+      <p className="text-sm text-muted-foreground">{totalCount} reports total</p>
+      {visibleItems.map((r) => (
         <Card key={r.id} className="shadow-card">
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between gap-2">
@@ -133,6 +137,7 @@ const AdminReports = () => {
           </CardContent>
         </Card>
       ))}
+      {hasMore && <ShowMoreButton onClick={showMore} visibleCount={visibleCount} totalCount={totalCount} />}
     </div>
   );
 };
