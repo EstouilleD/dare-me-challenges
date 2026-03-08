@@ -11,6 +11,7 @@ import { ArrowLeft, ThumbsUp, ThumbsDown, Award } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 
 interface Profile {
   id: string;
