@@ -243,20 +243,8 @@ const ChallengeDetail = () => {
       );
 
     if (error) {
-      // Fallback: if upsert fails (no unique constraint), try update existing inactive record
-      const { error: updateError } = await supabase
-        .from("participations")
-        .update({ is_active: true, is_done: false, score: 0 })
-        .eq("challenge_id", id)
-        .eq("user_id", session.user.id)
-        .eq("is_active", false);
-      
-      if (updateError) {
-        toast({ variant: "destructive", title: "Failed to join", description: error.message });
-        return;
-      }
-    }
-    {
+      toast({ variant: "destructive", title: "Failed to join", description: error.message });
+    } else {
       toast({ title: "Joined!", description: "You're now part of this challenge." });
       loadData();
     }
