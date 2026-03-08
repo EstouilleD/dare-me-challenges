@@ -136,7 +136,7 @@ const MyProfile = () => {
         {/* Avatar + Name card */}
         <div className="flex flex-col items-center">
           <Avatar className="h-28 w-28 border-4 border-background shadow-lg">
-            <AvatarImage src={getAvatarSrc()} />
+            <AvatarImage src={profile ? getAvatarSrc(profile) : ""} />
             <AvatarFallback className="text-3xl">{profile?.display_name?.[0]}</AvatarFallback>
           </Avatar>
           <h1 className="text-2xl font-bold mt-3">{profile?.display_name}</h1>
