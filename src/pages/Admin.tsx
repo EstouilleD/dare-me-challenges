@@ -1,7 +1,7 @@
 import { useAdmin } from "@/hooks/useAdmin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, LayoutDashboard, Flag, Users, FileText, UserX, BarChart3 } from "lucide-react";
+import { ArrowLeft, LayoutDashboard, Flag, Users, FileText, UserX, BarChart3, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import HeaderLogo from "@/components/HeaderLogo";
@@ -11,6 +11,7 @@ import AdminUsers from "@/components/admin/AdminUsers";
 import AdminContent from "@/components/admin/AdminContent";
 import AdminDeletedUsers from "@/components/admin/AdminDeletedUsers";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
+import AdminFairPlay from "@/components/admin/AdminFairPlay";
 
 const Admin = () => {
   const { isAdmin, loading } = useAdmin();
@@ -51,29 +52,33 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-6 max-w-5xl">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview" className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <LayoutDashboard className="h-4 w-4" />
+          <TabsList className="grid w-full grid-cols-7">
+            <TabsTrigger value="overview" className="flex items-center gap-1 text-xs">
+              <LayoutDashboard className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <BarChart3 className="h-4 w-4" />
+            <TabsTrigger value="analytics" className="flex items-center gap-1 text-xs">
+              <BarChart3 className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
-            <TabsTrigger value="reports" className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <Flag className="h-4 w-4" />
+            <TabsTrigger value="fairplay" className="flex items-center gap-1 text-xs">
+              <Shield className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Fair Play</span>
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="flex items-center gap-1 text-xs">
+              <Flag className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Reports</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <Users className="h-4 w-4" />
+            <TabsTrigger value="users" className="flex items-center gap-1 text-xs">
+              <Users className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Users</span>
             </TabsTrigger>
-            <TabsTrigger value="content" className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <FileText className="h-4 w-4" />
+            <TabsTrigger value="content" className="flex items-center gap-1 text-xs">
+              <FileText className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Content</span>
             </TabsTrigger>
-            <TabsTrigger value="deleted" className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <UserX className="h-4 w-4" />
+            <TabsTrigger value="deleted" className="flex items-center gap-1 text-xs">
+              <UserX className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Deleted</span>
             </TabsTrigger>
           </TabsList>
@@ -83,6 +88,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="analytics">
             <AdminAnalytics />
+          </TabsContent>
+          <TabsContent value="fairplay">
+            <AdminFairPlay />
           </TabsContent>
           <TabsContent value="reports">
             <AdminReports />

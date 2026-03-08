@@ -91,6 +91,7 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
   const navigate = useNavigate();
   const { toast } = useToast();
   const isAuthor = currentUserId === proof.participations.user_id;
+  const [hasBoosted, setHasBoosted] = useState(false);
 
   // Reactions
   const [reactions, setReactions] = useState<Reaction[]>([]);
@@ -121,15 +122,17 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
   }, [proof.id]);
 
   const loadInteractions = async () => {
-    const [reactionsRes, commentsRes, voteRes, allVotesRes] = await Promise.all([
+    const [reactionsRes, commentsRes, voteRes, allVotesRes, boostRes] = await Promise.all([
       supabase.from("proof_reactions").select("*").eq("proof_id", proof.id),
       supabase.from("proof_comments").select("*, profiles:user_id(id, display_name, avatar_url, profile_photo_url, use_avatar)").eq("proof_id", proof.id).order("created_at", { ascending: true }),
       supabase.from("votes").select("*").eq("proof_id", proof.id).eq("voter_id", currentUserId).maybeSingle(),
       supabase.from("votes").select("*").eq("proof_id", proof.id),
+      supabase.from("boosts").select("id").eq("target_proof_id", proof.id).limit(1),
     ]);
     setReactions(reactionsRes.data || []);
     setComments(commentsRes.data as Comment[] || []);
     setAllVotes(allVotesRes.data || []);
+    setHasBoosted((boostRes.data?.length || 0) > 0);
     if (voteRes.data) {
       setMyVote(voteRes.data);
       setVoteType(voteRes.data.vote_type);
@@ -272,7 +275,14 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
           <AvatarFallback>{proof.participations.profiles.display_name[0]}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm">{proof.participations.profiles.display_name}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="font-medium text-sm">{proof.participations.profiles.display_name}</p>
+            {hasBoosted && (
+              <span className="inline-flex items-center gap-0.5 bg-yellow-100 text-yellow-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                ⚡ Boosted
+              </span>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground">{format(new Date(proof.created_at), "MMM d, yyyy 'at' h:mm a")}</p>
         </div>
         {isAuthor && (
