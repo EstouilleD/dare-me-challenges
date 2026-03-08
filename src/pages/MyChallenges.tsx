@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ArrowLeft } from "lucide-react";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 
 const MyChallenges = () => {
   const navigate = useNavigate();
