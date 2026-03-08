@@ -114,7 +114,7 @@ const ChallengeHistory = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
-        <div className="container mx-auto px-4 py-4 flex items-center gap-3 relative">
+        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="text-white hover:bg-white/20">
             <ArrowLeft className="h-5 w-5" />
           </Button>
