@@ -798,7 +798,7 @@ const ChallengeDetail = () => {
         )}
 
         {/* Coin Boost - only for active participants */}
-        {isParticipant && challenge.status === "active" && myParticipation && (
+        {isParticipant && challenge.status === "active" && myParticipation && !isFinished && (
           <CoinBoostActions
             challengeId={challenge.id}
             participationId={myParticipation.id}
