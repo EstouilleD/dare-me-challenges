@@ -101,7 +101,7 @@ const ProfileSetup = () => {
         display_name: displayName.trim(),
         full_name: fullName.trim() || null,
         use_avatar: useAvatar,
-        avatar_url: useAvatar ? selectedAvatar : null,
+        avatar_url: useAvatar ? selectedAvatar : null, // stores stable key like "avatar1.png"
         profile_photo_url: !useAvatar ? profilePhotoUrl : null,
       })
       .eq("id", session.user.id);
