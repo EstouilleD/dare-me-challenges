@@ -886,28 +886,63 @@ const ChallengeDetail = () => {
             </CardContent>
           </Card>
         ) : (
-          <div>
-            <h2 className="text-lg font-semibold mb-3">
-              Proofs Feed ({proofs.length})
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">
+              Feed ({feedItems.length})
             </h2>
-            {proofs.length === 0 ? (
+
+            {/* Post input */}
+            {canPost && challenge.status === "active" && (
+              <Card className="shadow-card">
+                <CardContent className="p-3">
+                  <div className="flex items-end gap-2">
+                    <Textarea
+                      placeholder="Say something to the group..."
+                      value={postText}
+                      onChange={(e) => setPostText(e.target.value)}
+                      className="min-h-[40px] max-h-[120px] resize-none text-sm"
+                      rows={1}
+                    />
+                    <Button
+                      size="icon"
+                      className="h-9 w-9 flex-shrink-0"
+                      disabled={!postText.trim() || submittingPost}
+                      onClick={handlePost}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {feedItems.length === 0 ? (
               <Card className="shadow-card">
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  No proofs submitted yet.
+                  No activity yet. Be the first to post!
                 </CardContent>
               </Card>
             ) : (
               <div className="space-y-4">
-                {[...proofs].reverse().map((proof) => (
-                  <ProofFeedItem
-                    key={proof.id}
-                    proof={{ ...proof, challenge_id: challenge.id }}
-                    currentUserId={currentUserId}
-                    askNumericScore={challenge.ask_numeric_score}
-                    challengeStatus={challenge.status}
-                    onRefresh={loadData}
-                  />
-                ))}
+                {feedItems.map((item) =>
+                  item.type === "proof" ? (
+                    <ProofFeedItem
+                      key={`proof-${item.data.id}`}
+                      proof={{ ...item.data, challenge_id: challenge.id }}
+                      currentUserId={currentUserId}
+                      askNumericScore={challenge.ask_numeric_score}
+                      challengeStatus={challenge.status}
+                      onRefresh={loadData}
+                    />
+                  ) : (
+                    <PostFeedItem
+                      key={`post-${item.data.id}`}
+                      post={item.data}
+                      currentUserId={currentUserId}
+                      onRefresh={loadData}
+                    />
+                  )
+                )}
               </div>
             )}
           </div>
