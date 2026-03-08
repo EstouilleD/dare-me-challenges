@@ -694,6 +694,17 @@ const ChallengeDetail = () => {
       </Dialog>
 
       <main className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
+        {/* Brand Campaign Header */}
+        {isBrandChallenge && challenge.communities && (
+          <BrandChallengeHeader
+            community={challenge.communities}
+            challengeTitle={challenge.title}
+            challengeIcon={challenge.challenge_types.icon}
+            challengeTypeName={challenge.challenge_types.name}
+            status={challenge.status}
+          />
+        )}
+
         {/* Finished banner + Podium at top */}
         {isFinished && (
           <>
