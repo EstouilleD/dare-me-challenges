@@ -128,6 +128,18 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
   };
 
   const handleBoost = async (boostType: string, cost: number) => {
+    // Check: 1 booster of each type per challenge
+    if (usedInChallenge.has(boostType)) {
+      toast({ variant: "destructive", title: "Already used", description: "You can only use each booster once per challenge." });
+      return;
+    }
+
+    // Check: 3 boosters total per month
+    if (monthlyCount >= 3) {
+      toast({ variant: "destructive", title: "Monthly limit reached", description: "You can use a maximum of 3 boosters per month." });
+      return;
+    }
+
     setLoading(boostType);
 
     const { data: success } = await supabase.rpc("spend_coins", {
