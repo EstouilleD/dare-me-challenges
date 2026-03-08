@@ -22,6 +22,7 @@ interface HistoryChallenge {
 
 const ChallengeHistory = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const [challenges, setChallenges] = useState<HistoryChallenge[]>([]);
   const [loading, setLoading] = useState(true);
 

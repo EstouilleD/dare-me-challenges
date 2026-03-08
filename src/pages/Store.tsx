@@ -65,6 +65,7 @@ const ALL_BOOSTERS = [
 
 const Store = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);

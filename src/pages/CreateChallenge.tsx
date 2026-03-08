@@ -33,6 +33,7 @@ const FREQUENCY_PERIODS = [
 
 const CreateChallenge = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [types, setTypes] = useState<ChallengeType[]>([]);

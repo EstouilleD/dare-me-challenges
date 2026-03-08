@@ -34,6 +34,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const Badges = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const [badges, setBadges] = useState<Badge[]>([]);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);

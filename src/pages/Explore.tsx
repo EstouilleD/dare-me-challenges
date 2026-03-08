@@ -43,6 +43,7 @@ interface Challenge {
 
 const Explore = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const { toast } = useToast();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [challengeTypes, setChallengeTypes] = useState<ChallengeType[]>([]);

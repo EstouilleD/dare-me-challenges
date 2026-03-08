@@ -50,6 +50,7 @@ interface NotificationPrefs {
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
 

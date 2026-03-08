@@ -10,6 +10,7 @@ import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 
 const DeletedChallenges = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const [challenges, setChallenges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

@@ -48,6 +48,7 @@ interface Vote {
 const ProofDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const { toast } = useToast();
   const [proof, setProof] = useState<Proof | null>(null);
   const [myVote, setMyVote] = useState<Vote | null>(null);

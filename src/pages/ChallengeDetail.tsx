@@ -118,6 +118,7 @@ const CountdownBadge = ({ endDate }: { endDate: string }) => {
 const ChallengeDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const { toast } = useToast();
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [participants, setParticipants] = useState<Participation[]>([]);
