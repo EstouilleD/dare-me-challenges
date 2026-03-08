@@ -88,7 +88,10 @@ const Profile = () => {
     if (profileRes.data) {
       setProfile(profileRes.data);
       if (profileRes.data.use_avatar && profileRes.data.avatar_url) {
-        setSelectedAvatar(profileRes.data.avatar_url);
+        // Store the raw key from DB; resolveAvatarUrl handles legacy hashed paths
+        const match = profileRes.data.avatar_url.match(/avatar(\d+)/);
+        const key = match ? `avatar${match[1]}.png` : profileRes.data.avatar_url;
+        setSelectedAvatar(key);
       }
       if (!profileRes.data.use_avatar && profileRes.data.profile_photo_url) {
         setPhotoPreview(profileRes.data.profile_photo_url);
