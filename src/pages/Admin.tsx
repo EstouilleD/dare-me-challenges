@@ -81,6 +81,9 @@ const Admin = () => {
           <TabsContent value="overview">
             <AdminOverview />
           </TabsContent>
+          <TabsContent value="analytics">
+            <AdminAnalytics />
+          </TabsContent>
           <TabsContent value="reports">
             <AdminReports />
           </TabsContent>
