@@ -205,6 +205,14 @@ const ChallengeDetail = () => {
       .order("created_at", { ascending: true });
 
     setProofs(proofsData as Proof[] || []);
+
+    const { data: postsData } = await supabase
+      .from("challenge_posts")
+      .select("*, profiles:user_id(id, display_name, avatar_url, profile_photo_url, use_avatar)")
+      .eq("challenge_id", id)
+      .order("created_at", { ascending: true });
+
+    setPosts(postsData || []);
     setLoading(false);
   };
 
