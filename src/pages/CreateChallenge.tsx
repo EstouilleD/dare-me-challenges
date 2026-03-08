@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { trackEvent } from "@/hooks/useTrackEvent";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -247,6 +248,7 @@ const CreateChallenge = () => {
         description: error.message,
       });
     } else {
+      trackEvent("challenge_created", { challenge_id: challenge.id, type_id: selectedTypeId, is_public: isPublic, community_id: communityId || null });
       toast({ title: "Challenge created!", description: "Your challenge is ready." });
       navigate(`/challenge/${challenge.id}`);
     }

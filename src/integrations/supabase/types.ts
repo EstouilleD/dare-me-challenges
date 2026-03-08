@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_data: Json | null
+          event_name: string
+          id: string
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json | null
+          event_name: string
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json | null
+          event_name?: string
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           category: string
@@ -84,6 +111,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "boosts_target_challenge_id_fkey"
+            columns: ["target_challenge_id"]
+            isOneToOne: false
+            referencedRelation: "v_top_challenges"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "boosts_target_proof_id_fkey"
             columns: ["target_proof_id"]
             isOneToOne: false
@@ -146,6 +180,13 @@ export type Database = {
             referencedRelation: "challenges"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "certificate_purchases_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "v_top_challenges"
+            referencedColumns: ["id"]
+          },
         ]
       }
       challenge_posts: {
@@ -178,6 +219,13 @@ export type Database = {
             referencedRelation: "challenges"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "challenge_posts_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "v_top_challenges"
+            referencedColumns: ["id"]
+          },
         ]
       }
       challenge_shares: {
@@ -208,6 +256,13 @@ export type Database = {
             columns: ["challenge_id"]
             isOneToOne: false
             referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_shares_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "v_top_challenges"
             referencedColumns: ["id"]
           },
         ]
@@ -328,6 +383,13 @@ export type Database = {
             columns: ["community_id"]
             isOneToOne: false
             referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenges_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "v_top_communities"
             referencedColumns: ["id"]
           },
           {
@@ -553,6 +615,13 @@ export type Database = {
             referencedRelation: "communities"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "community_invitations_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "v_top_communities"
+            referencedColumns: ["id"]
+          },
         ]
       }
       community_invite_links: {
@@ -597,6 +666,13 @@ export type Database = {
             referencedRelation: "communities"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "community_invite_links_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "v_top_communities"
+            referencedColumns: ["id"]
+          },
         ]
       }
       community_members: {
@@ -629,6 +705,13 @@ export type Database = {
             referencedRelation: "communities"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "community_members_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "v_top_communities"
+            referencedColumns: ["id"]
+          },
         ]
       }
       community_posts: {
@@ -659,6 +742,13 @@ export type Database = {
             columns: ["community_id"]
             isOneToOne: false
             referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_posts_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "v_top_communities"
             referencedColumns: ["id"]
           },
         ]
@@ -736,6 +826,13 @@ export type Database = {
             columns: ["challenge_id"]
             isOneToOne: false
             referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "v_top_challenges"
             referencedColumns: ["id"]
           },
           {
@@ -857,6 +954,13 @@ export type Database = {
             columns: ["challenge_id"]
             isOneToOne: false
             referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participations_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "v_top_challenges"
             referencedColumns: ["id"]
           },
           {
@@ -1025,6 +1129,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "proofs_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "v_top_challenges"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "proofs_participation_id_fkey"
             columns: ["participation_id"]
             isOneToOne: false
@@ -1064,6 +1175,13 @@ export type Database = {
             columns: ["challenge_id"]
             isOneToOne: false
             referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "v_top_challenges"
             referencedColumns: ["id"]
           },
         ]
@@ -1254,7 +1372,98 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_active_users: {
+        Row: {
+          dau: number | null
+          mau: number | null
+          wau: number | null
+        }
+        Relationships: []
+      }
+      v_challenge_metrics: {
+        Row: {
+          avg_participants: number | null
+          completion_rate: number | null
+          created_7d: number | null
+          joins_7d: number | null
+          proofs_7d: number | null
+          total_created: number | null
+          total_joins: number | null
+          total_proofs: number | null
+          total_votes: number | null
+          votes_7d: number | null
+        }
+        Relationships: []
+      }
+      v_community_metrics: {
+        Row: {
+          active_community_challenges: number | null
+          brand_communities: number | null
+          new_members_7d: number | null
+          total_communities: number | null
+        }
+        Relationships: []
+      }
+      v_engagement_trends: {
+        Row: {
+          boosters_used: number | null
+          challenges_created: number | null
+          challenges_joined: number | null
+          day: string | null
+          proofs_submitted: number | null
+          votes_submitted: number | null
+        }
+        Relationships: []
+      }
+      v_monetization: {
+        Row: {
+          active_premium: number | null
+          boosts_7d: number | null
+          certificates_7d: number | null
+          total_boost_coins: number | null
+          total_boosts: number | null
+          total_certificates: number | null
+          total_users: number | null
+        }
+        Relationships: []
+      }
+      v_retention: {
+        Row: {
+          d1_retention: number | null
+          d30_retention: number | null
+          d7_retention: number | null
+        }
+        Relationships: []
+      }
+      v_top_challenges: {
+        Row: {
+          id: string | null
+          participant_count: number | null
+          proof_count: number | null
+          status: string | null
+          title: string | null
+        }
+        Relationships: []
+      }
+      v_top_communities: {
+        Row: {
+          challenge_count: number | null
+          id: string | null
+          member_count: number | null
+          name: string | null
+          new_members_7d: number | null
+          slug: string | null
+          type: Database["public"]["Enums"]["community_type"] | null
+        }
+        Relationships: []
+      }
+      v_user_growth: {
+        Row: {
+          day: string | null
+          signups: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_and_award_badges: { Args: { _user_id: string }; Returns: undefined }

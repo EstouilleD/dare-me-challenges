@@ -1,7 +1,7 @@
 import { useAdmin } from "@/hooks/useAdmin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, LayoutDashboard, Flag, Users, FileText, UserX } from "lucide-react";
+import { ArrowLeft, LayoutDashboard, Flag, Users, FileText, UserX, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import HeaderLogo from "@/components/HeaderLogo";
@@ -10,6 +10,7 @@ import AdminReports from "@/components/admin/AdminReports";
 import AdminUsers from "@/components/admin/AdminUsers";
 import AdminContent from "@/components/admin/AdminContent";
 import AdminDeletedUsers from "@/components/admin/AdminDeletedUsers";
+import AdminAnalytics from "@/components/admin/AdminAnalytics";
 
 const Admin = () => {
   const { isAdmin, loading } = useAdmin();
@@ -50,10 +51,14 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-6 max-w-5xl">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview" className="flex items-center gap-1.5 text-xs sm:text-sm">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline">Overview</span>
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-1.5 text-xs sm:text-sm">
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
             <TabsTrigger value="reports" className="flex items-center gap-1.5 text-xs sm:text-sm">
               <Flag className="h-4 w-4" />
@@ -75,6 +80,9 @@ const Admin = () => {
 
           <TabsContent value="overview">
             <AdminOverview />
+          </TabsContent>
+          <TabsContent value="analytics">
+            <AdminAnalytics />
           </TabsContent>
           <TabsContent value="reports">
             <AdminReports />

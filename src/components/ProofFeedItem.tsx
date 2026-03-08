@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { trackEvent } from "@/hooks/useTrackEvent";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent } from "@/components/ui/card";
@@ -194,6 +195,7 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
     } else {
       await supabase.from("votes").insert({ proof_id: proof.id, voter_id: currentUserId, vote_type: voteType, numeric_score: score });
     }
+    trackEvent("vote_submitted", { proof_id: proof.id, vote_type: voteType });
     toast({ title: myVote ? "Vote updated!" : "Vote submitted!" });
     setSubmittingVote(false);
     setShowVotePanel(false);

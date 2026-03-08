@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { trackEvent } from "@/hooks/useTrackEvent";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -115,6 +116,7 @@ const ProfileSetup = () => {
         description: error.message,
       });
     } else {
+      trackEvent("profile_completed");
       toast({
         title: "Profile complete!",
         description: "Welcome to Dare Me!",

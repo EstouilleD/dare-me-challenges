@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { trackEvent } from "@/hooks/useTrackEvent";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -77,6 +78,7 @@ const Auth = () => {
         description: error.message,
       });
     } else {
+      trackEvent("signup", { method: "email" });
       toast({
         title: "Account created!",
         description: "Please complete your profile.",

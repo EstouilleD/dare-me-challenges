@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { checkParticipationLimit } from "@/hooks/usePremium";
 import { supabase } from "@/lib/supabase";
+import { trackEvent } from "@/hooks/useTrackEvent";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -251,6 +252,7 @@ const ChallengeDetail = () => {
     if (error) {
       toast({ variant: "destructive", title: "Failed to join", description: error.message });
     } else {
+      trackEvent("challenge_joined", { challenge_id: id });
       toast({ title: "Joined!", description: "You're now part of this challenge." });
       loadData();
     }
@@ -351,6 +353,7 @@ const ChallengeDetail = () => {
     if (error) {
       toast({ variant: "destructive", title: "Failed to submit", description: error.message });
     } else {
+      trackEvent("proof_submitted", { challenge_id: id });
       toast({ title: "Proof submitted!", description: "Your proof has been added." });
       setProofText("");
       clearFile();
