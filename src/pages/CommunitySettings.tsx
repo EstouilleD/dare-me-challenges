@@ -210,7 +210,7 @@ const CommunitySettings = () => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-xl font-bold text-white">Community Settings</h1>
-            <div className="ml-auto"><HeaderLogo /></div>
+            <HeaderLogo />
           </div>
         </div>
       </header>

@@ -121,8 +121,8 @@ const Communities = () => {
               <Button variant="ghost" size="icon" onClick={() => navigate("/create-community")} className="text-white hover:bg-white/20">
                 <Plus className="h-5 w-5" />
               </Button>
-              <HeaderLogo />
             </div>
+            <HeaderLogo />
           </div>
         </div>
       </header>
