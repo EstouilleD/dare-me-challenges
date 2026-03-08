@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Check, CheckCheck } from "lucide-react";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+import HeaderLogo from "@/components/HeaderLogo";
 import { formatDistanceToNow } from "date-fns";
 
 interface Notification {
@@ -82,13 +83,14 @@ const Notifications = () => {
     <div className="min-h-screen bg-background">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between relative">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-white hover:bg-white/20">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <h1 className="text-lg font-bold text-white">Notifications</h1>
             </div>
+            <HeaderLogo />
             {notifications.some(n => !n.is_read) && (
               <Button variant="ghost" size="sm" onClick={markAllRead} className="text-white hover:bg-white/20 gap-1">
                 <CheckCheck className="h-4 w-4" /> Mark all read

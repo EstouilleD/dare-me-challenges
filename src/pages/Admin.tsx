@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, LayoutDashboard, Flag, Users, FileText, UserX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+import HeaderLogo from "@/components/HeaderLogo";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminReports from "@/components/admin/AdminReports";
 import AdminUsers from "@/components/admin/AdminUsers";
@@ -32,7 +33,7 @@ const Admin = () => {
     <div className="min-h-screen bg-background">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 relative">
             <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="text-white hover:bg-white/20">
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -42,6 +43,7 @@ const Admin = () => {
                 Admin Dashboard
               </h1>
             </div>
+            <HeaderLogo />
           </div>
         </div>
       </header>

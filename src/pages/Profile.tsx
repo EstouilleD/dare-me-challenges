@@ -14,6 +14,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+import HeaderLogo from "@/components/HeaderLogo";
 import { ArrowLeft, User, Lock, Bell, Sun, Moon, Monitor, Palette, Award, Trophy } from "lucide-react";
 import BadgeCard from "@/components/BadgeCard";
 import { useTheme } from "next-themes";
@@ -235,11 +236,12 @@ const Profile = () => {
     <div className="min-h-screen bg-background">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 relative">
             <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="text-white hover:bg-white/20">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-xl font-bold text-white">Settings</h1>
+            <HeaderLogo />
           </div>
         </div>
       </header>

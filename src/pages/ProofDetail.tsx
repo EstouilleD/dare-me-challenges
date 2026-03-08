@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+import HeaderLogo from "@/components/HeaderLogo";
 
 interface Profile {
   id: string;
@@ -240,7 +241,7 @@ const ProofDetail = () => {
     <div className="min-h-screen bg-background">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 relative">
             <Button
               variant="ghost"
               size="icon"
@@ -253,6 +254,7 @@ const ProofDetail = () => {
               <h1 className="text-2xl font-bold text-white">Proof</h1>
               <p className="text-white/80 text-sm">{proof.challenges.title}</p>
             </div>
+            <HeaderLogo />
           </div>
         </div>
       </header>

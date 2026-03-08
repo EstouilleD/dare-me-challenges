@@ -15,6 +15,7 @@ import ProofFeedItem from "@/components/ProofFeedItem";
 import PostFeedItem from "@/components/PostFeedItem";
 import InviteParticipants from "@/components/InviteParticipants";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+import HeaderLogo from "@/components/HeaderLogo";
 import ChallengeProgress from "@/components/ChallengeProgress";
 import ChallengeRanking from "@/components/ChallengeRanking";
 import FinalRankingPodium from "@/components/FinalRankingPodium";
@@ -500,7 +501,7 @@ const ChallengeDetail = () => {
     <div className="min-h-screen bg-background">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 relative">
             <Button
               variant="ghost"
               size="icon"
@@ -577,6 +578,7 @@ const ChallengeDetail = () => {
                 </>
               )}
             </div>
+            <HeaderLogo />
           </div>
         </div>
       </header>
