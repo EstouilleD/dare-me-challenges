@@ -122,15 +122,17 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
   }, [proof.id]);
 
   const loadInteractions = async () => {
-    const [reactionsRes, commentsRes, voteRes, allVotesRes] = await Promise.all([
+    const [reactionsRes, commentsRes, voteRes, allVotesRes, boostRes] = await Promise.all([
       supabase.from("proof_reactions").select("*").eq("proof_id", proof.id),
       supabase.from("proof_comments").select("*, profiles:user_id(id, display_name, avatar_url, profile_photo_url, use_avatar)").eq("proof_id", proof.id).order("created_at", { ascending: true }),
       supabase.from("votes").select("*").eq("proof_id", proof.id).eq("voter_id", currentUserId).maybeSingle(),
       supabase.from("votes").select("*").eq("proof_id", proof.id),
+      supabase.from("boosts").select("id").eq("target_proof_id", proof.id).limit(1),
     ]);
     setReactions(reactionsRes.data || []);
     setComments(commentsRes.data as Comment[] || []);
     setAllVotes(allVotesRes.data || []);
+    setHasBoosted((boostRes.data?.length || 0) > 0);
     if (voteRes.data) {
       setMyVote(voteRes.data);
       setVoteType(voteRes.data.vote_type);
