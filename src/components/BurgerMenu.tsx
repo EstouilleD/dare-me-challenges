@@ -59,7 +59,7 @@ const BurgerMenu = ({ profile }: BurgerMenuProps) => {
         <SheetHeader className="p-6 pb-4">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12 border-2 border-primary">
-              <AvatarImage src={getAvatarSrc()} />
+              <AvatarImage src={getAvatarSrc(profile)} />
               <AvatarFallback>{profile.display_name[0]}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
