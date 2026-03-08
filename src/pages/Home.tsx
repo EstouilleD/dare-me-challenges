@@ -51,6 +51,19 @@ const Home = () => {
   const [coinBalance, setCoinBalance] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
   const { isPremium } = usePremium(userId);
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
+  const handleScroll = useCallback(() => {
+    const currentY = window.scrollY;
+    setHeaderVisible(currentY <= 10 || currentY < lastScrollY.current);
+    lastScrollY.current = currentY;
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
 
   useEffect(() => {
     loadData();
