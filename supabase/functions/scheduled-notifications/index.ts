@@ -18,6 +18,54 @@ Deno.serve(async (req) => {
     const now = new Date();
     const results: string[] = [];
 
+    // ========== CHALLENGE ENDED NOTIFICATION ==========
+    // Find challenges that just finished (end_date passed, status still 'active')
+    // The update_challenge_status function sets them to 'finished', so we look for
+    // recently finished challenges that haven't been notified yet
+    const { data: justFinished } = await supabase
+      .from("challenges")
+      .select("id, title")
+      .eq("status", "active")
+      .lte("end_date", now.toISOString());
+
+    for (const challenge of justFinished || []) {
+      const { data: participants } = await supabase
+        .from("participations")
+        .select("user_id")
+        .eq("challenge_id", challenge.id)
+        .eq("is_active", true);
+
+      // Also notify the owner
+      const { data: challengeData } = await supabase
+        .from("challenges")
+        .select("owner_id")
+        .eq("id", challenge.id)
+        .single();
+
+      const userIds = new Set((participants || []).map(p => p.user_id));
+      if (challengeData?.owner_id) userIds.add(challengeData.owner_id);
+
+      for (const userId of userIds) {
+        const { count } = await supabase
+          .from("notifications")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .eq("type", "challenge_ended")
+          .eq("data->>challenge_id", challenge.id);
+
+        if ((count ?? 0) === 0) {
+          await supabase.from("notifications").insert({
+            user_id: userId,
+            type: "challenge_ended",
+            title: "🏁 Challenge finished!",
+            message: `"${challenge.title}" has ended! Check the final ranking and see how you did!`,
+            data: { challenge_id: challenge.id },
+          });
+        }
+      }
+    }
+    results.push(`Ended: ${(justFinished || []).length} challenges`);
+
     // ========== TIME NOTIFICATIONS ==========
 
     // J-7: Challenge ends in 7 days
@@ -43,7 +91,6 @@ Deno.serve(async (req) => {
         .eq("is_active", true);
 
       for (const p of participants || []) {
-        // Avoid duplicate: check if already notified
         const { count } = await supabase
           .from("notifications")
           .select("id", { count: "exact", head: true })
@@ -149,7 +196,6 @@ Deno.serve(async (req) => {
     results.push(`Day-of: ${(challengesToday || []).length} challenges`);
 
     // ========== FREQUENCY REMINDERS ==========
-    // For challenges with frequency_period set, remind users who haven't posted recently
     const { data: freqChallenges } = await supabase
       .from("challenges")
       .select("id, title, frequency_period, frequency_quantity")
@@ -175,7 +221,6 @@ Deno.serve(async (req) => {
         .eq("is_done", false);
 
       for (const p of participants || []) {
-        // Check if user posted since cutoff
         const { count: proofCount } = await supabase
           .from("proofs")
           .select("id", { count: "exact", head: true })
@@ -183,7 +228,6 @@ Deno.serve(async (req) => {
           .gte("created_at", cutoff.toISOString());
 
         if ((proofCount ?? 0) === 0) {
-          // Avoid spamming: max 1 frequency reminder per day per challenge
           const oneDayAgo = new Date(now);
           oneDayAgo.setDate(oneDayAgo.getDate() - 1);
           const { count: recentNotif } = await supabase
@@ -210,7 +254,7 @@ Deno.serve(async (req) => {
 
     // ========== BEHAVIORAL NUDGES ==========
 
-    // 1. "You haven't submitted proof yet" — active participants with 0 proofs, challenge started > 2 days ago
+    // 1. "You haven't submitted proof yet"
     const twoDaysAgo = new Date(now);
     twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
@@ -256,10 +300,7 @@ Deno.serve(async (req) => {
     }
     results.push(`No-proof nudge: checked`);
 
-    // 2. "Only 2 days left to join" — public upcoming/active challenges ending in 2+ days, 
-    //    notify users who are NOT participating yet (we notify the challenge owner's network — 
-    //    actually we notify users who have participated in other challenges by the same owner)
-    // This is complex — simplified: notify challenge owner that their challenge has 2 days left for new joiners
+    // 2. "Only 2 days left to join"
     const in2Days = new Date(now);
     in2Days.setDate(in2Days.getDate() + 2);
     const in2DaysStart = new Date(in2Days);
@@ -267,7 +308,6 @@ Deno.serve(async (req) => {
     const in2DaysEnd = new Date(in2Days);
     in2DaysEnd.setHours(23, 59, 59, 999);
 
-    // Public challenges ending in ~2 days
     const { data: soonEndPublic } = await supabase
       .from("challenges")
       .select("id, title, owner_id")
@@ -277,7 +317,6 @@ Deno.serve(async (req) => {
       .lte("end_date", in2DaysEnd.toISOString());
 
     for (const challenge of soonEndPublic || []) {
-      // Notify participants who haven't joined
       const { data: invited } = await supabase
         .from("invitations")
         .select("recipient_user_id")
@@ -307,27 +346,23 @@ Deno.serve(async (req) => {
     }
     results.push(`Join deadline nudge: checked`);
 
-    // 3. "Your participation slot is full" — user at max active participations (3 for free, 5 for premium)
-    // Check all users with active participations
+    // 3. "Your participation slot is full"
     const { data: activeParticipants } = await supabase
       .from("participations")
       .select("user_id")
       .eq("is_active", true)
       .eq("is_done", false);
 
-    // Count per user
     const userCounts: Record<string, number> = {};
     for (const p of activeParticipants || []) {
       userCounts[p.user_id] = (userCounts[p.user_id] || 0) + 1;
     }
 
     for (const [userId, count] of Object.entries(userCounts)) {
-      // Check premium status
       const { data: isPremium } = await supabase.rpc("is_premium", { _user_id: userId });
       const maxSlots = isPremium ? 5 : 3;
 
       if (count >= maxSlots) {
-        // Check if already notified recently (within 7 days)
         const oneWeekAgo = new Date(now);
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         const { count: recentNotif } = await supabase
