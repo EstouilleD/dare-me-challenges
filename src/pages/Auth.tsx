@@ -237,6 +237,7 @@ const Auth = () => {
             </TabsContent>
 
             <TabsContent value="signup">
+              <SocialButtons />
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
