@@ -119,7 +119,11 @@ const CreateCommunity = () => {
         logo_url: logoUrl,
         banner_url: bannerUrl,
         owner_id: session.user.id,
-      }).select("slug").single();
+        website_url: websiteUrl.trim() || null,
+        reward_description: rewardDescription.trim() || null,
+        sponsor_cta_text: sponsorCtaText.trim() || null,
+        sponsor_cta_url: sponsorCtaUrl.trim() || null,
+      } as any).select("slug").single();
 
       if (error) {
         if (error.message.includes("duplicate key") && error.message.includes("slug")) {
