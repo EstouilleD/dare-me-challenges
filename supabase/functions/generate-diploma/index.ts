@@ -33,21 +33,75 @@ serve(async (req) => {
       });
     }
 
-    // Get ALL participants ranked
-    const { data: allParticipants } = await supabase
-      .from("participations")
-      .select("user_id, score, profiles(display_name)")
-      .eq("challenge_id", challengeId)
-      .eq("is_active", true)
-      .order("score", { ascending: false });
+    // ===== Use the SAME ranking logic as the client (ChallengeRanking.tsx) =====
 
-    const totalParticipants = allParticipants?.length || 0;
+    // 1. Get all active participants
+    const { data: participations } = await supabase
+      .from("participations")
+      .select("id, user_id, profiles(display_name)")
+      .eq("challenge_id", challengeId)
+      .eq("is_active", true);
+
+    if (!participations || participations.length === 0) {
+      return new Response(JSON.stringify({ error: "No participants found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // 2. Get all proofs for this challenge
+    const { data: proofs } = await supabase
+      .from("proofs")
+      .select("id, participation_id, created_at")
+      .eq("challenge_id", challengeId)
+      .order("created_at", { ascending: true });
+
+    // 3. Get all votes for proofs in this challenge
+    const proofIds = (proofs || []).map((p: any) => p.id);
+    let votes: any[] = [];
+    if (proofIds.length > 0) {
+      const { data: voteData } = await supabase
+        .from("votes")
+        .select("proof_id, vote_type, numeric_score")
+        .in("proof_id", proofIds);
+      votes = voteData || [];
+    }
+
+    // 4. Build ranking using honor votes → avg score → first proof time
+    const ranked = participations.map((part: any) => {
+      const userProofs = (proofs || []).filter((p: any) => p.participation_id === part.id);
+      const userProofIds = userProofs.map((p: any) => p.id);
+      const userVotes = votes.filter((v: any) => userProofIds.includes(v.proof_id));
+
+      const honorVotes = userVotes.filter((v: any) => v.vote_type === "honor").length;
+      const validatedVotes = userVotes.filter((v: any) => v.vote_type === "validated" && v.numeric_score != null);
+      const avgScore = validatedVotes.length > 0
+        ? validatedVotes.reduce((sum: number, v: any) => sum + v.numeric_score, 0) / validatedVotes.length
+        : 0;
+
+      return {
+        user_id: part.user_id,
+        display_name: part.profiles?.display_name || "Participant",
+        honorVotes,
+        avgScore,
+        proofCount: userProofs.length,
+        firstProofAt: userProofs.length > 0 ? userProofs[0].created_at : null,
+      };
+    });
+
+    // 5. Sort identically to client: honor votes desc, avg score desc, first proof asc
+    ranked.sort((a: any, b: any) => {
+      if (b.honorVotes !== a.honorVotes) return b.honorVotes - a.honorVotes;
+      if (b.avgScore !== a.avgScore) return b.avgScore - a.avgScore;
+      if (a.firstProofAt && b.firstProofAt) return a.firstProofAt.localeCompare(b.firstProofAt);
+      return a.firstProofAt ? -1 : 1;
+    });
+
+    const totalParticipants = ranked.length;
 
     // Find user rank (0-indexed)
-    const userRankIdx = allParticipants?.findIndex(
-      (p: any) => p.user_id === userId
-    );
-    if (userRankIdx === undefined || userRankIdx === -1) {
+    const userRankIdx = ranked.findIndex((p: any) => p.user_id === userId);
+    if (userRankIdx === -1) {
       return new Response(
         JSON.stringify({ error: "User is not in this challenge" }),
         {
@@ -74,7 +128,6 @@ serve(async (req) => {
     });
 
     if (!isPremium) {
-      // Check if user purchased this certificate
       const { data: purchase } = await supabase
         .from("certificate_purchases")
         .select("id")
@@ -93,10 +146,11 @@ serve(async (req) => {
       }
     }
 
-    const userProfile = (allParticipants as any)?.[userRankIdx]?.profiles;
-    const displayName = userProfile?.display_name || "Participant";
-    const score = (allParticipants as any)?.[userRankIdx]?.score ?? 0;
+    const userEntry = ranked[userRankIdx];
+    const displayName = userEntry.display_name;
     const rank = userRankIdx + 1;
+    const honorVotes = userEntry.honorVotes;
+    const avgScore = userEntry.avgScore;
     const ownerName = (challenge as any).profiles?.display_name || "Challenge Director";
 
     const rankTitles: Record<number, string> = {
@@ -120,6 +174,12 @@ serve(async (req) => {
     const issuedDate = formatDate(new Date().toISOString());
     const certId = `DM-${challengeId.slice(0, 4).toUpperCase()}-${userId.slice(0, 4).toUpperCase()}-${rank}`;
     const challengeType = (challenge as any).challenge_types;
+
+    // Build score line for certificate
+    const scoreDetails: string[] = [];
+    if (honorVotes > 0) scoreDetails.push(`${honorVotes} Honor vote${honorVotes > 1 ? "s" : ""}`);
+    if (avgScore > 0) scoreDetails.push(`Avg. score: ${avgScore.toFixed(1)}`);
+    const scoreLine = scoreDetails.length > 0 ? scoreDetails.join(" · ") : "Participated";
 
     // Generate beautiful SVG certificate
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1190" height="842" viewBox="0 0 1190 842">
@@ -196,7 +256,7 @@ serve(async (req) => {
   <text x="595" y="355" text-anchor="middle" font-family="Georgia, serif" font-size="28" font-weight="bold" fill="url(#gold)" filter="url(#glow)">${rankMedal} ${rankTitle}</text>
   <text x="595" y="400" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8b7355" font-style="italic">has demonstrated outstanding excellence and dedication in the challenge</text>
   <text x="595" y="445" text-anchor="middle" font-family="Georgia, serif" font-size="30" font-weight="bold" fill="#302b63">"${escapeXml(challenge.title)}"</text>
-  <text x="595" y="480" text-anchor="middle" font-family="Georgia, serif" font-size="15" fill="#8b7355">${challengeType?.icon || "🏆"} ${challengeType?.name || "Challenge"} · Score: ${score} points · ${totalParticipants} participants</text>
+  <text x="595" y="480" text-anchor="middle" font-family="Georgia, serif" font-size="15" fill="#8b7355">${challengeType?.icon || "🏆"} ${challengeType?.name || "Challenge"} · ${escapeXml(scoreLine)} · ${totalParticipants} participants</text>
   <text x="595" y="510" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#a0936e">${startDate} — ${endDate}</text>
 
   <line x1="200" y1="550" x2="990" y2="550" stroke="url(#gold)" stroke-width="1"/>

@@ -121,10 +121,10 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
       };
     });
 
+    // Sort: honor votes desc, avg score desc, first proof asc (tiebreaker)
     ranked.sort((a, b) => {
       if (b.honorVotes !== a.honorVotes) return b.honorVotes - a.honorVotes;
       if (b.avgScore !== a.avgScore) return b.avgScore - a.avgScore;
-      if (b.proofCount !== a.proofCount) return b.proofCount - a.proofCount;
       if (a.firstProofAt && b.firstProofAt) return a.firstProofAt.localeCompare(b.firstProofAt);
       return a.firstProofAt ? -1 : 1;
     });
