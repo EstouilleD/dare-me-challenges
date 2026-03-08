@@ -98,8 +98,10 @@ const Home = () => {
           end_date,
           status,
           is_public,
+          community_id,
           challenge_types(id, name, icon),
-          profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)
+          profiles(id, display_name, avatar_url, profile_photo_url, use_avatar),
+          communities(name, slug)
         )
       `)
       .eq("user_id", session.user.id)
