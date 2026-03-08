@@ -234,13 +234,29 @@ const ChallengeDetail = () => {
       return;
     }
 
+    // Use upsert to handle rejoining after quitting
     const { error } = await supabase
       .from("participations")
-      .insert({ challenge_id: id, user_id: session.user.id, is_active: true });
+      .upsert(
+        { challenge_id: id, user_id: session.user.id, is_active: true, is_done: false, score: 0 },
+        { onConflict: "challenge_id,user_id", ignoreDuplicates: false }
+      );
 
     if (error) {
-      toast({ variant: "destructive", title: "Failed to join", description: error.message });
-    } else {
+      // Fallback: if upsert fails (no unique constraint), try update existing inactive record
+      const { error: updateError } = await supabase
+        .from("participations")
+        .update({ is_active: true, is_done: false, score: 0 })
+        .eq("challenge_id", id)
+        .eq("user_id", session.user.id)
+        .eq("is_active", false);
+      
+      if (updateError) {
+        toast({ variant: "destructive", title: "Failed to join", description: error.message });
+        return;
+      }
+    }
+    {
       toast({ title: "Joined!", description: "You're now part of this challenge." });
       loadData();
     }
