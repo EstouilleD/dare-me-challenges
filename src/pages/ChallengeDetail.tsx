@@ -825,7 +825,7 @@ const ChallengeDetail = () => {
           />
         )}
 
-        {isParticipant && challenge.challenge_types.name !== "Frequency" && challenge.challenge_types.name !== "Quantity" && !proofs.some(p => p.participations.user_id === currentUserId) && (
+        {isParticipant && !isFinished && challenge.challenge_types.name !== "Frequency" && challenge.challenge_types.name !== "Quantity" && !proofs.some(p => p.participations.user_id === currentUserId) && (
           <Card className="shadow-elevated border-accent">
             <CardHeader>
               <CardTitle>My Participation</CardTitle>
