@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Trophy, Medal, Download, Crown, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { getAvatarSrc } from "@/lib/avatars";
 
 interface Profile {
   id: string;
