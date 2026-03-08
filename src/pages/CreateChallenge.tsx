@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Camera, Video, X, Link, Lock, Crown } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { checkCreationLimit } from "@/hooks/usePremium";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import { Badge } from "@/components/ui/badge";
 
 interface ChallengeType {
