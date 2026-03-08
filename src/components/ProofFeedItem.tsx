@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
+import { getAvatarSrc } from "@/lib/avatars";
 
 interface Profile {
   id: string;
@@ -83,11 +84,7 @@ const REACTION_EMOJIS = [
   { type: "thumbsdown", icon: "👎" },
 ];
 
-const getAvatarSrc = (prof: Profile) => {
-  if (prof.use_avatar && prof.avatar_url) return prof.avatar_url;
-  if (prof.profile_photo_url) return prof.profile_photo_url;
-  return "";
-};
+// getAvatarSrc imported from @/lib/avatars
 
 const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus, onRefresh }: ProofFeedItemProps) => {
   const navigate = useNavigate();

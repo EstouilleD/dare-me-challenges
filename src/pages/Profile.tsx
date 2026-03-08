@@ -17,21 +17,7 @@ import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import { ArrowLeft, User, Lock, Bell, Sun, Moon, Monitor, Palette, Award, Trophy } from "lucide-react";
 import BadgeCard from "@/components/BadgeCard";
 import { useTheme } from "next-themes";
-import avatar1 from "@/assets/avatars/avatar1.png";
-import avatar2 from "@/assets/avatars/avatar2.png";
-import avatar4 from "@/assets/avatars/avatar4.png";
-import avatar5 from "@/assets/avatars/avatar5.png";
-import avatar6 from "@/assets/avatars/avatar6.png";
-import avatar7 from "@/assets/avatars/avatar7.png";
-import avatar8 from "@/assets/avatars/avatar8.png";
-import avatar9 from "@/assets/avatars/avatar9.png";
-import avatar10 from "@/assets/avatars/avatar10.png";
-import avatar11 from "@/assets/avatars/avatar11.png";
-
-const AVATARS = [
-  avatar1, avatar2, avatar4, avatar5, avatar6,
-  avatar7, avatar8, avatar9, avatar10, avatar11,
-];
+import { AVATARS, resolveAvatarUrl } from "@/lib/avatars";
 
 interface ProfileData {
   display_name: string;
@@ -65,7 +51,7 @@ const Profile = () => {
     avatar_url: null,
     profile_photo_url: null,
   });
-  const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
+  const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0].key);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState("");
 
@@ -102,7 +88,10 @@ const Profile = () => {
     if (profileRes.data) {
       setProfile(profileRes.data);
       if (profileRes.data.use_avatar && profileRes.data.avatar_url) {
-        setSelectedAvatar(profileRes.data.avatar_url);
+        // Store the raw key from DB; resolveAvatarUrl handles legacy hashed paths
+        const match = profileRes.data.avatar_url.match(/avatar(\d+)/);
+        const key = match ? `avatar${match[1]}.png` : profileRes.data.avatar_url;
+        setSelectedAvatar(key);
       }
       if (!profileRes.data.use_avatar && profileRes.data.profile_photo_url) {
         setPhotoPreview(profileRes.data.profile_photo_url);
@@ -315,17 +304,17 @@ const Profile = () => {
                     <div className="space-y-3">
                       <Label>Choose an avatar</Label>
                       <div className="flex flex-wrap gap-3">
-                        {AVATARS.map((avatar, i) => (
+                        {AVATARS.map((avatar) => (
                           <button
-                            key={i}
+                            key={avatar.key}
                             type="button"
-                            onClick={() => setSelectedAvatar(avatar)}
+                            onClick={() => setSelectedAvatar(avatar.key)}
                             className={`transition-all rounded-full ${
-                              selectedAvatar === avatar ? "ring-4 ring-primary scale-110" : "hover:scale-105"
+                              selectedAvatar === avatar.key ? "ring-4 ring-primary scale-110" : "hover:scale-105"
                             }`}
                           >
                             <Avatar className="h-14 w-14 bg-white">
-                              <AvatarImage src={avatar} />
+                              <AvatarImage src={avatar.src} />
                               <AvatarFallback>?</AvatarFallback>
                             </Avatar>
                           </button>

@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Separator } from "@/components/ui/separator";
 import { Menu, User, Swords, PlusCircle, Trash2, Trophy, Settings, LogOut, Compass, Award, Coins } from "lucide-react";
 import { useState } from "react";
+import { getAvatarSrc } from "@/lib/avatars";
 
 interface Profile {
   id: string;
@@ -22,11 +23,7 @@ const BurgerMenu = ({ profile }: BurgerMenuProps) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  const getAvatarSrc = () => {
-    if (profile.use_avatar && profile.avatar_url) return profile.avatar_url;
-    if (profile.profile_photo_url) return profile.profile_photo_url;
-    return "";
-  };
+  // getAvatarSrc is imported from @/lib/avatars
 
   const handleNavigate = (path: string) => {
     setOpen(false);
@@ -62,7 +59,7 @@ const BurgerMenu = ({ profile }: BurgerMenuProps) => {
         <SheetHeader className="p-6 pb-4">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12 border-2 border-primary">
-              <AvatarImage src={getAvatarSrc()} />
+              <AvatarImage src={getAvatarSrc(profile)} />
               <AvatarFallback>{profile.display_name[0]}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">

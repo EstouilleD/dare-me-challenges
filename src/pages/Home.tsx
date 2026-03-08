@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Plus, Compass, ChevronDown, Coins } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { getAvatarSrc } from "@/lib/avatars";
 import BurgerMenu from "@/components/BurgerMenu";
 import NotificationBell from "@/components/NotificationBell";
 import PremiumBanner from "@/components/PremiumBanner";
@@ -142,11 +143,7 @@ const Home = () => {
     navigate("/auth");
   };
 
-  const getAvatarSrc = (prof: Profile) => {
-    if (prof.use_avatar && prof.avatar_url) return prof.avatar_url;
-    if (prof.profile_photo_url) return prof.profile_photo_url;
-    return "";
-  };
+  // getAvatarSrc is imported from @/lib/avatars
 
   const ChallengeCard = ({ challenge }: { challenge: Challenge }) => (
     <Card 

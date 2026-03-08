@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { ArrowLeft, Search, CalendarIcon, X } from "lucide-react";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import { cn } from "@/lib/utils";
+import { getAvatarSrc } from "@/lib/avatars";
 
 interface Profile {
   id: string;
@@ -116,11 +117,7 @@ const Explore = () => {
     );
   });
 
-  const getAvatarSrc = (prof: Profile) => {
-    if (prof.use_avatar && prof.avatar_url) return prof.avatar_url;
-    if (prof.profile_photo_url) return prof.profile_photo_url;
-    return "";
-  };
+  // getAvatarSrc imported from @/lib/avatars
 
   const clearFilters = () => {
     setSearchQuery("");

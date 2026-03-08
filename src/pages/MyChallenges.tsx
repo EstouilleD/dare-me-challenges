@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ArrowLeft } from "lucide-react";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+import { getAvatarSrc } from "@/lib/avatars";
 
 const MyChallenges = () => {
   const navigate = useNavigate();
@@ -40,11 +41,7 @@ const MyChallenges = () => {
     load();
   }, [navigate]);
 
-  const getAvatarSrc = (p: any) => {
-    if (p.use_avatar && p.avatar_url) return p.avatar_url;
-    if (p.profile_photo_url) return p.profile_photo_url;
-    return "";
-  };
+  // getAvatarSrc imported from @/lib/avatars
 
   return (
     <div className="min-h-screen bg-background">

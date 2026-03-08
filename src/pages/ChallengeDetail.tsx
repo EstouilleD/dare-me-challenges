@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getAvatarSrc } from "@/lib/avatars";
 import { Input } from "@/components/ui/input";
 
 interface Profile {
@@ -349,11 +350,7 @@ const ChallengeDetail = () => {
     }
   };
 
-  const getAvatarSrc = (prof: Profile) => {
-    if (prof.use_avatar && prof.avatar_url) return prof.avatar_url;
-    if (prof.profile_photo_url) return prof.profile_photo_url;
-    return "";
-  };
+  // getAvatarSrc imported from @/lib/avatars
 
   // Owner actions
   const handleEditChallenge = async () => {

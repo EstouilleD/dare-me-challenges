@@ -8,21 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import avatar1 from "@/assets/avatars/avatar1.png";
-import avatar2 from "@/assets/avatars/avatar2.png";
-import avatar4 from "@/assets/avatars/avatar4.png";
-import avatar5 from "@/assets/avatars/avatar5.png";
-import avatar6 from "@/assets/avatars/avatar6.png";
-import avatar7 from "@/assets/avatars/avatar7.png";
-import avatar8 from "@/assets/avatars/avatar8.png";
-import avatar9 from "@/assets/avatars/avatar9.png";
-import avatar10 from "@/assets/avatars/avatar10.png";
-import avatar11 from "@/assets/avatars/avatar11.png";
-
-const AVATARS = [
-  avatar1, avatar2, avatar4, avatar5, avatar6,
-  avatar7, avatar8, avatar9, avatar10, avatar11,
-];
+import { AVATARS } from "@/lib/avatars";
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
@@ -31,7 +17,7 @@ const ProfileSetup = () => {
   const [displayName, setDisplayName] = useState("");
   const [fullName, setFullName] = useState("");
   const [useAvatar, setUseAvatar] = useState(true);
-  const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
+  const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0].key);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string>("");
 
@@ -115,7 +101,7 @@ const ProfileSetup = () => {
         display_name: displayName.trim(),
         full_name: fullName.trim() || null,
         use_avatar: useAvatar,
-        avatar_url: useAvatar ? selectedAvatar : null,
+        avatar_url: useAvatar ? selectedAvatar : null, // stores stable key like "avatar1.png"
         profile_photo_url: !useAvatar ? profilePhotoUrl : null,
       })
       .eq("id", session.user.id);
@@ -186,19 +172,19 @@ const ProfileSetup = () => {
                 <div className="space-y-3">
                   <Label>Choose an avatar</Label>
                   <div className="flex flex-wrap gap-3">
-                    {AVATARS.map((avatar, index) => (
+                    {AVATARS.map((avatar) => (
                       <button
-                        key={index}
+                        key={avatar.key}
                         type="button"
-                        onClick={() => setSelectedAvatar(avatar)}
+                        onClick={() => setSelectedAvatar(avatar.key)}
                         className={`transition-all ${
-                          selectedAvatar === avatar
+                          selectedAvatar === avatar.key
                             ? "ring-4 ring-primary scale-110"
                             : "hover:scale-105"
                         }`}
                       >
                         <Avatar className="h-16 w-16">
-                          <AvatarImage src={avatar} />
+                          <AvatarImage src={avatar.src} />
                           <AvatarFallback>?</AvatarFallback>
                         </Avatar>
                       </button>

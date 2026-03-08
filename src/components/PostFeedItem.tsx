@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import { getAvatarSrc } from "@/lib/avatars";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -31,11 +32,7 @@ interface PostFeedItemProps {
   onRefresh: () => void;
 }
 
-const getAvatarSrc = (prof: Profile) => {
-  if (prof.use_avatar && prof.avatar_url) return prof.avatar_url;
-  if (prof.profile_photo_url) return prof.profile_photo_url;
-  return "";
-};
+// getAvatarSrc imported from @/lib/avatars
 
 const PostFeedItem = ({ post, currentUserId, onRefresh }: PostFeedItemProps) => {
   const { toast } = useToast();

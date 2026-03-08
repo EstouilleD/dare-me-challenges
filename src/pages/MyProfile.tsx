@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Settings, Trophy, Target, CheckCircle, Star, Coins } from "lucide-react";
+import { getAvatarSrc } from "@/lib/avatars";
 import BadgeCard from "@/components/BadgeCard";
 import PremiumBanner from "@/components/PremiumBanner";
 import { usePremium } from "@/hooks/usePremium";
@@ -94,12 +95,7 @@ const MyProfile = () => {
     setLoading(false);
   };
 
-  const getAvatarSrc = () => {
-    if (!profile) return "";
-    if (profile.use_avatar && profile.avatar_url) return profile.avatar_url;
-    if (profile.profile_photo_url) return profile.profile_photo_url;
-    return "";
-  };
+  // getAvatarSrc imported from @/lib/avatars
 
   const earnedSet = new Set(userBadges.map(ub => ub.badge_id));
   const earnedBadges = badges.filter(b => earnedSet.has(b.id));
@@ -140,7 +136,7 @@ const MyProfile = () => {
         {/* Avatar + Name card */}
         <div className="flex flex-col items-center">
           <Avatar className="h-28 w-28 border-4 border-background shadow-lg">
-            <AvatarImage src={getAvatarSrc()} />
+            <AvatarImage src={profile ? getAvatarSrc(profile) : ""} />
             <AvatarFallback className="text-3xl">{profile?.display_name?.[0]}</AvatarFallback>
           </Avatar>
           <h1 className="text-2xl font-bold mt-3">{profile?.display_name}</h1>
