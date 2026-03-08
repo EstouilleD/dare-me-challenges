@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Settings, Trophy, Target, CheckCircle, Star, Coins } from "lucide-react";
+import { getAvatarSrc } from "@/lib/avatars";
 import BadgeCard from "@/components/BadgeCard";
 import PremiumBanner from "@/components/PremiumBanner";
 import { usePremium } from "@/hooks/usePremium";
