@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Camera, Video, X, Link, Lock, Crown } from "lucide-react";
+import { ArrowLeft, Camera, Video, X, Link, Lock, Crown, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { checkCreationLimit } from "@/hooks/usePremium";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
@@ -34,6 +34,7 @@ const FREQUENCY_PERIODS = [
 
 const CreateChallenge = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { headerClass } = useAutoHideHeader();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -55,6 +56,11 @@ const CreateChallenge = () => {
   const [creationLimitReached, setCreationLimitReached] = useState(false);
   const [creationCount, setCreationCount] = useState(0);
 
+  // Community fields
+  const [communityId, setCommunityId] = useState<string | null>(null);
+  const [communityName, setCommunityName] = useState<string | null>(null);
+  const [communityOnly, setCommunityOnly] = useState(false);
+
   // Frequency fields
   const [frequencyQuantity, setFrequencyQuantity] = useState("1");
   const [frequencyPeriod, setFrequencyPeriod] = useState("week");
@@ -67,6 +73,15 @@ const CreateChallenge = () => {
     checkLimits();
     const today = new Date().toISOString().split("T")[0];
     setStartDate(today);
+
+    // Load community from query param
+    const cid = searchParams.get("community");
+    if (cid) {
+      setCommunityId(cid);
+      supabase.from("communities").select("name").eq("id", cid).single().then(({ data }) => {
+        if (data) setCommunityName(data.name);
+      });
+    }
   }, []);
 
   const checkLimits = async () => {
@@ -207,6 +222,8 @@ const CreateChallenge = () => {
         quantity_target: isQuantity ? parseInt(quantityTarget) || 10 : null,
         is_surprise: isPremiumUser ? isSurprise : false,
         status,
+        community_id: communityId || null,
+        community_only: communityId ? communityOnly : false,
       })
       .select()
       .single();
@@ -260,6 +277,24 @@ const CreateChallenge = () => {
               </div>
             )}
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Community banner */}
+              {communityId && communityName && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                  <Users className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">Creating in <span className="text-primary">{communityName}</span></span>
+                </div>
+              )}
+
+              {/* Community only toggle */}
+              {communityId && (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="community-only">Community members only</Label>
+                    <p className="text-sm text-muted-foreground">Only members of this community can participate</p>
+                  </div>
+                  <Switch id="community-only" checked={communityOnly} onCheckedChange={setCommunityOnly} />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="title">Title *</Label>
                 <Input

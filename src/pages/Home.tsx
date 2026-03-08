@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Plus, Compass, ChevronDown, Coins } from "lucide-react";
+import { Plus, Compass, ChevronDown, Coins, Users } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { getAvatarSrc } from "@/lib/avatars";
 import BurgerMenu from "@/components/BurgerMenu";
@@ -36,8 +36,10 @@ interface Challenge {
   end_date: string;
   status: string;
   is_public: boolean;
+  community_id: string | null;
   challenge_types: ChallengeType;
   profiles: Profile;
+  communities?: { name: string; slug: string } | null;
 }
 
 const Home = () => {
@@ -96,8 +98,10 @@ const Home = () => {
           end_date,
           status,
           is_public,
+          community_id,
           challenge_types(id, name, icon),
-          profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)
+          profiles(id, display_name, avatar_url, profile_photo_url, use_avatar),
+          communities(name, slug)
         )
       `)
       .eq("user_id", session.user.id)
@@ -113,7 +117,8 @@ const Home = () => {
       .select(`
         *,
         challenge_types(id, name, icon),
-        profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)
+        profiles(id, display_name, avatar_url, profile_photo_url, use_avatar),
+        communities(name, slug)
       `)
       .eq("owner_id", session.user.id)
       .order("created_at", { ascending: false });
@@ -165,6 +170,12 @@ const Home = () => {
             {challenge.status}
           </Badge>
         </div>
+        {challenge.communities && (
+          <div className="flex items-center gap-1.5 mt-1">
+            <Users className="h-3 w-3 text-primary" />
+            <span className="text-xs text-primary font-medium">{challenge.communities.name}</span>
+          </div>
+        )}
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex items-center justify-between text-sm">

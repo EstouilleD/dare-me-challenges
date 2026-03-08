@@ -61,8 +61,11 @@ interface Challenge {
   quantity_target: number | null;
   frequency_quantity: number | null;
   frequency_period: string | null;
+  community_id: string | null;
+  community_only: boolean;
   challenge_types: ChallengeType;
   profiles: Profile;
+  communities?: { name: string; slug: string; logo_url: string | null; type: string; is_verified: boolean } | null;
 }
 
 interface Participation {
@@ -169,7 +172,8 @@ const ChallengeDetail = () => {
       .select(`
         *,
         challenge_types(id, name, icon),
-        profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)
+        profiles(id, display_name, avatar_url, profile_photo_url, use_avatar),
+        communities(name, slug, logo_url, type, is_verified)
       `)
       .eq("id", id)
       .single();
@@ -712,6 +716,24 @@ const ChallengeDetail = () => {
                 </Button>
               )}
             </div>
+
+            {/* Community badge */}
+            {challenge.communities && (
+              <button
+                onClick={() => navigate(`/community/${challenge.communities!.slug}`)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors w-fit mb-2"
+              >
+                {challenge.communities.logo_url ? (
+                  <img src={challenge.communities.logo_url} alt="" className="h-5 w-5 rounded object-cover" />
+                ) : (
+                  <Users className="h-4 w-4 text-primary" />
+                )}
+                <span className="text-xs font-medium text-primary">{challenge.communities.name}</span>
+                {challenge.community_only && (
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">Members only</Badge>
+                )}
+              </button>
+            )}
 
             {/* Dates + Countdown */}
             <div className="flex items-center justify-between gap-2 mb-3">
