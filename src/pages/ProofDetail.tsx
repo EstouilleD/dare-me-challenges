@@ -254,6 +254,7 @@ const ProofDetail = () => {
               <h1 className="text-2xl font-bold text-white">Proof</h1>
               <p className="text-white/80 text-sm">{proof.challenges.title}</p>
             </div>
+            <HeaderLogo />
           </div>
         </div>
       </header>
