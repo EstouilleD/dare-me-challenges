@@ -12,6 +12,7 @@ import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus, C
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProofFeedItem from "@/components/ProofFeedItem";
+import PostFeedItem from "@/components/PostFeedItem";
 import InviteParticipants from "@/components/InviteParticipants";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import ChallengeProgress from "@/components/ChallengeProgress";
