@@ -92,18 +92,54 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
+  const [usedInChallenge, setUsedInChallenge] = useState<Set<string>>(new Set());
+  const [monthlyCount, setMonthlyCount] = useState(0);
 
   const loadBalance = async () => {
     const { data } = await supabase.rpc("get_coin_balance", { _user_id: currentUserId });
     setBalance(data ?? 0);
   };
 
+  const loadBoostUsage = async () => {
+    // Boosts used in this challenge
+    const { data: challengeBoosts } = await supabase
+      .from("boosts")
+      .select("boost_type")
+      .eq("user_id", currentUserId)
+      .eq("target_challenge_id", challengeId);
+    setUsedInChallenge(new Set((challengeBoosts || []).map(b => b.boost_type)));
+
+    // Boosts used this month
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const { count } = await supabase
+      .from("boosts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", currentUserId)
+      .gte("created_at", startOfMonth.toISOString());
+    setMonthlyCount(count ?? 0);
+  };
+
   const handleOpen = () => {
     loadBalance();
+    loadBoostUsage();
     setOpen(true);
   };
 
   const handleBoost = async (boostType: string, cost: number) => {
+    // Check: 1 booster of each type per challenge
+    if (usedInChallenge.has(boostType)) {
+      toast({ variant: "destructive", title: "Already used", description: "You can only use each booster once per challenge." });
+      return;
+    }
+
+    // Check: 3 boosters total per month
+    if (monthlyCount >= 3) {
+      toast({ variant: "destructive", title: "Monthly limit reached", description: "You can use a maximum of 3 boosters per month." });
+      return;
+    }
+
     setLoading(boostType);
 
     const { data: success } = await supabase.rpc("spend_coins", {
@@ -163,7 +199,7 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
 
     toast({ title: "Boost activated! 🚀", description: `${labels[boostType] || boostType} applied.` });
     setLoading(null);
-    await loadBalance();
+    await Promise.all([loadBalance(), loadBoostUsage()]);
     onRefresh();
   };
 
@@ -214,30 +250,39 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
             </DialogTitle>
             <DialogDescription>
               Balance: <span className="font-bold text-foreground">{balance ?? "..."} 🪙</span>
+              <span className="block text-xs mt-1">{monthlyCount}/3 boosters used this month</span>
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="flex-1 -mx-1 px-1">
             <div className="space-y-2 pb-2">
-              {BOOSTS.map((boost) => (
-                <div key={boost.type} className="flex items-center gap-3 p-3 rounded-lg border">
-                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <boost.icon className="h-4 w-4 text-primary" />
+              {BOOSTS.map((boost) => {
+                const usedHere = usedInChallenge.has(boost.type);
+                const monthLimitHit = monthlyCount >= 3;
+                const cantAfford = balance !== null && balance < boost.cost;
+                const isDisabled = loading === boost.type || usedHere || monthLimitHit || cantAfford;
+
+                return (
+                  <div key={boost.type} className={`flex items-center gap-3 p-3 rounded-lg border ${usedHere ? "opacity-50 bg-muted/30" : ""}`}>
+                    <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <boost.icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">{boost.label}</p>
+                      <p className="text-xs text-muted-foreground">{boost.description}</p>
+                      {usedHere && <p className="text-[10px] text-primary font-medium mt-0.5">✓ Used in this challenge</p>}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="default"
+                      disabled={isDisabled}
+                      onClick={() => handleBoost(boost.type, boost.cost)}
+                      className="gap-1 flex-shrink-0"
+                    >
+                      {loading === boost.type ? "..." : usedHere ? "Used" : `${boost.cost} 🪙`}
+                    </Button>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm">{boost.label}</p>
-                    <p className="text-xs text-muted-foreground">{boost.description}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="default"
-                    disabled={loading === boost.type || (balance !== null && balance < boost.cost)}
-                    onClick={() => handleBoost(boost.type, boost.cost)}
-                    className="gap-1 flex-shrink-0"
-                  >
-                    {loading === boost.type ? "..." : `${boost.cost} 🪙`}
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </ScrollArea>
           <Button variant="outline" className="w-full gap-2" onClick={() => { setOpen(false); navigate("/store"); }}>
