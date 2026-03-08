@@ -281,24 +281,7 @@ const Store = () => {
             </div>
           </section>
         ) : (
-          <Card className="shadow-elevated border-primary/30 overflow-hidden">
-            <div className="h-1 bg-gradient-to-r from-primary to-accent" />
-            <CardContent className="py-5 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Crown className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-semibold">Premium Active</p>
-                  <p className="text-xs text-muted-foreground">You have access to all features + 1 free booster/month</p>
-                </div>
-              </div>
-              <Button variant="outline" size="sm" className="w-full gap-2" onClick={handleManageSubscription}>
-                <Settings className="h-4 w-4" />
-                Manage Subscription
-              </Button>
-            </CardContent>
-          </Card>
+          <div />
         )}
 
         {/* Coin packs */}
