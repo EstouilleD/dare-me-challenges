@@ -578,6 +578,7 @@ const ChallengeDetail = () => {
                 </>
               )}
             </div>
+            <HeaderLogo />
           </div>
         </div>
       </header>

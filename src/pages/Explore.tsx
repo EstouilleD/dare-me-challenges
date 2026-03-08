@@ -141,6 +141,7 @@ const Explore = () => {
               <h1 className="text-xl font-bold text-white">Explore</h1>
               <p className="text-sm text-white/80">Discover public challenges</p>
             </div>
+            <HeaderLogo />
           </div>
         </div>
       </header>
