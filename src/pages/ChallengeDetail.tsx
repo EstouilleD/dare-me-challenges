@@ -471,6 +471,30 @@ const ChallengeDetail = () => {
   const isOwner = currentUserId === challenge.owner_id;
   const isParticipant = !!myParticipation;
   const canJoin = !isParticipant && challenge.status === "active";
+  const canPost = isOwner || isParticipant;
+
+  // Merge proofs and posts into a single feed sorted by date
+  const feedItems = [
+    ...proofs.map(p => ({ type: "proof" as const, data: p, date: p.created_at })),
+    ...posts.map(p => ({ type: "post" as const, data: p, date: p.created_at })),
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const handlePost = async () => {
+    if (!postText.trim()) return;
+    setSubmittingPost(true);
+    const { error } = await supabase.from("challenge_posts").insert({
+      challenge_id: challenge.id,
+      user_id: currentUserId,
+      text: postText.trim(),
+    });
+    setSubmittingPost(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Failed to post", description: error.message });
+    } else {
+      setPostText("");
+      loadData();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
