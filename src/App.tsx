@@ -24,6 +24,9 @@ import Admin from "./pages/Admin";
 import Badges from "./pages/Badges";
 import Notifications from "./pages/Notifications";
 import Store from "./pages/Store";
+import Communities from "./pages/Communities";
+import CommunityDetail from "./pages/CommunityDetail";
+import CreateCommunity from "./pages/CreateCommunity";
 
 const queryClient = new QueryClient();
 
