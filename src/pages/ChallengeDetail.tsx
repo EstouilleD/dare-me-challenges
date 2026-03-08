@@ -672,6 +672,18 @@ const ChallengeDetail = () => {
       </Dialog>
 
       <main className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
+        {/* Finished banner + Podium at top */}
+        {isFinished && (
+          <>
+            <div className="rounded-xl bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/20 p-4 text-center space-y-1">
+              <p className="text-2xl">🏁</p>
+              <h3 className="font-bold text-lg">Challenge Completed</h3>
+              <p className="text-sm text-muted-foreground">This challenge has ended. No more submissions or votes.</p>
+            </div>
+            <FinalRankingPodium challengeId={challenge.id} />
+          </>
+        )}
+
         <Card className="shadow-elevated">
           <CardHeader className="pb-3">
             {/* Creator - small at top */}
