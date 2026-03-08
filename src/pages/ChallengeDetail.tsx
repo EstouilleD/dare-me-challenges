@@ -717,6 +717,24 @@ const ChallengeDetail = () => {
               )}
             </div>
 
+            {/* Community badge */}
+            {challenge.communities && (
+              <button
+                onClick={() => navigate(`/community/${challenge.communities!.slug}`)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors w-fit mb-2"
+              >
+                {challenge.communities.logo_url ? (
+                  <img src={challenge.communities.logo_url} alt="" className="h-5 w-5 rounded object-cover" />
+                ) : (
+                  <Users className="h-4 w-4 text-primary" />
+                )}
+                <span className="text-xs font-medium text-primary">{challenge.communities.name}</span>
+                {challenge.community_only && (
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">Members only</Badge>
+                )}
+              </button>
+            )}
+
             {/* Dates + Countdown */}
             <div className="flex items-center justify-between gap-2 mb-3">
               <p className="text-sm text-muted-foreground">
