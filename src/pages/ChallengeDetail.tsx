@@ -740,8 +740,8 @@ const ChallengeDetail = () => {
               )}
             </div>
 
-            {/* Community badge */}
-            {challenge.communities && (
+            {/* Community badge (hidden for brand challenges, shown in BrandChallengeHeader) */}
+            {challenge.communities && !isBrandChallenge && (
               <button
                 onClick={() => navigate(`/community/${challenge.communities!.slug}`)}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors w-fit mb-2"
