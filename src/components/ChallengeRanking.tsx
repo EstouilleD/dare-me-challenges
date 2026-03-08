@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, Medal, Download, Crown, Lock } from "lucide-react";
+import { Trophy, Medal, Download, Crown, Lock, ShoppingCart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { getAvatarSrc } from "@/lib/avatars";
@@ -265,18 +265,27 @@ const ChallengeRanking = ({ challengeId, isFinished }: ChallengeRankingProps) =>
                 )}
               </Button>
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full gap-2"
-                onClick={() => navigate("/store")}
-              >
-                <Lock className="h-4 w-4" />
-                Download Certificate
-                <Badge variant="outline" className="text-xs gap-1 ml-1">
-                  <Crown className="h-3 w-3" /> Premium
-                </Badge>
-              </Button>
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full gap-2"
+                  onClick={async () => {
+                    try {
+                      const { data, error } = await supabase.functions.invoke("purchase-certificate", {
+                        body: { challengeId },
+                      });
+                      if (data?.url) window.open(data.url, "_blank");
+                    } catch {}
+                  }}
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  Buy Certificate — 1,99 €
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  Or <button onClick={() => navigate("/store")} className="underline text-primary hover:text-primary/80">upgrade to Premium</button> for unlimited
+                </p>
+              </div>
             )}
           </div>
         )}
