@@ -13,7 +13,7 @@ import BurgerMenu from "@/components/BurgerMenu";
 import NotificationBell from "@/components/NotificationBell";
 import PremiumBanner from "@/components/PremiumBanner";
 import { usePremium } from "@/hooks/usePremium";
-
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 interface Profile {
   id: string;
   display_name: string;
