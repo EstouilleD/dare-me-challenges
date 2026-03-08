@@ -61,8 +61,11 @@ interface Challenge {
   quantity_target: number | null;
   frequency_quantity: number | null;
   frequency_period: string | null;
+  community_id: string | null;
+  community_only: boolean;
   challenge_types: ChallengeType;
   profiles: Profile;
+  communities?: { name: string; slug: string; logo_url: string | null; type: string; is_verified: boolean } | null;
 }
 
 interface Participation {
