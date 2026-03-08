@@ -219,9 +219,7 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
   const myRank = ranking.findIndex(r => r.user_id === currentUserId);
   const isTop3 = myRank >= 0 && myRank < 3;
 
-  // After purchase redirect, allow download even for non-premium
-  const hasPurchased = searchParams.get("certificate") === "purchased";
-  const canDownload = isPremium || hasPurchased;
+  const canDownload = isPremium || hasPurchasedCert || searchParams.get("certificate") === "purchased";
 
   // Podium order: 2nd, 1st, 3rd
   const podiumOrder = top3.length >= 3
