@@ -213,7 +213,7 @@ const Home = () => {
             <div className="flex items-center gap-3">
               {profile && <BurgerMenu profile={profile} />}
             </div>
-            <img src={logo} alt="Dare Me" className="h-10 absolute left-1/2 -translate-x-1/2" />
+            <img src={logo} alt="Dare Me" className="h-10 mx-auto" />
             <div className="flex items-center gap-2">
               <NotificationBell />
               <button onClick={() => navigate("/store")} className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/20 text-white text-sm font-medium hover:bg-white/30 transition-colors">
