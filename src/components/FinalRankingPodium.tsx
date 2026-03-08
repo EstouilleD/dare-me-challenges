@@ -4,9 +4,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trophy, Download, Crown, Lock } from "lucide-react";
+import { Trophy, Download, ShoppingCart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getAvatarSrc } from "@/lib/avatars";
 
 interface Profile {
@@ -36,12 +36,25 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
   const [currentUserId, setCurrentUserId] = useState("");
   const [isPremium, setIsPremium] = useState(false);
   const [downloadingDiploma, setDownloadingDiploma] = useState(false);
+  const [purchasing, setPurchasing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     loadRanking();
   }, [challengeId]);
+
+  // Handle certificate purchase success
+  useEffect(() => {
+    if (searchParams.get("certificate") === "purchased") {
+      toast({ title: "🎉 Certificate purchased!", description: "You can now download your certificate." });
+      // Clean up URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete("certificate");
+      window.history.replaceState({}, "", url.pathname);
+    }
+  }, [searchParams]);
 
   const loadRanking = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -169,12 +182,36 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
     }
   };
 
+  const handlePurchaseCertificate = async () => {
+    setPurchasing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("purchase-certificate", {
+        body: { challengeId },
+      });
+      if (error || data?.error) {
+        toast({ variant: "destructive", title: "Purchase failed", description: data?.error || error?.message });
+        setPurchasing(false);
+        return;
+      }
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Error", description: err.message });
+    }
+    setPurchasing(false);
+  };
+
   if (loading || ranking.length === 0) return null;
 
   const top3 = ranking.slice(0, 3);
   const rest = ranking.slice(3);
   const myRank = ranking.findIndex(r => r.user_id === currentUserId);
   const isTop3 = myRank >= 0 && myRank < 3;
+
+  // After purchase redirect, allow download even for non-premium
+  const hasPurchased = searchParams.get("certificate") === "purchased";
+  const canDownload = isPremium || hasPurchased;
 
   // Podium order: 2nd, 1st, 3rd
   const podiumOrder = top3.length >= 3
@@ -185,9 +222,9 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
 
   const podiumHeights = ["h-24", "h-32", "h-20"];
   const podiumColors = [
-    "from-muted to-muted/60",      // Silver (2nd)
-    "from-primary to-primary/70",    // Gold (1st)
-    "from-accent to-accent/60",      // Bronze (3rd)
+    "from-muted to-muted/60",
+    "from-primary to-primary/70",
+    "from-accent to-accent/60",
   ];
   const podiumLabels = ["2nd", "1st", "3rd"];
   const medalEmojis = ["🥈", "🥇", "🥉"];
@@ -208,7 +245,11 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
         {/* Podium visual */}
         <div className="flex items-end justify-center gap-2 mb-6 px-4">
           {podiumOrder.map((participant, idx) => {
-            const actualIdx = top3.length >= 3 ? idx : (top3.length === 2 ? idx : 0);
+            const label = top3.length >= 3
+              ? podiumLabels[idx]
+              : top3.length === 2
+              ? (idx === 0 ? "2nd" : "1st")
+              : "1st";
             const height = top3.length >= 3
               ? podiumHeights[idx]
               : top3.length === 2
@@ -219,11 +260,6 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
               : top3.length === 2
               ? (idx === 0 ? podiumColors[0] : podiumColors[1])
               : podiumColors[1];
-            const label = top3.length >= 3
-              ? podiumLabels[idx]
-              : top3.length === 2
-              ? (idx === 0 ? "2nd" : "1st")
-              : "1st";
             const medal = top3.length >= 3
               ? medalEmojis[idx]
               : top3.length === 2
@@ -232,7 +268,6 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
 
             return (
               <div key={participant.user_id} className="flex flex-col items-center flex-1 max-w-[140px]">
-                {/* Avatar + medal */}
                 <div className="relative mb-2">
                   <Avatar className={`${label === "1st" ? "h-16 w-16 ring-4 ring-primary/30" : "h-12 w-12 ring-2 ring-border"} shadow-lg`}>
                     <AvatarImage src={getAvatarSrc(participant.profile)} />
@@ -244,7 +279,6 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
                 {participant.honorVotes > 0 && (
                   <Badge variant="default" className="text-[10px] px-1.5 py-0 mb-1">⭐ {participant.honorVotes}</Badge>
                 )}
-                {/* Podium bar */}
                 <div className={`w-full ${height} rounded-t-lg bg-gradient-to-t ${gradient} flex items-end justify-center pb-2 shadow-inner`}>
                   <span className="text-xs font-bold text-foreground/70">{label}</span>
                 </div>
@@ -275,10 +309,10 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
           </div>
         )}
 
-        {/* Certificate download */}
+        {/* Certificate actions */}
         {isTop3 && (
           <div className="pt-4 border-t mt-4">
-            {isPremium ? (
+            {canDownload ? (
               <Button
                 variant="outline"
                 className="w-full gap-2 border-primary/30 hover:bg-primary/5"
@@ -293,17 +327,24 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
                 )}
               </Button>
             ) : (
-              <Button
-                variant="outline"
-                className="w-full gap-2"
-                onClick={() => navigate("/store")}
-              >
-                <Lock className="h-4 w-4" />
-                Download Certificate
-                <Badge variant="outline" className="text-xs gap-1 ml-1">
-                  <Crown className="h-3 w-3" /> Premium
-                </Badge>
-              </Button>
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  className="w-full gap-2 border-primary/30 hover:bg-primary/5"
+                  onClick={handlePurchaseCertificate}
+                  disabled={purchasing}
+                >
+                  {purchasing ? "Redirecting to checkout..." : (
+                    <>
+                      <ShoppingCart className="h-4 w-4" />
+                      Buy Certificate — 1,99 €
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  Or <button onClick={() => navigate("/store")} className="underline text-primary hover:text-primary/80">upgrade to Premium</button> for unlimited certificates
+                </p>
+              </div>
             )}
           </div>
         )}
