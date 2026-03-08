@@ -530,6 +530,15 @@ const ChallengeDetail = () => {
               </div>
             </div>
             <div className="flex items-center gap-1">
+              <ShareChallenge
+                challengeId={challenge.id}
+                challengeTitle={challenge.title}
+                trigger={
+                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" title="Share">
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                }
+              />
               {isParticipant && !isOwner && !isFinished && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
