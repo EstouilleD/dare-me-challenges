@@ -1074,6 +1074,21 @@ export type Database = {
     Functions: {
       check_and_award_badges: { Args: { _user_id: string }; Returns: undefined }
       get_coin_balance: { Args: { _user_id: string }; Returns: number }
+      get_community_leaderboard: {
+        Args: { _community_id: string }
+        Returns: {
+          avatar_url: string
+          challenges_completed: number
+          challenges_won: number
+          display_name: string
+          honor_votes: number
+          profile_photo_url: string
+          proofs_submitted: number
+          total_points: number
+          use_avatar: boolean
+          user_id: string
+        }[]
+      }
       get_community_role: {
         Args: { _community_id: string; _user_id: string }
         Returns: Database["public"]["Enums"]["community_role"]
