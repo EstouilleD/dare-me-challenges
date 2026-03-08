@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getAvatarSrc } from "@/lib/avatars";
 import { Input } from "@/components/ui/input";
 
 interface Profile {
