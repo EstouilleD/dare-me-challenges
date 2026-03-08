@@ -23,11 +23,7 @@ const BurgerMenu = ({ profile }: BurgerMenuProps) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  const getAvatarSrc = () => {
-    if (profile.use_avatar && profile.avatar_url) return profile.avatar_url;
-    if (profile.profile_photo_url) return profile.profile_photo_url;
-    return "";
-  };
+  // getAvatarSrc is imported from @/lib/avatars
 
   const handleNavigate = (path: string) => {
     setOpen(false);
