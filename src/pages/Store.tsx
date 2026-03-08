@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Crown, Coins, Sparkles, Zap, Trophy, Eye, Gift, Check, Settings } from "lucide-react";
 import { usePremium } from "@/hooks/usePremium";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 
 interface CoinPack {
   id: string;
@@ -64,6 +65,7 @@ const ALL_BOOSTERS = [
 
 const Store = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
@@ -149,7 +151,7 @@ const Store = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-gradient-primary border-b shadow-card">
+      <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4 flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-white hover:bg-white/20">
             <ArrowLeft className="h-5 w-5" />

@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProofFeedItem from "@/components/ProofFeedItem";
 import InviteParticipants from "@/components/InviteParticipants";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import ChallengeProgress from "@/components/ChallengeProgress";
 import ChallengeRanking from "@/components/ChallengeRanking";
 import CoinBoostActions from "@/components/CoinBoostActions";
@@ -117,6 +118,7 @@ const CountdownBadge = ({ endDate }: { endDate: string }) => {
 const ChallengeDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const { toast } = useToast();
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [participants, setParticipants] = useState<Participation[]>([]);
@@ -461,7 +463,7 @@ const ChallengeDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-gradient-primary border-b shadow-card">
+      <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button

@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Check, CheckCheck } from "lucide-react";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import { formatDistanceToNow } from "date-fns";
 
 interface Notification {
@@ -18,6 +19,7 @@ interface Notification {
 
 const Notifications = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -78,7 +80,7 @@ const Notifications = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-gradient-primary border-b shadow-card">
+      <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

@@ -12,6 +12,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ArrowLeft, Search, CalendarIcon, X } from "lucide-react";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import { cn } from "@/lib/utils";
 
 interface Profile {
@@ -42,6 +43,7 @@ interface Challenge {
 
 const Explore = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const { toast } = useToast();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [challengeTypes, setChallengeTypes] = useState<ChallengeType[]>([]);
@@ -131,7 +133,7 @@ const Explore = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-gradient-primary border-b shadow-card">
+      <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Button

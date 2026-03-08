@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Camera, Video, X, Link, Lock, Crown } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { checkCreationLimit } from "@/hooks/usePremium";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import { Badge } from "@/components/ui/badge";
 
 interface ChallengeType {
@@ -32,6 +33,7 @@ const FREQUENCY_PERIODS = [
 
 const CreateChallenge = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [types, setTypes] = useState<ChallengeType[]>([]);
@@ -224,7 +226,7 @@ const CreateChallenge = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-gradient-primary border-b shadow-card">
+      <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button

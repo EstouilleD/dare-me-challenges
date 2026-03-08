@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import BurgerMenu from "@/components/BurgerMenu";
 import NotificationBell from "@/components/NotificationBell";
 import PremiumBanner from "@/components/PremiumBanner";
 import { usePremium } from "@/hooks/usePremium";
-
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 interface Profile {
   id: string;
   display_name: string;
@@ -51,19 +51,7 @@ const Home = () => {
   const [coinBalance, setCoinBalance] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
   const { isPremium } = usePremium(userId);
-  const [headerVisible, setHeaderVisible] = useState(true);
-  const lastScrollY = useRef(0);
-
-  const handleScroll = useCallback(() => {
-    const currentY = window.scrollY;
-    setHeaderVisible(currentY <= 10 || currentY < lastScrollY.current);
-    lastScrollY.current = currentY;
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
+  const { headerClass } = useAutoHideHeader();
 
   useEffect(() => {
     loadData();
@@ -211,7 +199,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className={`sticky top-0 z-10 bg-gradient-primary border-b shadow-card transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+      <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

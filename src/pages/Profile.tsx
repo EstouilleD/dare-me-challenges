@@ -13,6 +13,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import { ArrowLeft, User, Lock, Bell, Sun, Moon, Monitor, Palette, Award, Trophy } from "lucide-react";
 import BadgeCard from "@/components/BadgeCard";
 import { useTheme } from "next-themes";
@@ -49,6 +50,7 @@ interface NotificationPrefs {
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
 
@@ -242,7 +244,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-gradient-primary border-b shadow-card">
+      <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="text-white hover:bg-white/20">

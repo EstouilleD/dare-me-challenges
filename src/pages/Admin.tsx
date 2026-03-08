@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, LayoutDashboard, Flag, Users, FileText, UserX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminReports from "@/components/admin/AdminReports";
 import AdminUsers from "@/components/admin/AdminUsers";
@@ -12,6 +13,7 @@ import AdminDeletedUsers from "@/components/admin/AdminDeletedUsers";
 const Admin = () => {
   const { isAdmin, loading } = useAdmin();
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
 
   if (loading) {
     return (
@@ -28,7 +30,7 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-gradient-primary border-b shadow-card">
+      <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="text-white hover:bg-white/20">

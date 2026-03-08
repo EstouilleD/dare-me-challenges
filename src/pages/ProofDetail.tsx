@@ -11,6 +11,7 @@ import { ArrowLeft, ThumbsUp, ThumbsDown, Award } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 
 interface Profile {
   id: string;
@@ -47,6 +48,7 @@ interface Vote {
 const ProofDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const { toast } = useToast();
   const [proof, setProof] = useState<Proof | null>(null);
   const [myVote, setMyVote] = useState<Vote | null>(null);
@@ -239,7 +241,7 @@ const ProofDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-gradient-primary border-b shadow-card">
+      <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button

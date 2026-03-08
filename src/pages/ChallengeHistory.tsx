@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { ArrowLeft, Trophy, XCircle } from "lucide-react";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 
 interface HistoryChallenge {
   id: string;
@@ -21,6 +22,7 @@ interface HistoryChallenge {
 
 const ChallengeHistory = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const [challenges, setChallenges] = useState<HistoryChallenge[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -110,7 +112,7 @@ const ChallengeHistory = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-gradient-primary border-b shadow-card">
+      <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4 flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="text-white hover:bg-white/20">
             <ArrowLeft className="h-5 w-5" />

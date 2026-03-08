@@ -7,9 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ArrowLeft } from "lucide-react";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 
 const MyChallenges = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const [challenges, setChallenges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,7 +48,7 @@ const MyChallenges = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-gradient-primary border-b shadow-card">
+      <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4 flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="text-white hover:bg-white/20">
             <ArrowLeft className="h-5 w-5" />

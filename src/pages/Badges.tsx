@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import BadgeCard from "@/components/BadgeCard";
 
 interface Badge {
@@ -33,6 +34,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const Badges = () => {
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
   const [badges, setBadges] = useState<Badge[]>([]);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,7 +81,7 @@ const Badges = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-gradient-primary border-b shadow-card">
+      <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-white hover:bg-white/20">
