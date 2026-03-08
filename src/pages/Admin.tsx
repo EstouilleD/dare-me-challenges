@@ -11,6 +11,7 @@ import AdminUsers from "@/components/admin/AdminUsers";
 import AdminContent from "@/components/admin/AdminContent";
 import AdminDeletedUsers from "@/components/admin/AdminDeletedUsers";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
+import AdminFairPlay from "@/components/admin/AdminFairPlay";
 
 const Admin = () => {
   const { isAdmin, loading } = useAdmin();
