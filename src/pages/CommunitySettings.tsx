@@ -204,12 +204,12 @@ const CommunitySettings = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate(`/community/${slug}`)} className="text-white hover:bg-white/20">
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold text-white">Community Settings</h1>
+            <h1 className="text-lg font-bold text-white truncate flex-1">Community Settings</h1>
             <HeaderLogo />
           </div>
         </div>

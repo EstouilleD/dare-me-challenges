@@ -99,10 +99,10 @@ const Explore = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center gap-3">
             {profile && <BurgerMenu profile={profile} />}
-            <h1 className="text-xl font-bold text-white">Explore</h1>
+            <h1 className="text-lg font-bold text-white truncate flex-1">Explore</h1>
             <HeaderLogo />
           </div>
         </div>
