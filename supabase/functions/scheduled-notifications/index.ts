@@ -18,6 +18,11 @@ Deno.serve(async (req) => {
     const now = new Date();
     const results: string[] = [];
 
+    // ========== UPDATE CHALLENGE STATUSES ==========
+    // Transition active challenges past their end_date to 'finished', and upcoming to 'active'
+    await supabase.rpc("update_challenge_status");
+    results.push("Status update: done");
+
     // ========== CHALLENGE ENDED NOTIFICATION ==========
     // Find challenges that just finished (end_date passed, status still 'active')
     // The update_challenge_status function sets them to 'finished', so we look for
