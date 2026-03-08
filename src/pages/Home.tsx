@@ -117,7 +117,8 @@ const Home = () => {
       .select(`
         *,
         challenge_types(id, name, icon),
-        profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)
+        profiles(id, display_name, avatar_url, profile_photo_url, use_avatar),
+        communities(name, slug)
       `)
       .eq("owner_id", session.user.id)
       .order("created_at", { ascending: false });
