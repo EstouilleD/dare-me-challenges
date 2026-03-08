@@ -17,6 +17,7 @@ import InviteParticipants from "@/components/InviteParticipants";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import ChallengeProgress from "@/components/ChallengeProgress";
 import ChallengeRanking from "@/components/ChallengeRanking";
+import FinalRankingPodium from "@/components/FinalRankingPodium";
 import CoinBoostActions from "@/components/CoinBoostActions";
 import confetti from "canvas-confetti";
 import {
