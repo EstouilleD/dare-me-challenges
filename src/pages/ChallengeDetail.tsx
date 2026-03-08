@@ -882,8 +882,10 @@ const ChallengeDetail = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Ranking */}
-        <ChallengeRanking challengeId={challenge.id} isFinished={challenge.status === "finished"} />
+        {/* Ranking — only show simple ranking for active challenges */}
+        {!isFinished && (
+          <ChallengeRanking challengeId={challenge.id} isFinished={false} />
+        )}
 
         {/* Social Feed */}
         {challenge.is_surprise && challenge.status !== "finished" ? (
