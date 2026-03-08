@@ -182,23 +182,38 @@ const Store = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 max-w-lg space-y-6">
-        {/* Current balance */}
+        {/* Premium status (shown first when premium) */}
+        {isPremium && (
+          <Card className="shadow-elevated border-primary/30 overflow-hidden">
+            <div className="h-1.5" style={{ background: 'linear-gradient(90deg, hsl(45 93% 47%), hsl(36 100% 50%), hsl(45 93% 47%))' }} />
+            <CardContent className="py-5 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-full flex items-center justify-center shadow-md" style={{ background: 'linear-gradient(135deg, hsl(45 93% 47%), hsl(36 100% 50%))' }}>
+                  <Crown className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <p className="font-bold text-lg">Premium Active</p>
+                  <p className="text-xs text-muted-foreground">All features unlocked + 1 free booster/month</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" className="w-full gap-2" onClick={handleManageSubscription}>
+                <Settings className="h-4 w-4" />
+                Manage Subscription
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Coin balance */}
         <Card className="shadow-elevated">
-          <CardContent className="py-5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Coins className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Your balance</p>
-                <p className="text-2xl font-bold">{balance} 🪙</p>
-              </div>
+          <CardContent className="py-5 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Coins className="h-5 w-5 text-primary" />
             </div>
-            {isPremium && (
-              <Badge className="gap-1 bg-primary text-primary-foreground">
-                <Crown className="h-3 w-3" /> Premium
-              </Badge>
-            )}
+            <div>
+              <p className="text-sm text-muted-foreground">Your balance</p>
+              <p className="text-2xl font-bold">{balance} 🪙</p>
+            </div>
           </CardContent>
         </Card>
 
