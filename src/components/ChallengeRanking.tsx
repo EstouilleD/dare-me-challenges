@@ -134,29 +134,67 @@ const ChallengeRanking = ({ challengeId, isFinished }: ChallengeRankingProps) =>
       if (error || data?.error) {
         toast({
           variant: "destructive",
-          title: "Diploma unavailable",
-          description: data?.error || error?.message || "Could not generate diploma.",
+          title: "Certificate unavailable",
+          description: data?.error || error?.message || "Could not generate certificate.",
         });
         setDownloadingDiploma(false);
         return;
       }
 
-      // Convert SVG to downloadable file
-      const blob = new Blob([data.svg], { type: "image/svg+xml" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `diploma-${data.challengeTitle?.replace(/\s+/g, "-")}.svg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Render SVG to high-res canvas then download as PNG
+      const svgString = data.svg;
+      const canvas = document.createElement("canvas");
+      const scale = 3; // 3x for high quality
+      canvas.width = 1190 * scale;
+      canvas.height = 842 * scale;
+      const ctx = canvas.getContext("2d")!;
+      ctx.scale(scale, scale);
 
-      toast({ title: "🎓 Diploma downloaded!", description: "Your official certificate has been saved." });
+      const img = new Image();
+      const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(svgBlob);
+
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, 1190, 842);
+        URL.revokeObjectURL(url);
+
+        canvas.toBlob((blob) => {
+          if (!blob) return;
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = downloadUrl;
+          a.download = `Certificate-${data.challengeTitle?.replace(/\s+/g, "-")}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(downloadUrl);
+
+          toast({ title: "🎓 Certificate downloaded!", description: "Your official certificate has been saved in high quality." });
+          setDownloadingDiploma(false);
+        }, "image/png", 1.0);
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        // Fallback: download SVG directly
+        const fallbackBlob = new Blob([svgString], { type: "image/svg+xml" });
+        const fallbackUrl = URL.createObjectURL(fallbackBlob);
+        const a = document.createElement("a");
+        a.href = fallbackUrl;
+        a.download = `Certificate-${data.challengeTitle?.replace(/\s+/g, "-")}.svg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(fallbackUrl);
+        toast({ title: "🎓 Certificate downloaded!" });
+        setDownloadingDiploma(false);
+      };
+
+      img.src = url;
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
+      setDownloadingDiploma(false);
     }
-    setDownloadingDiploma(false);
   };
 
   if (loading || ranking.length === 0) return null;
