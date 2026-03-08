@@ -164,6 +164,7 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
       coin_cost: cost,
       target_challenge_id: challengeId,
     });
+    trackEvent("booster_used", { boost_type: boostType, coin_cost: cost, challenge_id: challengeId });
 
     if (boostType === "score_boost") {
       const { data: part } = await supabase

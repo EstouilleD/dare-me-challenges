@@ -248,6 +248,7 @@ const CreateChallenge = () => {
         description: error.message,
       });
     } else {
+      trackEvent("challenge_created", { challenge_id: challenge.id, type_id: selectedTypeId, is_public: isPublic, community_id: communityId || null });
       toast({ title: "Challenge created!", description: "Your challenge is ready." });
       navigate(`/challenge/${challenge.id}`);
     }

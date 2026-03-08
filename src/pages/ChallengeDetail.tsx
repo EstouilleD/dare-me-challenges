@@ -353,6 +353,7 @@ const ChallengeDetail = () => {
     if (error) {
       toast({ variant: "destructive", title: "Failed to submit", description: error.message });
     } else {
+      trackEvent("proof_submitted", { challenge_id: id });
       toast({ title: "Proof submitted!", description: "Your proof has been added." });
       setProofText("");
       clearFile();
