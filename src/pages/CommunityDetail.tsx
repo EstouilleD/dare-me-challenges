@@ -200,7 +200,7 @@ const CommunityDetail = () => {
   };
 
   const handlePromote = async (memberId: string, newRole: string) => {
-    const { error } = await supabase.from("community_members").update({ role: newRole }).eq("id", memberId);
+    const { error } = await supabase.from("community_members").update({ role: newRole as any }).eq("id", memberId);
     if (!error) { toast({ title: `Role updated to ${newRole}` }); loadCommunity(); }
   };
 
