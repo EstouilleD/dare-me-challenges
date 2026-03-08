@@ -174,7 +174,7 @@ const ChallengeDetail = () => {
         *,
         challenge_types(id, name, icon),
         profiles(id, display_name, avatar_url, profile_photo_url, use_avatar),
-        communities(name, slug, logo_url, type, is_verified)
+        communities(name, slug, logo_url, type, is_verified, banner_url, accent_color, reward_description, sponsor_cta_text, sponsor_cta_url)
       `)
       .eq("id", id)
       .single();
