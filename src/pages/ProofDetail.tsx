@@ -240,20 +240,19 @@ const ProofDetail = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate(`/challenge/${proof.challenge_id}`)}
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-white/20 shrink-0"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-white">Proof</h1>
-              <p className="text-white/80 text-sm">{proof.challenges.title}</p>
-            </div>
+            <h1 className="text-lg font-bold text-white truncate flex-1">
+              Proof — {proof.challenges.title}
+            </h1>
             <HeaderLogo />
           </div>
         </div>

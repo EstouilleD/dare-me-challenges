@@ -514,27 +514,20 @@ const ChallengeDetail = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate("/")}
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-white/20 shrink-0"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-white">{challenge.title}</h1>
-              <div className="flex items-center gap-2 text-white/80 text-sm">
-                <span>{challenge.challenge_types.icon}</span>
-                <span>{challenge.challenge_types.name}</span>
-                <Badge variant={challenge.is_public ? "secondary" : "outline"} className="text-xs">
-                  {challenge.is_public ? "🌍 Public" : "🔒 Private"}
-                </Badge>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
+            <h1 className="text-lg font-bold text-white truncate flex-1">
+              {challenge.challenge_types.icon} {challenge.title}
+            </h1>
+            <div className="flex items-center gap-1 shrink-0">
               <ShareChallenge
                 challengeId={challenge.id}
                 challengeTitle={challenge.title}
