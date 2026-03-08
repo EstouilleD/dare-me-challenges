@@ -36,8 +36,10 @@ interface Challenge {
   end_date: string;
   status: string;
   is_public: boolean;
+  community_id: string | null;
   challenge_types: ChallengeType;
   profiles: Profile;
+  communities?: { name: string; slug: string } | null;
 }
 
 const Home = () => {
