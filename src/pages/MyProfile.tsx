@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Settings, Trophy, Target, CheckCircle, Star, Coins } from "lucide-react";
+import { ArrowLeft, Settings, Trophy, Target, CheckCircle, Star, Coins, Crown } from "lucide-react";
 import { getAvatarSrc } from "@/lib/avatars";
 import BadgeCard from "@/components/BadgeCard";
 import PremiumBanner from "@/components/PremiumBanner";
@@ -135,10 +135,17 @@ const MyProfile = () => {
       <main className="container mx-auto px-4 max-w-lg -mt-16 space-y-6 pb-8">
         {/* Avatar + Name card */}
         <div className="flex flex-col items-center">
-          <Avatar className="h-28 w-28 border-4 border-background shadow-lg">
-            <AvatarImage src={profile ? getAvatarSrc(profile) : ""} />
-            <AvatarFallback className="text-3xl">{profile?.display_name?.[0]}</AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="h-28 w-28 border-4 border-background shadow-lg">
+              <AvatarImage src={profile ? getAvatarSrc(profile) : ""} />
+              <AvatarFallback className="text-3xl">{profile?.display_name?.[0]}</AvatarFallback>
+            </Avatar>
+            {isPremium && (
+              <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-1.5 shadow-lg border-2 border-background">
+                <Crown className="h-4 w-4" />
+              </div>
+            )}
+          </div>
           <h1 className="text-2xl font-bold mt-3">{profile?.display_name}</h1>
           {profile?.full_name && (
             <p className="text-muted-foreground">{profile.full_name}</p>
