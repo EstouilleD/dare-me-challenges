@@ -49,11 +49,7 @@ const InviteParticipants = ({ challengeId, currentUserId, existingParticipantIds
   // QR
   const joinUrl = `${window.location.origin}/join/${challengeId}`;
 
-  const getAvatarSrc = (prof: Profile) => {
-    if (prof.use_avatar && prof.avatar_url) return prof.avatar_url;
-    if (prof.profile_photo_url) return prof.profile_photo_url;
-    return "";
-  };
+  // getAvatarSrc imported from @/lib/avatars
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;

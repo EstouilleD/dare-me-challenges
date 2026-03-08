@@ -41,11 +41,7 @@ const MyChallenges = () => {
     load();
   }, [navigate]);
 
-  const getAvatarSrc = (p: any) => {
-    if (p.use_avatar && p.avatar_url) return p.avatar_url;
-    if (p.profile_photo_url) return p.profile_photo_url;
-    return "";
-  };
+  // getAvatarSrc imported from @/lib/avatars
 
   return (
     <div className="min-h-screen bg-background">

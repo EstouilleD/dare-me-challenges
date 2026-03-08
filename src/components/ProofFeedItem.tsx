@@ -84,11 +84,7 @@ const REACTION_EMOJIS = [
   { type: "thumbsdown", icon: "👎" },
 ];
 
-const getAvatarSrc = (prof: Profile) => {
-  if (prof.use_avatar && prof.avatar_url) return prof.avatar_url;
-  if (prof.profile_photo_url) return prof.profile_photo_url;
-  return "";
-};
+// getAvatarSrc imported from @/lib/avatars
 
 const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus, onRefresh }: ProofFeedItemProps) => {
   const navigate = useNavigate();

@@ -95,12 +95,7 @@ const MyProfile = () => {
     setLoading(false);
   };
 
-  const getAvatarSrc = () => {
-    if (!profile) return "";
-    if (profile.use_avatar && profile.avatar_url) return profile.avatar_url;
-    if (profile.profile_photo_url) return profile.profile_photo_url;
-    return "";
-  };
+  // getAvatarSrc imported from @/lib/avatars
 
   const earnedSet = new Set(userBadges.map(ub => ub.badge_id));
   const earnedBadges = badges.filter(b => earnedSet.has(b.id));
