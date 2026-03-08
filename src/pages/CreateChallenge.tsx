@@ -60,6 +60,8 @@ const CreateChallenge = () => {
   const [communityId, setCommunityId] = useState<string | null>(null);
   const [communityName, setCommunityName] = useState<string | null>(null);
   const [communityOnly, setCommunityOnly] = useState(false);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [categories, setCategories] = useState<{ id: string; name: string; icon: string }[]>([]);
 
   // Frequency fields
   const [frequencyQuantity, setFrequencyQuantity] = useState("1");
