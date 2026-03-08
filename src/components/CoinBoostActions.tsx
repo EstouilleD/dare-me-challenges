@@ -199,7 +199,7 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
 
     toast({ title: "Boost activated! 🚀", description: `${labels[boostType] || boostType} applied.` });
     setLoading(null);
-    await loadBalance();
+    await Promise.all([loadBalance(), loadBoostUsage()]);
     onRefresh();
   };
 
