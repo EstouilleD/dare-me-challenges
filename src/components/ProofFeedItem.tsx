@@ -91,6 +91,7 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
   const navigate = useNavigate();
   const { toast } = useToast();
   const isAuthor = currentUserId === proof.participations.user_id;
+  const [hasBoosted, setHasBoosted] = useState(false);
 
   // Reactions
   const [reactions, setReactions] = useState<Reaction[]>([]);
