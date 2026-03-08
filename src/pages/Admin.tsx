@@ -89,6 +89,9 @@ const Admin = () => {
           <TabsContent value="analytics">
             <AdminAnalytics />
           </TabsContent>
+          <TabsContent value="fairplay">
+            <AdminFairPlay />
+          </TabsContent>
           <TabsContent value="reports">
             <AdminReports />
           </TabsContent>
