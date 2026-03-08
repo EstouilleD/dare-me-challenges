@@ -64,6 +64,7 @@ const App = () => (
             <Route path="/store" element={<Store />} />
             <Route path="/communities" element={<Communities />} />
             <Route path="/community/:slug" element={<CommunityDetail />} />
+            <Route path="/community/:slug/settings" element={<CommunitySettings />} />
             <Route path="/community/join/:code" element={<CommunityJoin />} />
             <Route path="/create-community" element={<CreateCommunity />} />
             <Route path="/onboarding" element={<OnboardingDiscovery />} />
