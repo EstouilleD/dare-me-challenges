@@ -51,7 +51,7 @@ const Profile = () => {
     avatar_url: null,
     profile_photo_url: null,
   });
-  const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
+  const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0].key);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState("");
 
