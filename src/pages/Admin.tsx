@@ -13,6 +13,7 @@ import AdminDeletedUsers from "@/components/admin/AdminDeletedUsers";
 const Admin = () => {
   const { isAdmin, loading } = useAdmin();
   const navigate = useNavigate();
+  const { headerClass } = useAutoHideHeader();
 
   if (loading) {
     return (
