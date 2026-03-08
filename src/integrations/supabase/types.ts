@@ -374,9 +374,13 @@ export type Database = {
           member_count: number
           name: string
           owner_id: string
+          pinned_post_id: string | null
           requires_approval: boolean
+          reward_description: string | null
           rules: string | null
           slug: string
+          sponsor_cta_text: string | null
+          sponsor_cta_url: string | null
           type: Database["public"]["Enums"]["community_type"]
           updated_at: string
           website_url: string | null
@@ -393,9 +397,13 @@ export type Database = {
           member_count?: number
           name: string
           owner_id: string
+          pinned_post_id?: string | null
           requires_approval?: boolean
+          reward_description?: string | null
           rules?: string | null
           slug: string
+          sponsor_cta_text?: string | null
+          sponsor_cta_url?: string | null
           type?: Database["public"]["Enums"]["community_type"]
           updated_at?: string
           website_url?: string | null
@@ -412,9 +420,13 @@ export type Database = {
           member_count?: number
           name?: string
           owner_id?: string
+          pinned_post_id?: string | null
           requires_approval?: boolean
+          reward_description?: string | null
           rules?: string | null
           slug?: string
+          sponsor_cta_text?: string | null
+          sponsor_cta_url?: string | null
           type?: Database["public"]["Enums"]["community_type"]
           updated_at?: string
           website_url?: string | null
@@ -425,6 +437,13 @@ export type Database = {
             columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communities_pinned_post_id_fkey"
+            columns: ["pinned_post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
             referencedColumns: ["id"]
           },
         ]
