@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { ArrowLeft, Search, CalendarIcon, X } from "lucide-react";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import { cn } from "@/lib/utils";
+import { getAvatarSrc } from "@/lib/avatars";
 
 interface Profile {
   id: string;
