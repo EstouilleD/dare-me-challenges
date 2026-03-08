@@ -12,6 +12,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Mail, QrCode, Search, Check, Loader2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { getAvatarSrc } from "@/lib/avatars";
 
 interface Profile {
   id: string;
