@@ -35,6 +35,7 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState("");
   const [isPremium, setIsPremium] = useState(false);
+  const [hasPurchasedCert, setHasPurchasedCert] = useState(false);
   const [downloadingDiploma, setDownloadingDiploma] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
   const { toast } = useToast();
