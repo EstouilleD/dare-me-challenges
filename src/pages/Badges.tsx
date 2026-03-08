@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import BadgeCard from "@/components/BadgeCard";
 
 interface Badge {
