@@ -83,7 +83,7 @@ const Badges = () => {
     <div className="min-h-screen bg-background">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 relative">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-white hover:bg-white/20">
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -91,6 +91,7 @@ const Badges = () => {
               <h1 className="text-xl font-bold text-white">Badges</h1>
               <p className="text-sm text-white/80">{earnedCount} / {totalCount} earned</p>
             </div>
+            <HeaderLogo />
           </div>
         </div>
       </header>
