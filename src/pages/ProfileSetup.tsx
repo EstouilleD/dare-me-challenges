@@ -17,7 +17,7 @@ const ProfileSetup = () => {
   const [displayName, setDisplayName] = useState("");
   const [fullName, setFullName] = useState("");
   const [useAvatar, setUseAvatar] = useState(true);
-  const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
+  const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0].key);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string>("");
 
