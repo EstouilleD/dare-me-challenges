@@ -792,6 +792,60 @@ export type Database = {
         }
         Relationships: []
       }
+      fair_play_flags: {
+        Row: {
+          challenge_id: string | null
+          created_at: string
+          details: Json | null
+          flag_type: string
+          id: string
+          is_resolved: boolean
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          user_id: string
+        }
+        Insert: {
+          challenge_id?: string | null
+          created_at?: string
+          details?: Json | null
+          flag_type: string
+          id?: string
+          is_resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string | null
+          created_at?: string
+          details?: Json | null
+          flag_type?: string
+          id?: string
+          is_resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fair_play_flags_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fair_play_flags_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "v_top_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           challenge_id: string
