@@ -66,7 +66,7 @@ interface Challenge {
   community_only: boolean;
   challenge_types: ChallengeType;
   profiles: Profile;
-  communities?: { name: string; slug: string; logo_url: string | null; type: string; is_verified: boolean } | null;
+  communities?: { name: string; slug: string; logo_url: string | null; type: string; is_verified: boolean; banner_url: string | null; accent_color: string | null; reward_description: string | null; sponsor_cta_text: string | null; sponsor_cta_url: string | null } | null;
 }
 
 interface Participation {
