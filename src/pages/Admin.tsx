@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, LayoutDashboard, Flag, Users, FileText, UserX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminReports from "@/components/admin/AdminReports";
 import AdminUsers from "@/components/admin/AdminUsers";
