@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
@@ -22,7 +22,7 @@ serve(async (req) => {
     // Get challenge info
     const { data: challenge } = await supabase
       .from("challenges")
-      .select("title, description, start_date, end_date, challenge_types(name, icon)")
+      .select("title, description, start_date, end_date, owner_id, challenge_types(name, icon), profiles(display_name)")
       .eq("id", challengeId)
       .single();
 
@@ -33,22 +33,34 @@ serve(async (req) => {
       });
     }
 
-    // Get top 3 participants
-    const { data: topParticipants } = await supabase
+    // Get ALL participants ranked
+    const { data: allParticipants } = await supabase
       .from("participations")
       .select("user_id, score, profiles(display_name)")
       .eq("challenge_id", challengeId)
       .eq("is_active", true)
-      .order("score", { ascending: false })
-      .limit(3);
+      .order("score", { ascending: false });
 
-    // Check user is in top 3
-    const userRank = topParticipants?.findIndex(
+    const totalParticipants = allParticipants?.length || 0;
+
+    // Find user rank (0-indexed)
+    const userRankIdx = allParticipants?.findIndex(
       (p: any) => p.user_id === userId
     );
-    if (userRank === undefined || userRank === -1) {
+    if (userRankIdx === undefined || userRankIdx === -1) {
       return new Response(
-        JSON.stringify({ error: "User is not in the top 3" }),
+        JSON.stringify({ error: "User is not in this challenge" }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Must be top 3
+    if (userRankIdx > 2) {
+      return new Response(
+        JSON.stringify({ error: "Certificate available for top 3 only" }),
         {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -62,7 +74,7 @@ serve(async (req) => {
     });
     if (!isPremium) {
       return new Response(
-        JSON.stringify({ error: "Premium required for diploma export" }),
+        JSON.stringify({ error: "Premium required for certificate export" }),
         {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -70,78 +82,190 @@ serve(async (req) => {
       );
     }
 
-    const userProfile = (topParticipants as any)?.[userRank]?.profiles;
-    const rankLabels = ["1st Place 🥇", "2nd Place 🥈", "3rd Place 🥉"];
-    const rankLabel = rankLabels[userRank];
-    const score = (topParticipants as any)?.[userRank]?.score ?? 0;
+    const userProfile = (allParticipants as any)?.[userRankIdx]?.profiles;
+    const displayName = userProfile?.display_name || "Participant";
+    const score = (allParticipants as any)?.[userRankIdx]?.score ?? 0;
+    const rank = userRankIdx + 1;
+    const ownerName = (challenge as any).profiles?.display_name || "Challenge Director";
 
-    const startDate = new Date(challenge.start_date).toLocaleDateString(
-      "en-US",
-      { year: "numeric", month: "long", day: "numeric" }
-    );
-    const endDate = new Date(challenge.end_date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    const rankTitles: Record<number, string> = {
+      1: "CHAMPION — 1st Place",
+      2: "RUNNER-UP — 2nd Place",
+      3: "3rd PLACE FINALIST",
+    };
+    const rankMedals: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
+    const rankTitle = rankTitles[rank] || `#${rank}`;
+    const rankMedal = rankMedals[rank] || "";
 
-    // Generate SVG-based diploma (converts well to PDF via client)
-    const diplomaSvg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
-      <defs>
-        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
-        </linearGradient>
-        <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:#f5c842;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#e0a800;stop-opacity:1" />
-        </linearGradient>
-      </defs>
-      
-      <!-- Background -->
-      <rect width="800" height="600" fill="url(#bg)" rx="20" />
-      <rect x="20" y="20" width="760" height="560" fill="white" rx="12" opacity="0.95" />
-      
-      <!-- Border decoration -->
-      <rect x="30" y="30" width="740" height="540" fill="none" stroke="url(#gold)" stroke-width="3" rx="8" stroke-dasharray="12 4" />
-      
-      <!-- Header -->
-      <text x="400" y="90" text-anchor="middle" font-family="Georgia, serif" font-size="16" fill="#888" letter-spacing="4">CERTIFICATE OF ACHIEVEMENT</text>
-      
-      <!-- App name -->
-      <text x="400" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#667eea">🔥 DARE ME</text>
-      
-      <!-- Divider -->
-      <line x1="200" y1="150" x2="600" y2="150" stroke="url(#gold)" stroke-width="2" />
-      
-      <!-- Rank -->
-      <text x="400" y="200" text-anchor="middle" font-family="Georgia, serif" font-size="36" font-weight="bold" fill="#333">${rankLabel}</text>
-      
-      <!-- Name -->
-      <text x="400" y="260" text-anchor="middle" font-family="Georgia, serif" font-size="24" fill="#555">Awarded to</text>
-      <text x="400" y="300" text-anchor="middle" font-family="Georgia, serif" font-size="32" font-weight="bold" fill="#222">${userProfile?.display_name || "Participant"}</text>
-      
-      <!-- Challenge -->
-      <text x="400" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#888">for outstanding performance in</text>
-      <text x="400" y="395" text-anchor="middle" font-family="Georgia, serif" font-size="22" font-weight="bold" fill="#667eea">"${challenge.title}"</text>
-      
-      <!-- Score -->
-      <text x="400" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#888">Score: ${score} points · ${(challenge as any).challenge_types?.icon} ${(challenge as any).challenge_types?.name}</text>
-      
-      <!-- Dates -->
-      <text x="400" y="480" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#aaa">${startDate} — ${endDate}</text>
-      
-      <!-- Footer -->
-      <line x1="250" y1="520" x2="550" y2="520" stroke="#ddd" stroke-width="1" />
-      <text x="400" y="550" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#bbb">Dare Me · Official Certificate · ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</text>
-    </svg>`;
+    const formatDate = (d: string) =>
+      new Date(d).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+    const startDate = formatDate(challenge.start_date);
+    const endDate = formatDate(challenge.end_date);
+    const issuedDate = formatDate(new Date().toISOString());
+    const certId = `DM-${challengeId.slice(0, 4).toUpperCase()}-${userId.slice(0, 4).toUpperCase()}-${rank}`;
+    const challengeType = (challenge as any).challenge_types;
+
+    // Generate beautiful SVG certificate - landscape A4 proportions
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1190" height="842" viewBox="0 0 1190 842">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0c29"/>
+      <stop offset="50%" style="stop-color:#302b63"/>
+      <stop offset="100%" style="stop-color:#24243e"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5d442"/>
+      <stop offset="30%" style="stop-color:#e8b923"/>
+      <stop offset="70%" style="stop-color:#d4a017"/>
+      <stop offset="100%" style="stop-color:#c8960e"/>
+    </linearGradient>
+    <linearGradient id="goldLight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#fce38a"/>
+      <stop offset="50%" style="stop-color:#f5d442"/>
+      <stop offset="100%" style="stop-color:#fce38a"/>
+    </linearGradient>
+    <linearGradient id="innerBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fffdf5"/>
+      <stop offset="100%" style="stop-color:#faf6e8"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#00000033"/>
+    </filter>
+    <pattern id="watermark" patternUnits="userSpaceOnUse" width="200" height="200" patternTransform="rotate(30)">
+      <text x="100" y="100" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#e8dfc0" opacity="0.3">DARE ME</text>
+    </pattern>
+  </defs>
+
+  <!-- Dark outer frame -->
+  <rect width="1190" height="842" fill="url(#bgGrad)" rx="12"/>
+  
+  <!-- Gold border -->
+  <rect x="15" y="15" width="1160" height="812" fill="none" stroke="url(#gold)" stroke-width="4" rx="8"/>
+  <rect x="22" y="22" width="1146" height="798" fill="none" stroke="url(#goldLight)" stroke-width="1" rx="6"/>
+  
+  <!-- Inner cream background -->
+  <rect x="30" y="30" width="1130" height="782" fill="url(#innerBg)" rx="4"/>
+  
+  <!-- Watermark pattern -->
+  <rect x="30" y="30" width="1130" height="782" fill="url(#watermark)" rx="4"/>
+  
+  <!-- Decorative corner ornaments -->
+  <g fill="url(#gold)" opacity="0.6">
+    <!-- Top-left -->
+    <path d="M50,50 Q50,90 90,90 Q70,70 50,50Z"/>
+    <path d="M50,50 Q90,50 90,90 Q70,70 50,50Z"/>
+    <circle cx="55" cy="55" r="3"/>
+    <!-- Top-right -->
+    <path d="M1140,50 Q1140,90 1100,90 Q1120,70 1140,50Z"/>
+    <path d="M1140,50 Q1100,50 1100,90 Q1120,70 1140,50Z"/>
+    <circle cx="1135" cy="55" r="3"/>
+    <!-- Bottom-left -->
+    <path d="M50,792 Q50,752 90,752 Q70,772 50,792Z"/>
+    <path d="M50,792 Q90,792 90,752 Q70,772 50,792Z"/>
+    <circle cx="55" cy="787" r="3"/>
+    <!-- Bottom-right -->
+    <path d="M1140,792 Q1140,752 1100,752 Q1120,772 1140,792Z"/>
+    <path d="M1140,792 Q1100,792 1100,752 Q1120,772 1140,792Z"/>
+    <circle cx="1135" cy="787" r="3"/>
+  </g>
+
+  <!-- Top decorative gold line -->
+  <line x1="200" y1="100" x2="990" y2="100" stroke="url(#gold)" stroke-width="1.5"/>
+  <circle cx="200" cy="100" r="4" fill="url(#gold)"/>
+  <circle cx="990" cy="100" r="4" fill="url(#gold)"/>
+  <circle cx="595" cy="100" r="6" fill="url(#gold)"/>
+
+  <!-- Header text -->
+  <text x="595" y="82" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#b8860b" letter-spacing="8" font-weight="normal">OFFICIAL CERTIFICATE</text>
+
+  <!-- App branding -->
+  <text x="595" y="145" text-anchor="middle" font-family="Georgia, serif" font-size="42" font-weight="bold" fill="#302b63" filter="url(#shadow)">🔥 DARE ME</text>
+  <text x="595" y="172" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#8b7355" letter-spacing="6">CERTIFICATE OF ACHIEVEMENT</text>
+  
+  <!-- Gold divider -->
+  <line x1="350" y1="192" x2="840" y2="192" stroke="url(#gold)" stroke-width="2"/>
+  <line x1="400" y1="197" x2="790" y2="197" stroke="url(#goldLight)" stroke-width="0.5"/>
+
+  <!-- "This certifies that" -->
+  <text x="595" y="235" text-anchor="middle" font-family="Georgia, serif" font-size="15" fill="#8b7355" font-style="italic">This certifies that</text>
+  
+  <!-- Winner name -->
+  <text x="595" y="290" text-anchor="middle" font-family="Georgia, serif" font-size="48" font-weight="bold" fill="#1a1a2e" filter="url(#shadow)">${escapeXml(displayName)}</text>
+  
+  <!-- Underline for name -->
+  <line x1="300" y1="305" x2="890" y2="305" stroke="url(#gold)" stroke-width="1.5"/>
+  
+  <!-- Rank title -->
+  <text x="595" y="355" text-anchor="middle" font-family="Georgia, serif" font-size="28" font-weight="bold" fill="url(#gold)" filter="url(#glow)">${rankMedal} ${rankTitle}</text>
+
+  <!-- "has demonstrated excellence in" -->
+  <text x="595" y="400" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8b7355" font-style="italic">has demonstrated outstanding excellence and dedication in the challenge</text>
+
+  <!-- Challenge name -->
+  <text x="595" y="445" text-anchor="middle" font-family="Georgia, serif" font-size="30" font-weight="bold" fill="#302b63">"${escapeXml(challenge.title)}"</text>
+  
+  <!-- Challenge type & score -->
+  <text x="595" y="480" text-anchor="middle" font-family="Georgia, serif" font-size="15" fill="#8b7355">${challengeType?.icon || "🏆"} ${challengeType?.name || "Challenge"} · Score: ${score} points · ${totalParticipants} participants</text>
+
+  <!-- Duration -->
+  <text x="595" y="510" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#a0936e">${startDate} — ${endDate}</text>
+
+  <!-- Bottom divider -->
+  <line x1="200" y1="550" x2="990" y2="550" stroke="url(#gold)" stroke-width="1"/>
+
+  <!-- Golden seal circle (left) -->
+  <g transform="translate(230, 630)">
+    <circle cx="0" cy="0" r="55" fill="url(#gold)" opacity="0.15"/>
+    <circle cx="0" cy="0" r="45" fill="none" stroke="url(#gold)" stroke-width="2"/>
+    <circle cx="0" cy="0" r="40" fill="none" stroke="url(#gold)" stroke-width="0.5" stroke-dasharray="3 3"/>
+    <text x="0" y="-10" text-anchor="middle" font-family="Georgia, serif" font-size="24">🏆</text>
+    <text x="0" y="15" text-anchor="middle" font-family="Georgia, serif" font-size="8" fill="#b8860b" letter-spacing="2">CERTIFIED</text>
+    <text x="0" y="27" text-anchor="middle" font-family="Georgia, serif" font-size="7" fill="#b8860b" letter-spacing="1">DARE ME</text>
+  </g>
+
+  <!-- Signature area - Challenge Director -->
+  <g transform="translate(480, 600)">
+    <line x1="0" y1="45" x2="230" y2="45" stroke="#b8860b" stroke-width="0.8"/>
+    <text x="115" y="28" text-anchor="middle" font-family="'Brush Script MT', 'Segoe Script', cursive" font-size="28" fill="#302b63" transform="rotate(-3, 115, 28)">${escapeXml(ownerName)}</text>
+    <text x="115" y="62" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#8b7355">Challenge Director</text>
+  </g>
+
+  <!-- Signature area - Dare Me -->
+  <g transform="translate(780, 600)">
+    <line x1="0" y1="45" x2="200" y2="45" stroke="#b8860b" stroke-width="0.8"/>
+    <text x="100" y="28" text-anchor="middle" font-family="'Brush Script MT', 'Segoe Script', cursive" font-size="28" fill="#302b63" transform="rotate(-2, 100, 28)">Dare Me</text>
+    <text x="100" y="62" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#8b7355">Platform Authority</text>
+  </g>
+
+  <!-- Medal ribbon (right side) -->
+  <g transform="translate(960, 630)">
+    <circle cx="0" cy="0" r="55" fill="url(#gold)" opacity="0.15"/>
+    <circle cx="0" cy="0" r="45" fill="none" stroke="url(#gold)" stroke-width="2"/>
+    <circle cx="0" cy="0" r="40" fill="none" stroke="url(#gold)" stroke-width="0.5" stroke-dasharray="3 3"/>
+    <text x="0" y="-5" text-anchor="middle" font-size="30">${rankMedal}</text>
+    <text x="0" y="22" text-anchor="middle" font-family="Georgia, serif" font-size="8" fill="#b8860b" letter-spacing="2">#${rank} OF ${totalParticipants}</text>
+  </g>
+
+  <!-- Footer -->
+  <line x1="200" y1="730" x2="990" y2="730" stroke="url(#goldLight)" stroke-width="0.5"/>
+  <text x="595" y="755" text-anchor="middle" font-family="Georgia, serif" font-size="10" fill="#b8a88a">Issued on ${issuedDate} · Certificate ID: ${certId}</text>
+  <text x="595" y="775" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="#c4b89a">Dare Me — Challenge Yourself, Compete with Friends</text>
+</svg>`;
 
     return new Response(
       JSON.stringify({
-        svg: diplomaSvg,
-        displayName: userProfile?.display_name,
-        rank: rankLabel,
+        svg,
+        displayName,
+        rank: rankTitle,
         challengeTitle: challenge.title,
       }),
       {
@@ -155,3 +279,12 @@ serve(async (req) => {
     });
   }
 });
+
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
