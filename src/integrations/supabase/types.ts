@@ -365,6 +365,7 @@ export type Database = {
         Row: {
           accent_color: string | null
           banner_url: string | null
+          category: string
           created_at: string
           description: string
           id: string
@@ -373,6 +374,8 @@ export type Database = {
           member_count: number
           name: string
           owner_id: string
+          requires_approval: boolean
+          rules: string | null
           slug: string
           type: Database["public"]["Enums"]["community_type"]
           updated_at: string
@@ -381,6 +384,7 @@ export type Database = {
         Insert: {
           accent_color?: string | null
           banner_url?: string | null
+          category?: string
           created_at?: string
           description?: string
           id?: string
@@ -389,6 +393,8 @@ export type Database = {
           member_count?: number
           name: string
           owner_id: string
+          requires_approval?: boolean
+          rules?: string | null
           slug: string
           type?: Database["public"]["Enums"]["community_type"]
           updated_at?: string
@@ -397,6 +403,7 @@ export type Database = {
         Update: {
           accent_color?: string | null
           banner_url?: string | null
+          category?: string
           created_at?: string
           description?: string
           id?: string
@@ -405,6 +412,8 @@ export type Database = {
           member_count?: number
           name?: string
           owner_id?: string
+          requires_approval?: boolean
+          rules?: string | null
           slug?: string
           type?: Database["public"]["Enums"]["community_type"]
           updated_at?: string

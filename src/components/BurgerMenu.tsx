@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { Menu, User, Swords, PlusCircle, Trash2, Trophy, Settings, LogOut, Compass, Award, Coins } from "lucide-react";
+import { Menu, User, Swords, PlusCircle, Trash2, Trophy, Settings, LogOut, Compass, Award, Coins, Users } from "lucide-react";
 import { useState } from "react";
 import { getAvatarSrc } from "@/lib/avatars";
 
@@ -38,6 +38,7 @@ const BurgerMenu = ({ profile }: BurgerMenuProps) => {
 
   const menuItems = [
     { icon: User, label: "Profile", path: "/profile" },
+    { icon: Users, label: "Communities", path: "/communities" },
     { icon: Compass, label: "Explore", path: "/explore" },
     { icon: Swords, label: "My Challenges", path: "/my-challenges" },
     { icon: PlusCircle, label: "Challenges Created", path: "/created-challenges" },
