@@ -8,10 +8,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
-import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus, Camera, Video, Upload, X, Flag, DoorOpen } from "lucide-react";
+import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus, Camera, Video, Upload, X, Flag, DoorOpen, Send } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProofFeedItem from "@/components/ProofFeedItem";
+import PostFeedItem from "@/components/PostFeedItem";
 import InviteParticipants from "@/components/InviteParticipants";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import ChallengeProgress from "@/components/ChallengeProgress";
@@ -123,6 +124,7 @@ const ChallengeDetail = () => {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [participants, setParticipants] = useState<Participation[]>([]);
   const [proofs, setProofs] = useState<Proof[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
   const [myParticipation, setMyParticipation] = useState<Participation | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -145,7 +147,8 @@ const ChallengeDetail = () => {
   const [reportDetails, setReportDetails] = useState("");
   const [submittingReport, setSubmittingReport] = useState(false);
   const [reportSubmitted, setReportSubmitted] = useState(false);
-
+  const [postText, setPostText] = useState("");
+  const [submittingPost, setSubmittingPost] = useState(false);
   useEffect(() => {
     loadData();
   }, [id]);
@@ -202,6 +205,14 @@ const ChallengeDetail = () => {
       .order("created_at", { ascending: true });
 
     setProofs(proofsData as Proof[] || []);
+
+    const { data: postsData } = await supabase
+      .from("challenge_posts")
+      .select("*, profiles:user_id(id, display_name, avatar_url, profile_photo_url, use_avatar)")
+      .eq("challenge_id", id)
+      .order("created_at", { ascending: true });
+
+    setPosts(postsData || []);
     setLoading(false);
   };
 
@@ -460,6 +471,30 @@ const ChallengeDetail = () => {
   const isOwner = currentUserId === challenge.owner_id;
   const isParticipant = !!myParticipation;
   const canJoin = !isParticipant && challenge.status === "active";
+  const canPost = isOwner || isParticipant;
+
+  // Merge proofs and posts into a single feed sorted by date
+  const feedItems = [
+    ...proofs.map(p => ({ type: "proof" as const, data: p, date: p.created_at })),
+    ...posts.map(p => ({ type: "post" as const, data: p, date: p.created_at })),
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const handlePost = async () => {
+    if (!postText.trim()) return;
+    setSubmittingPost(true);
+    const { error } = await supabase.from("challenge_posts").insert({
+      challenge_id: challenge.id,
+      user_id: currentUserId,
+      text: postText.trim(),
+    });
+    setSubmittingPost(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Failed to post", description: error.message });
+    } else {
+      setPostText("");
+      loadData();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -851,28 +886,63 @@ const ChallengeDetail = () => {
             </CardContent>
           </Card>
         ) : (
-          <div>
-            <h2 className="text-lg font-semibold mb-3">
-              Proofs Feed ({proofs.length})
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">
+              Feed ({feedItems.length})
             </h2>
-            {proofs.length === 0 ? (
+
+            {/* Post input */}
+            {canPost && challenge.status === "active" && (
+              <Card className="shadow-card">
+                <CardContent className="p-3">
+                  <div className="flex items-end gap-2">
+                    <Textarea
+                      placeholder="Say something to the group..."
+                      value={postText}
+                      onChange={(e) => setPostText(e.target.value)}
+                      className="min-h-[40px] max-h-[120px] resize-none text-sm"
+                      rows={1}
+                    />
+                    <Button
+                      size="icon"
+                      className="h-9 w-9 flex-shrink-0"
+                      disabled={!postText.trim() || submittingPost}
+                      onClick={handlePost}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {feedItems.length === 0 ? (
               <Card className="shadow-card">
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  No proofs submitted yet.
+                  No activity yet. Be the first to post!
                 </CardContent>
               </Card>
             ) : (
               <div className="space-y-4">
-                {[...proofs].reverse().map((proof) => (
-                  <ProofFeedItem
-                    key={proof.id}
-                    proof={{ ...proof, challenge_id: challenge.id }}
-                    currentUserId={currentUserId}
-                    askNumericScore={challenge.ask_numeric_score}
-                    challengeStatus={challenge.status}
-                    onRefresh={loadData}
-                  />
-                ))}
+                {feedItems.map((item) =>
+                  item.type === "proof" ? (
+                    <ProofFeedItem
+                      key={`proof-${item.data.id}`}
+                      proof={{ ...item.data, challenge_id: challenge.id }}
+                      currentUserId={currentUserId}
+                      askNumericScore={challenge.ask_numeric_score}
+                      challengeStatus={challenge.status}
+                      onRefresh={loadData}
+                    />
+                  ) : (
+                    <PostFeedItem
+                      key={`post-${item.data.id}`}
+                      post={item.data}
+                      currentUserId={currentUserId}
+                      onRefresh={loadData}
+                    />
+                  )
+                )}
               </div>
             )}
           </div>
