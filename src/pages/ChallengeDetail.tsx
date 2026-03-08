@@ -17,6 +17,7 @@ import InviteParticipants from "@/components/InviteParticipants";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import ChallengeProgress from "@/components/ChallengeProgress";
 import ChallengeRanking from "@/components/ChallengeRanking";
+import FinalRankingPodium from "@/components/FinalRankingPodium";
 import CoinBoostActions from "@/components/CoinBoostActions";
 import confetti from "canvas-confetti";
 import {
@@ -467,8 +468,10 @@ const ChallengeDetail = () => {
 
   const isOwner = currentUserId === challenge.owner_id;
   const isParticipant = !!myParticipation;
+  const isFinished = challenge.status === "finished";
   const canJoin = !isParticipant && challenge.status === "active";
-  const canPost = isOwner || isParticipant;
+  const canPost = (isOwner || isParticipant) && !isFinished;
+  
 
   // Merge proofs and posts into a single feed sorted by date
   const feedItems = [
@@ -517,7 +520,7 @@ const ChallengeDetail = () => {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              {isParticipant && !isOwner && (
+              {isParticipant && !isOwner && !isFinished && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" title="Quit challenge">
@@ -669,6 +672,18 @@ const ChallengeDetail = () => {
       </Dialog>
 
       <main className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
+        {/* Finished banner + Podium at top */}
+        {isFinished && (
+          <>
+            <div className="rounded-xl bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/20 p-4 text-center space-y-1">
+              <p className="text-2xl">🏁</p>
+              <h3 className="font-bold text-lg">Challenge Completed</h3>
+              <p className="text-sm text-muted-foreground">This challenge has ended. No more submissions or votes.</p>
+            </div>
+            <FinalRankingPodium challengeId={challenge.id} />
+          </>
+        )}
+
         <Card className="shadow-elevated">
           <CardHeader className="pb-3">
             {/* Creator - small at top */}
@@ -783,7 +798,7 @@ const ChallengeDetail = () => {
         )}
 
         {/* Coin Boost - only for active participants */}
-        {isParticipant && challenge.status === "active" && myParticipation && (
+        {isParticipant && challenge.status === "active" && myParticipation && !isFinished && (
           <CoinBoostActions
             challengeId={challenge.id}
             participationId={myParticipation.id}
@@ -810,7 +825,7 @@ const ChallengeDetail = () => {
           />
         )}
 
-        {isParticipant && challenge.challenge_types.name !== "Frequency" && challenge.challenge_types.name !== "Quantity" && !proofs.some(p => p.participations.user_id === currentUserId) && (
+        {isParticipant && !isFinished && challenge.challenge_types.name !== "Frequency" && challenge.challenge_types.name !== "Quantity" && !proofs.some(p => p.participations.user_id === currentUserId) && (
           <Card className="shadow-elevated border-accent">
             <CardHeader>
               <CardTitle>My Participation</CardTitle>
@@ -867,8 +882,10 @@ const ChallengeDetail = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Ranking */}
-        <ChallengeRanking challengeId={challenge.id} isFinished={challenge.status === "finished"} />
+        {/* Ranking — only show simple ranking for active challenges */}
+        {!isFinished && (
+          <ChallengeRanking challengeId={challenge.id} isFinished={false} />
+        )}
 
         {/* Social Feed */}
         {challenge.is_surprise && challenge.status !== "finished" ? (
