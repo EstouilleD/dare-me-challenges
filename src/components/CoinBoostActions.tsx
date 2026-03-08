@@ -92,14 +92,38 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
+  const [usedInChallenge, setUsedInChallenge] = useState<Set<string>>(new Set());
+  const [monthlyCount, setMonthlyCount] = useState(0);
 
   const loadBalance = async () => {
     const { data } = await supabase.rpc("get_coin_balance", { _user_id: currentUserId });
     setBalance(data ?? 0);
   };
 
+  const loadBoostUsage = async () => {
+    // Boosts used in this challenge
+    const { data: challengeBoosts } = await supabase
+      .from("boosts")
+      .select("boost_type")
+      .eq("user_id", currentUserId)
+      .eq("target_challenge_id", challengeId);
+    setUsedInChallenge(new Set((challengeBoosts || []).map(b => b.boost_type)));
+
+    // Boosts used this month
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const { count } = await supabase
+      .from("boosts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", currentUserId)
+      .gte("created_at", startOfMonth.toISOString());
+    setMonthlyCount(count ?? 0);
+  };
+
   const handleOpen = () => {
     loadBalance();
+    loadBoostUsage();
     setOpen(true);
   };
 
