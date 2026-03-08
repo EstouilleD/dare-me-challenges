@@ -277,6 +277,24 @@ const CreateChallenge = () => {
               </div>
             )}
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Community banner */}
+              {communityId && communityName && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                  <Users className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">Creating in <span className="text-primary">{communityName}</span></span>
+                </div>
+              )}
+
+              {/* Community only toggle */}
+              {communityId && (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="community-only">Community members only</Label>
+                    <p className="text-sm text-muted-foreground">Only members of this community can participate</p>
+                  </div>
+                  <Switch id="community-only" checked={communityOnly} onCheckedChange={setCommunityOnly} />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="title">Title *</Label>
                 <Input
