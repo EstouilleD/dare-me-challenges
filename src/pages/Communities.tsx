@@ -114,7 +114,7 @@ const Communities = () => {
     <div className="min-h-screen bg-background">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4 relative">
+          <div className="flex items-center gap-4">
             {profile && <BurgerMenu profile={profile} />}
             <h1 className="text-xl font-bold text-white">Communities</h1>
             <div className="ml-auto flex items-center gap-2">
