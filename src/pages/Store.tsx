@@ -324,25 +324,37 @@ const Store = () => {
           )}
         </section>
 
-        {/* All boosters catalog */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">All Boosters</CardTitle>
-            <CardDescription>Spend coins for competitive advantages</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2.5 text-sm">
-            {ALL_BOOSTERS.map((b) => (
-              <div key={b.name} className="flex items-center gap-3 p-2.5 rounded-lg border">
-                <span className="text-lg flex-shrink-0">{b.emoji}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium">{b.name}</p>
-                  <p className="text-xs text-muted-foreground">{b.desc}</p>
+        {/* Boosters catalog by category */}
+        {BOOSTER_CATEGORIES.map((cat) => (
+          <section key={cat.title} className="space-y-3">
+            <div>
+              <h2 className="text-lg font-bold">{cat.title}</h2>
+              <p className="text-sm text-muted-foreground">{cat.description}</p>
+            </div>
+            <div className="grid gap-2.5">
+              {cat.boosters.map((b) => (
+                <div key={b.name} className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:shadow-card transition-shadow">
+                  <span className="text-lg flex-shrink-0">{b.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">{b.name}</p>
+                    <p className="text-xs text-muted-foreground">{b.desc}</p>
+                  </div>
+                  <span className="text-xs font-semibold text-primary flex-shrink-0">{b.cost} 🪙</span>
                 </div>
-                <span className="text-xs font-semibold text-primary flex-shrink-0">{b.cost} 🪙</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+              ))}
+            </div>
+            {/* Contextual CTA */}
+            <div className="rounded-lg bg-primary/5 border border-primary/15 p-3 text-center">
+              <p className="text-xs text-muted-foreground mb-2">{cat.cta}</p>
+              <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => {
+                const coinSection = document.getElementById("coin-packs");
+                coinSection?.scrollIntoView({ behavior: "smooth" });
+              }}>
+                <Coins className="h-3 w-3" /> Get Coins
+              </Button>
+            </div>
+          </section>
+        ))}
       </main>
     </div>
   );
