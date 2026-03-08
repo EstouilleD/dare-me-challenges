@@ -119,7 +119,7 @@ const ProfileSetup = () => {
         title: "Profile complete!",
         description: "Welcome to Dare Me!",
       });
-      navigate("/");
+      navigate("/onboarding");
     }
   };
 

@@ -60,6 +60,8 @@ const CreateChallenge = () => {
   const [communityId, setCommunityId] = useState<string | null>(null);
   const [communityName, setCommunityName] = useState<string | null>(null);
   const [communityOnly, setCommunityOnly] = useState(false);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [categories, setCategories] = useState<{ id: string; name: string; icon: string }[]>([]);
 
   // Frequency fields
   const [frequencyQuantity, setFrequencyQuantity] = useState("1");
@@ -70,6 +72,7 @@ const CreateChallenge = () => {
 
   useEffect(() => {
     loadTypes();
+    loadCategories();
     checkLimits();
     const today = new Date().toISOString().split("T")[0];
     setStartDate(today);
@@ -113,6 +116,12 @@ const CreateChallenge = () => {
       }
     }
   };
+
+  const loadCategories = async () => {
+    const { data } = await supabase.from("categories").select("id, name, icon").order("sort_order");
+    setCategories(data || []);
+  };
+
 
   const selectedType = types.find((t) => t.id === selectedTypeId);
   const isFrequency = selectedType?.name === "Frequency";
@@ -224,6 +233,7 @@ const CreateChallenge = () => {
         status,
         community_id: communityId || null,
         community_only: communityId ? communityOnly : false,
+        category_id: categoryId || null,
       })
       .select()
       .single();
@@ -336,7 +346,24 @@ const CreateChallenge = () => {
                 </RadioGroup>
               </div>
 
-              {/* Frequency-specific fields */}
+              {/* Category */}
+              <div className="space-y-2">
+                <Label>Category (optional)</Label>
+                <Select value={categoryId || "none"} onValueChange={(v) => setCategoryId(v === "none" ? null : v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No category</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.icon} {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {isFrequency && (
                 <Card className="border-dashed">
                   <CardContent className="pt-4 space-y-4">

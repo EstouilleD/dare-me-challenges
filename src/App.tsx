@@ -13,6 +13,7 @@ import ProofDetail from "./pages/ProofDetail";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import Explore from "./pages/Explore";
+import ExploreCategory from "./pages/ExploreCategory";
 import Profile from "./pages/Profile";
 import MyProfile from "./pages/MyProfile";
 import MyChallenges from "./pages/MyChallenges";
@@ -27,6 +28,8 @@ import Store from "./pages/Store";
 import Communities from "./pages/Communities";
 import CommunityDetail from "./pages/CommunityDetail";
 import CreateCommunity from "./pages/CreateCommunity";
+import OnboardingDiscovery from "./pages/OnboardingDiscovery";
+import CommunityJoin from "./pages/CommunityJoin";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +49,7 @@ const App = () => (
             <Route path="/proof/:id" element={<ProofDetail />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/explore" element={<Explore />} />
+            <Route path="/explore/category/:slug" element={<ExploreCategory />} />
             <Route path="/profile" element={<MyProfile />} />
             <Route path="/settings" element={<Profile />} />
             <Route path="/my-challenges" element={<MyChallenges />} />
@@ -59,7 +63,9 @@ const App = () => (
             <Route path="/store" element={<Store />} />
             <Route path="/communities" element={<Communities />} />
             <Route path="/community/:slug" element={<CommunityDetail />} />
+            <Route path="/community/join/:code" element={<CommunityJoin />} />
             <Route path="/create-community" element={<CreateCommunity />} />
+            <Route path="/onboarding" element={<OnboardingDiscovery />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
