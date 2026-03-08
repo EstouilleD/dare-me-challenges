@@ -172,7 +172,8 @@ const ChallengeDetail = () => {
       .select(`
         *,
         challenge_types(id, name, icon),
-        profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)
+        profiles(id, display_name, avatar_url, profile_photo_url, use_avatar),
+        communities(name, slug, logo_url, type, is_verified)
       `)
       .eq("id", id)
       .single();
