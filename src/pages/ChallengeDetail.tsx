@@ -124,6 +124,7 @@ const ChallengeDetail = () => {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [participants, setParticipants] = useState<Participation[]>([]);
   const [proofs, setProofs] = useState<Proof[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
   const [myParticipation, setMyParticipation] = useState<Participation | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [loading, setLoading] = useState(true);
