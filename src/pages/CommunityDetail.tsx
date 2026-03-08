@@ -558,11 +558,7 @@ const CommunityDetail = () => {
 
           {/* Leaderboard Tab */}
           <TabsContent value="leaderboard">
-            <Card className="shadow-card"><CardContent className="py-12 text-center">
-              <Trophy className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-              <p className="font-semibold">Community Leaderboard</p>
-              <p className="text-sm text-muted-foreground mt-1">Rankings will appear once challenges are completed</p>
-            </CardContent></Card>
+            <CommunityLeaderboard communityId={community.id} currentUserId={userId} />
           </TabsContent>
 
           {/* Members Tab */}
