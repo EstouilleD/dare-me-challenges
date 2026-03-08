@@ -34,6 +34,7 @@ const FREQUENCY_PERIODS = [
 
 const CreateChallenge = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { headerClass } = useAutoHideHeader();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -55,6 +56,11 @@ const CreateChallenge = () => {
   const [creationLimitReached, setCreationLimitReached] = useState(false);
   const [creationCount, setCreationCount] = useState(0);
 
+  // Community fields
+  const [communityId, setCommunityId] = useState<string | null>(null);
+  const [communityName, setCommunityName] = useState<string | null>(null);
+  const [communityOnly, setCommunityOnly] = useState(false);
+
   // Frequency fields
   const [frequencyQuantity, setFrequencyQuantity] = useState("1");
   const [frequencyPeriod, setFrequencyPeriod] = useState("week");
@@ -67,6 +73,15 @@ const CreateChallenge = () => {
     checkLimits();
     const today = new Date().toISOString().split("T")[0];
     setStartDate(today);
+
+    // Load community from query param
+    const cid = searchParams.get("community");
+    if (cid) {
+      setCommunityId(cid);
+      supabase.from("communities").select("name").eq("id", cid).single().then(({ data }) => {
+        if (data) setCommunityName(data.name);
+      });
+    }
   }, []);
 
   const checkLimits = async () => {
