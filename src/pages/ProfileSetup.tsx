@@ -8,21 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import avatar1 from "@/assets/avatars/avatar1.png";
-import avatar2 from "@/assets/avatars/avatar2.png";
-import avatar4 from "@/assets/avatars/avatar4.png";
-import avatar5 from "@/assets/avatars/avatar5.png";
-import avatar6 from "@/assets/avatars/avatar6.png";
-import avatar7 from "@/assets/avatars/avatar7.png";
-import avatar8 from "@/assets/avatars/avatar8.png";
-import avatar9 from "@/assets/avatars/avatar9.png";
-import avatar10 from "@/assets/avatars/avatar10.png";
-import avatar11 from "@/assets/avatars/avatar11.png";
-
-const AVATARS = [
-  avatar1, avatar2, avatar4, avatar5, avatar6,
-  avatar7, avatar8, avatar9, avatar10, avatar11,
-];
+import { AVATARS } from "@/lib/avatars";
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
