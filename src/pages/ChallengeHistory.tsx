@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { ArrowLeft, Trophy, XCircle } from "lucide-react";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 
 interface HistoryChallenge {
   id: string;
