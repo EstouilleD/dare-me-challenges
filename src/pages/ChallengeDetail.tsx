@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
 import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus, Camera, Video, Upload, X, Flag, DoorOpen, Send, Share2 } from "lucide-react";
 import ShareChallenge from "@/components/ShareChallenge";
+import BrandChallengeHeader from "@/components/BrandChallengeHeader";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProofFeedItem from "@/components/ProofFeedItem";
