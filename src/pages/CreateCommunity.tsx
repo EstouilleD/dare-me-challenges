@@ -272,6 +272,60 @@ const CreateCommunity = () => {
           </div>
         )}
 
+        {/* Brand-specific fields */}
+        {type === "brand" && (
+          <div className="space-y-4 p-4 rounded-xl border-2 border-primary/20 bg-primary/5">
+            <div className="flex items-center gap-2 mb-1">
+              <BadgeCheck className="h-4 w-4 text-primary" />
+              <p className="font-semibold text-sm text-primary">Brand Settings</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="website">Website URL</Label>
+              <Input
+                id="website"
+                placeholder="https://www.yourbrand.com"
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reward">Rewards & Prizes Description</Label>
+              <Textarea
+                id="reward"
+                placeholder="e.g. Win a pair of Nike Air Max! Top 3 participants receive exclusive merchandise..."
+                value={rewardDescription}
+                onChange={(e) => setRewardDescription(e.target.value)}
+                maxLength={500}
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground text-right">{rewardDescription.length}/500</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ctaText">Sponsor CTA Text</Label>
+              <Input
+                id="ctaText"
+                placeholder="e.g. Shop Now, Learn More, Visit Our Store"
+                value={sponsorCtaText}
+                onChange={(e) => setSponsorCtaText(e.target.value)}
+                maxLength={50}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ctaUrl">Sponsor CTA Link</Label>
+              <Input
+                id="ctaUrl"
+                placeholder="https://www.yourbrand.com/promo"
+                value={sponsorCtaUrl}
+                onChange={(e) => setSponsorCtaUrl(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Rules */}
         <div className="space-y-2">
           <Label htmlFor="rules">Community Rules (optional)</Label>
