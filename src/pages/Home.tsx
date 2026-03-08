@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -51,6 +51,19 @@ const Home = () => {
   const [coinBalance, setCoinBalance] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
   const { isPremium } = usePremium(userId);
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
+  const handleScroll = useCallback(() => {
+    const currentY = window.scrollY;
+    setHeaderVisible(currentY <= 10 || currentY < lastScrollY.current);
+    lastScrollY.current = currentY;
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
 
   useEffect(() => {
     loadData();
@@ -198,13 +211,13 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-gradient-primary border-b shadow-card">
-        <div className="container mx-auto px-4 py-4">
+      <header className={`sticky top-0 z-10 bg-gradient-primary border-b shadow-card transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+        <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {profile && <BurgerMenu profile={profile} />}
             </div>
-            <img src={logo} alt="Dare Me" className="h-14" />
+            <img src={logo} alt="Dare Me" className="h-10" />
             <div className="flex items-center gap-2">
               <NotificationBell />
               <button onClick={() => navigate("/store")} className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/20 text-white text-sm font-medium hover:bg-white/30 transition-colors">
@@ -212,7 +225,7 @@ const Home = () => {
                 {coinBalance}
               </button>
               <button onClick={() => navigate("/profile")} className="rounded-full hover:ring-2 hover:ring-white/50 transition-all">
-                <Avatar className="h-9 w-9 border-2 border-white">
+                <Avatar className="h-8 w-8 border-2 border-white">
                   <AvatarImage src={getAvatarSrc(profile!)} />
                   <AvatarFallback>{profile?.display_name[0]}</AvatarFallback>
                 </Avatar>
