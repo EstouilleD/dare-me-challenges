@@ -256,11 +256,11 @@ const ChallengeRanking = ({ challengeId, isFinished }: ChallengeRankingProps) =>
                 disabled={downloadingDiploma}
               >
                 {downloadingDiploma ? (
-                  "Generating..."
+                  "Generating certificate..."
                 ) : (
                   <>
                     <Download className="h-4 w-4" />
-                    Download Diploma
+                    Download Certificate
                   </>
                 )}
               </Button>
@@ -272,7 +272,7 @@ const ChallengeRanking = ({ challengeId, isFinished }: ChallengeRankingProps) =>
                 onClick={() => navigate("/store")}
               >
                 <Lock className="h-4 w-4" />
-                Download Diploma
+                Download Certificate
                 <Badge variant="outline" className="text-xs gap-1 ml-1">
                   <Crown className="h-3 w-3" /> Premium
                 </Badge>
