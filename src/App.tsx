@@ -57,6 +57,9 @@ const App = () => (
             <Route path="/badges" element={<Badges />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/store" element={<Store />} />
+            <Route path="/communities" element={<Communities />} />
+            <Route path="/community/:slug" element={<CommunityDetail />} />
+            <Route path="/create-community" element={<CreateCommunity />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

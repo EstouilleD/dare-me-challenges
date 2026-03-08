@@ -38,6 +38,7 @@ const BurgerMenu = ({ profile }: BurgerMenuProps) => {
 
   const menuItems = [
     { icon: User, label: "Profile", path: "/profile" },
+    { icon: Users, label: "Communities", path: "/communities" },
     { icon: Compass, label: "Explore", path: "/explore" },
     { icon: Swords, label: "My Challenges", path: "/my-challenges" },
     { icon: PlusCircle, label: "Challenges Created", path: "/created-challenges" },
