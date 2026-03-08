@@ -172,19 +172,19 @@ const ProfileSetup = () => {
                 <div className="space-y-3">
                   <Label>Choose an avatar</Label>
                   <div className="flex flex-wrap gap-3">
-                    {AVATARS.map((avatar, index) => (
+                    {AVATARS.map((avatar) => (
                       <button
-                        key={index}
+                        key={avatar.key}
                         type="button"
-                        onClick={() => setSelectedAvatar(avatar)}
+                        onClick={() => setSelectedAvatar(avatar.key)}
                         className={`transition-all ${
-                          selectedAvatar === avatar
+                          selectedAvatar === avatar.key
                             ? "ring-4 ring-primary scale-110"
                             : "hover:scale-105"
                         }`}
                       >
                         <Avatar className="h-16 w-16">
-                          <AvatarImage src={avatar} />
+                          <AvatarImage src={avatar.src} />
                           <AvatarFallback>?</AvatarFallback>
                         </Avatar>
                       </button>
