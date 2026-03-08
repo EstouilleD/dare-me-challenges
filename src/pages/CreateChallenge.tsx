@@ -72,6 +72,7 @@ const CreateChallenge = () => {
 
   useEffect(() => {
     loadTypes();
+    loadCategories();
     checkLimits();
     const today = new Date().toISOString().split("T")[0];
     setStartDate(today);
