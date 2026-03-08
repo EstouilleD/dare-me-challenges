@@ -51,16 +51,37 @@ const PREMIUM_PERKS = [
   { icon: Gift, label: "1 free booster per month (your choice!)" },
 ];
 
-const ALL_BOOSTERS = [
-  { emoji: "📈", name: "Score Boost", cost: 5, desc: "Add +1 to your participation score" },
-  { emoji: "⭐", name: "Honor Vote", cost: 10, desc: "Auto honor vote on your latest proof" },
-  { emoji: "🗳️", name: "Vote Twice", cost: 10, desc: "Vote a second time on any proof" },
-  { emoji: "👤", name: "Extra Participation +1", cost: 10, desc: "Join one more active challenge" },
-  { emoji: "👥", name: "Extra Participation +3", cost: 25, desc: "Join 3 more active challenges" },
-  { emoji: "✏️", name: "Extra Creation +1", cost: 20, desc: "Create one additional challenge this month" },
-  { emoji: "💫", name: "Highlighted Proof", cost: 15, desc: "Your proof goes to the top of the feed (marked as boosted)" },
-  { emoji: "✖️", name: "Vote Multiplier", cost: 20, desc: "Your next vote counts double weight" },
-  { emoji: "📅", name: "Extend +3 Days", cost: 20, desc: "Extend the challenge deadline by 3 days (owner only)" },
+const BOOSTER_CATEGORIES = [
+  {
+    title: "🏆 Competition Edge",
+    description: "Boost your scores and votes to dominate the leaderboard",
+    cta: "Want to win? These boosters give you the edge!",
+    boosters: [
+      { emoji: "📈", name: "Score Boost", cost: 5, desc: "Add +1 to your participation score" },
+      { emoji: "⭐", name: "Honor Vote", cost: 10, desc: "Auto honor vote on your latest proof" },
+      { emoji: "🗳️", name: "Vote Twice", cost: 10, desc: "Vote a second time on any proof" },
+      { emoji: "✖️", name: "Vote Multiplier", cost: 20, desc: "Your next vote counts double weight" },
+    ],
+  },
+  {
+    title: "🚀 Unlock More",
+    description: "Expand your limits and do more",
+    cta: "Hit your limits? Break through with extra slots!",
+    boosters: [
+      { emoji: "👤", name: "Extra Participation +1", cost: 10, desc: "Join one more active challenge" },
+      { emoji: "👥", name: "Extra Participation +3", cost: 25, desc: "Join 3 more active challenges" },
+      { emoji: "✏️", name: "Extra Creation +1", cost: 20, desc: "Create one additional challenge this month" },
+    ],
+  },
+  {
+    title: "✨ Visibility & Control",
+    description: "Stand out and manage your challenges",
+    cta: "Make your proof shine and extend the fun!",
+    boosters: [
+      { emoji: "💫", name: "Highlighted Proof", cost: 15, desc: "Your proof goes to the top of the feed (marked as boosted)" },
+      { emoji: "📅", name: "Extend +3 Days", cost: 20, desc: "Extend the challenge deadline by 3 days (owner only)" },
+    ],
+  },
 ];
 
 const Store = () => {
@@ -266,7 +287,7 @@ const Store = () => {
         )}
 
         {/* Coin packs */}
-        <section className="space-y-3">
+        <section id="coin-packs" className="space-y-3">
           <h2 className="text-lg font-bold flex items-center gap-2">
             <Coins className="h-5 w-5 text-primary" />
             Coin Packs
@@ -303,25 +324,37 @@ const Store = () => {
           )}
         </section>
 
-        {/* All boosters catalog */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">All Boosters</CardTitle>
-            <CardDescription>Spend coins for competitive advantages</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2.5 text-sm">
-            {ALL_BOOSTERS.map((b) => (
-              <div key={b.name} className="flex items-center gap-3 p-2.5 rounded-lg border">
-                <span className="text-lg flex-shrink-0">{b.emoji}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium">{b.name}</p>
-                  <p className="text-xs text-muted-foreground">{b.desc}</p>
+        {/* Boosters catalog by category */}
+        {BOOSTER_CATEGORIES.map((cat) => (
+          <section key={cat.title} className="space-y-3">
+            <div>
+              <h2 className="text-lg font-bold">{cat.title}</h2>
+              <p className="text-sm text-muted-foreground">{cat.description}</p>
+            </div>
+            <div className="grid gap-2.5">
+              {cat.boosters.map((b) => (
+                <div key={b.name} className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:shadow-card transition-shadow">
+                  <span className="text-lg flex-shrink-0">{b.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">{b.name}</p>
+                    <p className="text-xs text-muted-foreground">{b.desc}</p>
+                  </div>
+                  <span className="text-xs font-semibold text-primary flex-shrink-0">{b.cost} 🪙</span>
                 </div>
-                <span className="text-xs font-semibold text-primary flex-shrink-0">{b.cost} 🪙</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+              ))}
+            </div>
+            {/* Contextual CTA */}
+            <div className="rounded-lg bg-primary/5 border border-primary/15 p-3 text-center">
+              <p className="text-xs text-muted-foreground mb-2">{cat.cta}</p>
+              <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => {
+                const coinSection = document.getElementById("coin-packs");
+                coinSection?.scrollIntoView({ behavior: "smooth" });
+              }}>
+                <Coins className="h-3 w-3" /> Get Coins
+              </Button>
+            </div>
+          </section>
+        ))}
       </main>
     </div>
   );
