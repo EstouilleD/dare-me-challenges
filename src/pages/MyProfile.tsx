@@ -141,8 +141,8 @@ const MyProfile = () => {
               <AvatarFallback className="text-3xl">{profile?.display_name?.[0]}</AvatarFallback>
             </Avatar>
             {isPremium && (
-              <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-1.5 shadow-lg border-2 border-background">
-                <Crown className="h-4 w-4" />
+              <div className="absolute -top-2 -right-2 rounded-full p-1.5 shadow-lg border-2 border-background" style={{ background: 'linear-gradient(135deg, hsl(45 93% 47%), hsl(36 100% 50%))' }}>
+                <Crown className="h-4 w-4 text-white" />
               </div>
             )}
           </div>
