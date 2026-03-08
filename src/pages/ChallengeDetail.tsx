@@ -937,6 +937,14 @@ const ChallengeDetail = () => {
         </Dialog>
 
         {/* Ranking — only show simple ranking for active challenges */}
+        {/* Fair Play Notice */}
+        {isParticipant && challenge.status === "active" && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted text-xs text-muted-foreground">
+            <span>🛡️</span>
+            <span>This challenge uses <strong>fair play monitoring</strong>. Votes and boosts are transparent to all participants. Suspicious patterns are flagged automatically.</span>
+          </div>
+        )}
+
         {!isFinished && (
           <ChallengeRanking challengeId={challenge.id} isFinished={false} />
         )}
