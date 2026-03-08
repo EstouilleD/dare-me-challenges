@@ -250,30 +250,39 @@ const CoinBoostActions = ({ challengeId, participationId, currentUserId, onRefre
             </DialogTitle>
             <DialogDescription>
               Balance: <span className="font-bold text-foreground">{balance ?? "..."} 🪙</span>
+              <span className="block text-xs mt-1">{monthlyCount}/3 boosters used this month</span>
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="flex-1 -mx-1 px-1">
             <div className="space-y-2 pb-2">
-              {BOOSTS.map((boost) => (
-                <div key={boost.type} className="flex items-center gap-3 p-3 rounded-lg border">
-                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <boost.icon className="h-4 w-4 text-primary" />
+              {BOOSTS.map((boost) => {
+                const usedHere = usedInChallenge.has(boost.type);
+                const monthLimitHit = monthlyCount >= 3;
+                const cantAfford = balance !== null && balance < boost.cost;
+                const isDisabled = loading === boost.type || usedHere || monthLimitHit || cantAfford;
+
+                return (
+                  <div key={boost.type} className={`flex items-center gap-3 p-3 rounded-lg border ${usedHere ? "opacity-50 bg-muted/30" : ""}`}>
+                    <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <boost.icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">{boost.label}</p>
+                      <p className="text-xs text-muted-foreground">{boost.description}</p>
+                      {usedHere && <p className="text-[10px] text-primary font-medium mt-0.5">✓ Used in this challenge</p>}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="default"
+                      disabled={isDisabled}
+                      onClick={() => handleBoost(boost.type, boost.cost)}
+                      className="gap-1 flex-shrink-0"
+                    >
+                      {loading === boost.type ? "..." : usedHere ? "Used" : `${boost.cost} 🪙`}
+                    </Button>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm">{boost.label}</p>
-                    <p className="text-xs text-muted-foreground">{boost.description}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="default"
-                    disabled={loading === boost.type || (balance !== null && balance < boost.cost)}
-                    onClick={() => handleBoost(boost.type, boost.cost)}
-                    className="gap-1 flex-shrink-0"
-                  >
-                    {loading === boost.type ? "..." : `${boost.cost} 🪙`}
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </ScrollArea>
           <Button variant="outline" className="w-full gap-2" onClick={() => { setOpen(false); navigate("/store"); }}>
