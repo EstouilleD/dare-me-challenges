@@ -200,6 +200,7 @@ const Auth = () => {
             </TabsList>
 
             <TabsContent value="login">
+              <SocialButtons />
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="login-email">Email</Label>
