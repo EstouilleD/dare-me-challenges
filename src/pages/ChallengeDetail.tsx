@@ -520,7 +520,7 @@ const ChallengeDetail = () => {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              {isParticipant && !isOwner && (
+              {isParticipant && !isOwner && !isFinished && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" title="Quit challenge">
