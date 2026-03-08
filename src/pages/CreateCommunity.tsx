@@ -45,6 +45,10 @@ const CreateCommunity = () => {
   const [type, setType] = useState<"public" | "private" | "brand">("public");
   const [requiresApproval, setRequiresApproval] = useState(false);
   const [rules, setRules] = useState("");
+  const [rewardDescription, setRewardDescription] = useState("");
+  const [sponsorCtaText, setSponsorCtaText] = useState("");
+  const [sponsorCtaUrl, setSponsorCtaUrl] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -115,7 +119,11 @@ const CreateCommunity = () => {
         logo_url: logoUrl,
         banner_url: bannerUrl,
         owner_id: session.user.id,
-      }).select("slug").single();
+        website_url: websiteUrl.trim() || null,
+        reward_description: rewardDescription.trim() || null,
+        sponsor_cta_text: sponsorCtaText.trim() || null,
+        sponsor_cta_url: sponsorCtaUrl.trim() || null,
+      } as any).select("slug").single();
 
       if (error) {
         if (error.message.includes("duplicate key") && error.message.includes("slug")) {
@@ -261,6 +269,60 @@ const CreateCommunity = () => {
               <p className="text-xs text-muted-foreground">Review requests before accepting members</p>
             </div>
             <Switch checked={requiresApproval} onCheckedChange={setRequiresApproval} />
+          </div>
+        )}
+
+        {/* Brand-specific fields */}
+        {type === "brand" && (
+          <div className="space-y-4 p-4 rounded-xl border-2 border-primary/20 bg-primary/5">
+            <div className="flex items-center gap-2 mb-1">
+              <BadgeCheck className="h-4 w-4 text-primary" />
+              <p className="font-semibold text-sm text-primary">Brand Settings</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="website">Website URL</Label>
+              <Input
+                id="website"
+                placeholder="https://www.yourbrand.com"
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reward">Rewards & Prizes Description</Label>
+              <Textarea
+                id="reward"
+                placeholder="e.g. Win a pair of Nike Air Max! Top 3 participants receive exclusive merchandise..."
+                value={rewardDescription}
+                onChange={(e) => setRewardDescription(e.target.value)}
+                maxLength={500}
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground text-right">{rewardDescription.length}/500</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ctaText">Sponsor CTA Text</Label>
+              <Input
+                id="ctaText"
+                placeholder="e.g. Shop Now, Learn More, Visit Our Store"
+                value={sponsorCtaText}
+                onChange={(e) => setSponsorCtaText(e.target.value)}
+                maxLength={50}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ctaUrl">Sponsor CTA Link</Label>
+              <Input
+                id="ctaUrl"
+                placeholder="https://www.yourbrand.com/promo"
+                value={sponsorCtaUrl}
+                onChange={(e) => setSponsorCtaUrl(e.target.value)}
+              />
+            </div>
           </div>
         )}
 

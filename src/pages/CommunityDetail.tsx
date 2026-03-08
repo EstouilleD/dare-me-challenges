@@ -13,7 +13,7 @@ import { getAvatarSrc } from "@/lib/avatars";
 import {
   ArrowLeft, Users, Trophy, MessageSquare, Swords, Settings, Share2, Info,
   BadgeCheck, Globe, Lock, LogIn, LogOut, Send, Crown, Shield, ShieldCheck,
-  ExternalLink, Star, Trash2, UserMinus, ChevronUp,
+  ExternalLink, Star, Trash2, UserMinus, ChevronUp, Pin, Gift, Megaphone,
 } from "lucide-react";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import HeaderLogo from "@/components/HeaderLogo";
@@ -44,6 +44,10 @@ interface Community {
   rules: string | null;
   requires_approval: boolean;
   created_at: string;
+  pinned_post_id: string | null;
+  reward_description: string | null;
+  sponsor_cta_text: string | null;
+  sponsor_cta_url: string | null;
 }
 
 interface Profile {
@@ -99,6 +103,7 @@ const CommunityDetail = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [challenges, setChallenges] = useState<ChallengeItem[]>([]);
+  const [pinnedPost, setPinnedPost] = useState<Post | null>(null);
   const [myRole, setMyRole] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -116,7 +121,7 @@ const CommunityDetail = () => {
 
     const { data: c } = await supabase.from("communities").select("*").eq("slug", slug).single();
     if (!c) { navigate("/communities"); return; }
-    setCommunity(c);
+    setCommunity(c as any);
 
     const { data: membership } = await supabase
       .from("community_members").select("role")
@@ -133,6 +138,16 @@ const CommunityDetail = () => {
         .from("community_posts").select("id, text, created_at, user_id, profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)")
         .eq("community_id", c.id).order("created_at", { ascending: false }).limit(50);
       setPosts((p as any) || []);
+
+      // Load pinned post
+      if ((c as any).pinned_post_id) {
+        const { data: pinned } = await supabase
+          .from("community_posts").select("id, text, created_at, user_id, profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)")
+          .eq("id", (c as any).pinned_post_id).single();
+        setPinnedPost((pinned as any) || null);
+      } else {
+        setPinnedPost(null);
+      }
     }
 
     const { data: ch } = await supabase
@@ -205,6 +220,16 @@ const CommunityDetail = () => {
     if (!error) { toast({ title: `Role updated to ${newRole}` }); loadCommunity(); }
   };
 
+  const handlePinPost = async (postId: string) => {
+    if (!community) return;
+    const newPinnedId = community.pinned_post_id === postId ? null : postId;
+    const { error } = await supabase.from("communities").update({ pinned_post_id: newPinnedId } as any).eq("id", community.id);
+    if (!error) {
+      toast({ title: newPinnedId ? "📌 Post pinned!" : "Post unpinned" });
+      loadCommunity();
+    }
+  };
+
   if (loading || !community) {
     return <div className="min-h-screen flex items-center justify-center"><p className="text-muted-foreground">Loading...</p></div>;
   }
@@ -241,13 +266,13 @@ const CommunityDetail = () => {
         </div>
       </header>
 
-      {/* Banner */}
+      {/* Banner — taller for brand communities */}
       <div className="relative">
         {community.banner_url ? (
-          <img src={community.banner_url} alt="" className="w-full h-40 object-cover" />
+          <img src={community.banner_url} alt="" className={`w-full object-cover ${isBrand ? "h-48" : "h-40"}`} />
         ) : (
           <div
-            className="w-full h-40"
+            className={`w-full ${isBrand ? "h-48" : "h-40"}`}
             style={{
               background: isBrand && community.accent_color
                 ? `linear-gradient(135deg, ${community.accent_color}, ${community.accent_color}88)`
@@ -257,17 +282,19 @@ const CommunityDetail = () => {
             {!isBrand && <div className="w-full h-full bg-gradient-to-r from-primary/20 to-accent/20" />}
           </div>
         )}
-        {/* Brand sponsor strip */}
-        {isBrand && community.website_url && (
+
+        {/* Brand sponsor CTA strip */}
+        {isBrand && (community.sponsor_cta_url || community.website_url) && (
           <a
-            href={community.website_url}
+            href={community.sponsor_cta_url || community.website_url || "#"}
             target="_blank"
             rel="noopener noreferrer"
-            className="absolute bottom-0 inset-x-0 bg-black/50 backdrop-blur-sm text-white text-xs py-1.5 px-4 flex items-center justify-center gap-1.5 hover:bg-black/60 transition-colors"
+            className="absolute bottom-0 inset-x-0 bg-black/50 backdrop-blur-sm text-white text-xs py-2 px-4 flex items-center justify-center gap-1.5 hover:bg-black/60 transition-colors"
           >
-            Visit {community.name} <ExternalLink className="h-3 w-3" />
+            {community.sponsor_cta_text || `Visit ${community.name}`} <ExternalLink className="h-3 w-3" />
           </a>
         )}
+
         {/* Logo */}
         <div className="absolute -bottom-12 left-4">
           {community.logo_url ? (
@@ -370,17 +397,39 @@ const CommunityDetail = () => {
         </div>
       </div>
 
+      {/* Pinned announcement */}
+      {pinnedPost && isMember && (
+        <div className="container mx-auto px-4 pb-4">
+          <Card className="shadow-card border-primary/20 bg-primary/5">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Pin className="h-3.5 w-3.5 text-primary" />
+                <span className="text-xs font-semibold uppercase tracking-wide text-primary">Pinned Announcement</span>
+              </div>
+              <p className="text-sm whitespace-pre-wrap">{pinnedPost.text}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <Avatar className="h-5 w-5">
+                  <AvatarImage src={getAvatarSrc(pinnedPost.profiles)} />
+                  <AvatarFallback className="text-[8px]">{pinnedPost.profiles.display_name[0]}</AvatarFallback>
+                </Avatar>
+                <span className="text-xs text-muted-foreground">{pinnedPost.profiles.display_name} · {format(new Date(pinnedPost.created_at), "MMM d")}</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Brand featured challenge */}
       {isBrand && featuredChallenge && (
         <div className="container mx-auto px-4 pb-4">
           <Card
-            className="shadow-elevated border-yellow-400/30 bg-gradient-to-r from-yellow-50/50 to-orange-50/50 dark:from-yellow-950/20 dark:to-orange-950/20 cursor-pointer hover:shadow-glow transition-shadow"
+            className="shadow-elevated border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5 cursor-pointer hover:shadow-glow transition-shadow"
             onClick={() => navigate(`/challenge/${featuredChallenge.id}`)}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-1.5 mb-2">
-                <Star className="h-4 w-4 text-yellow-500" />
-                <span className="text-xs font-semibold uppercase tracking-wide text-yellow-600 dark:text-yellow-400">Featured Challenge</span>
+                <Star className="h-4 w-4 text-primary" />
+                <span className="text-xs font-semibold uppercase tracking-wide text-primary">Featured Challenge</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{featuredChallenge.challenge_types?.icon || "🏆"}</span>
@@ -392,6 +441,21 @@ const CommunityDetail = () => {
                 </div>
                 <Badge className="bg-primary">{featuredChallenge.status}</Badge>
               </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Brand rewards card */}
+      {isBrand && community.reward_description && (
+        <div className="container mx-auto px-4 pb-4">
+          <Card className="shadow-card border-accent/30 bg-gradient-to-r from-accent/5 to-primary/5">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Gift className="h-4 w-4 text-accent-foreground" />
+                <span className="text-xs font-semibold uppercase tracking-wide text-accent-foreground">Rewards & Prizes</span>
+              </div>
+              <p className="text-sm whitespace-pre-wrap">{community.reward_description}</p>
             </CardContent>
           </Card>
         </div>
@@ -418,6 +482,17 @@ const CommunityDetail = () => {
                   <h3 className="font-semibold text-sm mb-1">About</h3>
                   <p className="text-sm text-muted-foreground">{community.description}</p>
                 </div>
+
+                {/* Brand-specific about enhancements */}
+                {isBrand && community.reward_description && (
+                  <div>
+                    <h3 className="font-semibold text-sm mb-1 flex items-center gap-1.5">
+                      <Gift className="h-3.5 w-3.5 text-primary" /> Rewards & Prizes
+                    </h3>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{community.reward_description}</p>
+                  </div>
+                )}
+
                 {community.rules && (
                   <div>
                     <h3 className="font-semibold text-sm mb-1">📋 Community Rules</h3>
@@ -447,6 +522,23 @@ const CommunityDetail = () => {
                     </div>
                   )}
                 </div>
+
+                {/* Brand sponsor CTA in About */}
+                {isBrand && community.sponsor_cta_url && community.sponsor_cta_text && (
+                  <>
+                    <Separator />
+                    <a
+                      href={community.sponsor_cta_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 p-3 rounded-xl bg-primary/10 text-primary font-semibold text-sm hover:bg-primary/20 transition-colors"
+                    >
+                      <Megaphone className="h-4 w-4" />
+                      {community.sponsor_cta_text}
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -518,39 +610,56 @@ const CommunityDetail = () => {
                     <p className="text-sm text-muted-foreground mt-1">Start the conversation!</p>
                   </CardContent></Card>
                 ) : (
-                  posts.map((post) => (
-                    <Card key={post.id} className="shadow-card">
-                      <CardContent className="p-4 flex gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={getAvatarSrc(post.profiles)} />
-                          <AvatarFallback>{post.profiles.display_name[0]}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium">{post.profiles.display_name}</p>
-                            <span className="text-xs text-muted-foreground">{format(new Date(post.created_at), "MMM d 'at' h:mm a")}</span>
+                  posts.map((post) => {
+                    const isPinned = community.pinned_post_id === post.id;
+                    return (
+                      <Card key={post.id} className={`shadow-card ${isPinned ? "border-primary/20 bg-primary/5" : ""}`}>
+                        <CardContent className="p-4 flex gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={getAvatarSrc(post.profiles)} />
+                            <AvatarFallback>{post.profiles.display_name[0]}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium">{post.profiles.display_name}</p>
+                              {isPinned && <Pin className="h-3 w-3 text-primary" />}
+                              <span className="text-xs text-muted-foreground">{format(new Date(post.created_at), "MMM d 'at' h:mm a")}</span>
+                            </div>
+                            <p className="text-sm mt-1 whitespace-pre-wrap">{post.text}</p>
                           </div>
-                          <p className="text-sm mt-1 whitespace-pre-wrap">{post.text}</p>
-                        </div>
-                        {(post.user_id === userId || isModerator) && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0">
-                                <Trash2 className="h-3.5 w-3.5" />
+                          <div className="flex flex-col gap-1 shrink-0">
+                            {isAdmin && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={`h-7 w-7 ${isPinned ? "text-primary" : "text-muted-foreground"}`}
+                                onClick={() => handlePinPost(post.id)}
+                                title={isPinned ? "Unpin" : "Pin announcement"}
+                              >
+                                <Pin className="h-3.5 w-3.5" />
                               </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader><AlertDialogTitle>Delete post?</AlertDialogTitle></AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeletePost(post.id)} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))
+                            )}
+                            {(post.user_id === userId || isModerator) && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive">
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader><AlertDialogTitle>Delete post?</AlertDialogTitle></AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeletePost(post.id)} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })
                 )}
               </div>
             )}
