@@ -9,6 +9,8 @@ import { format } from "date-fns";
 import { ArrowLeft, Trophy, XCircle } from "lucide-react";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import HeaderLogo from "@/components/HeaderLogo";
+import { usePagination } from "@/hooks/usePagination";
+import ShowMoreButton from "@/components/ShowMoreButton";
 
 interface HistoryChallenge {
   id: string;
@@ -32,7 +34,6 @@ const ChallengeHistory = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { navigate("/auth"); return; }
 
-      // Get completed challenges where user participated
       const { data } = await supabase
         .from("participations")
         .select(`
@@ -47,13 +48,11 @@ const ChallengeHistory = () => {
         .in("challenges.status", ["completed", "ended"]);
 
       if (data) {
-        // For each challenge, check if user had highest score (win)
         const enriched: HistoryChallenge[] = [];
         for (const p of data) {
           const c = p.challenges as any;
           if (!c) continue;
 
-          // Get max score for this challenge
           const { data: topScorer } = await supabase
             .from("participations")
             .select("score, user_id")
@@ -111,6 +110,16 @@ const ChallengeHistory = () => {
     </Card>
   );
 
+  const PaginatedList = ({ items }: { items: HistoryChallenge[] }) => {
+    const { visibleItems, hasMore, showMore, totalCount, visibleCount } = usePagination(items);
+    return (
+      <div className="space-y-4">
+        {visibleItems.map(c => <ChallengeCard key={c.id} challenge={c} />)}
+        {hasMore && <ShowMoreButton onClick={showMore} visibleCount={visibleCount} totalCount={totalCount} />}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
@@ -137,15 +146,15 @@ const ChallengeHistory = () => {
                 <XCircle className="h-4 w-4" /> Losses ({losses.length})
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="wins" className="space-y-4 mt-4">
+            <TabsContent value="wins" className="mt-4">
               {wins.length === 0 ? (
                 <Card><CardContent className="py-8 text-center text-muted-foreground">No wins yet. Keep going! 💪</CardContent></Card>
-              ) : wins.map(c => <ChallengeCard key={c.id} challenge={c} />)}
+              ) : <PaginatedList items={wins} />}
             </TabsContent>
-            <TabsContent value="losses" className="space-y-4 mt-4">
+            <TabsContent value="losses" className="mt-4">
               {losses.length === 0 ? (
                 <Card><CardContent className="py-8 text-center text-muted-foreground">No losses. You're undefeated! 🎉</CardContent></Card>
-              ) : losses.map(c => <ChallengeCard key={c.id} challenge={c} />)}
+              ) : <PaginatedList items={losses} />}
             </TabsContent>
           </Tabs>
         )}

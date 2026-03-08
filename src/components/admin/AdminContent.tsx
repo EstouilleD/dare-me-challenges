@@ -10,6 +10,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { usePagination } from "@/hooks/usePagination";
+import ShowMoreButton from "@/components/ShowMoreButton";
 
 interface ChallengeRow {
   id: string;
@@ -28,6 +30,7 @@ const AdminContent = () => {
   const [challenges, setChallenges] = useState<ChallengeRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const { visibleItems, hasMore, showMore, totalCount, visibleCount, reset } = usePagination(challenges, { pageSize: 20 });
 
   const loadContent = async () => {
     setLoading(true);
@@ -45,7 +48,7 @@ const AdminContent = () => {
     setLoading(false);
   };
 
-  useEffect(() => { loadContent(); }, [filter]);
+  useEffect(() => { reset(); loadContent(); }, [filter]);
 
   const handleStatusChange = async (id: string, status: string) => {
     const { error } = await supabase.from("challenges").update({ status }).eq("id", id);
@@ -97,53 +100,57 @@ const AdminContent = () => {
           <CardContent className="py-8 text-center text-muted-foreground">No challenges found.</CardContent>
         </Card>
       ) : (
-        challenges.map((c) => (
-          <Card key={c.id} className="shadow-card">
-            <CardContent className="py-4">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium truncate">{c.title}</span>
-                    <Badge variant={statusBadgeVariant(c.status)} className="text-xs shrink-0">
-                      {c.status.replace("_", " ")}
-                    </Badge>
+        <>
+          <p className="text-sm text-muted-foreground">{totalCount} challenges total</p>
+          {visibleItems.map((c) => (
+            <Card key={c.id} className="shadow-card">
+              <CardContent className="py-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium truncate">{c.title}</span>
+                      <Badge variant={statusBadgeVariant(c.status)} className="text-xs shrink-0">
+                        {c.status.replace("_", " ")}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground truncate">{c.description}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      By {c.profiles.display_name} · {format(new Date(c.created_at), "MMM d, yyyy")}
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground truncate">{c.description}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    By {c.profiles.display_name} · {format(new Date(c.created_at), "MMM d, yyyy")}
-                  </p>
+                  <div className="flex gap-2 shrink-0">
+                    <Select onValueChange={(v) => handleStatusChange(c.id, v)}>
+                      <SelectTrigger className="w-[140px] h-8 text-xs">
+                        <SelectValue placeholder="Change status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="under_review">Under Review</SelectItem>
+                        <SelectItem value="removed">Removed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="destructive" className="text-xs h-8">Delete</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete "{c.title}"?</AlertDialogTitle>
+                          <AlertDialogDescription>This permanently deletes the challenge and all associated data.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(c.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  <Select onValueChange={(v) => handleStatusChange(c.id, v)}>
-                    <SelectTrigger className="w-[140px] h-8 text-xs">
-                      <SelectValue placeholder="Change status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="under_review">Under Review</SelectItem>
-                      <SelectItem value="removed">Removed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button size="sm" variant="destructive" className="text-xs h-8">Delete</Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete "{c.title}"?</AlertDialogTitle>
-                        <AlertDialogDescription>This permanently deletes the challenge and all associated data.</AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(c.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))
+              </CardContent>
+            </Card>
+          ))}
+          {hasMore && <ShowMoreButton onClick={showMore} visibleCount={visibleCount} totalCount={totalCount} />}
+        </>
       )}
     </div>
   );

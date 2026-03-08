@@ -10,6 +10,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { usePagination } from "@/hooks/usePagination";
+import ShowMoreButton from "@/components/ShowMoreButton";
 
 interface UserRow {
   id: string;
@@ -27,6 +29,7 @@ const AdminUsers = () => {
   const { toast } = useToast();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const { visibleItems, hasMore, showMore, totalCount, visibleCount } = usePagination(users, { pageSize: 20 });
 
   const loadUsers = async () => {
     setLoading(true);
@@ -38,7 +41,6 @@ const AdminUsers = () => {
 
     if (!profiles) { setLoading(false); return; }
 
-    // Get report counts per challenge owner
     const { data: reports } = await supabase
       .from("reports")
       .select("challenge_id, challenges!inner(owner_id)");
@@ -49,7 +51,6 @@ const AdminUsers = () => {
       reportCounts[ownerId] = (reportCounts[ownerId] || 0) + 1;
     });
 
-    // Get roles
     const { data: roles } = await supabase.from("user_roles").select("user_id, role");
     const roleMap: Record<string, string[]> = {};
     roles?.forEach((r) => {
@@ -81,7 +82,6 @@ const AdminUsers = () => {
   };
 
   const handleRoleChange = async (userId: string, newRole: string) => {
-    // Remove existing roles, then insert new one
     await supabase.from("user_roles").delete().eq("user_id", userId);
     if (newRole !== "none") {
       await supabase.from("user_roles").insert({ user_id: userId, role: newRole as any });
@@ -122,7 +122,8 @@ const AdminUsers = () => {
 
   return (
     <div className="space-y-3">
-      {users.map((u) => (
+      <p className="text-sm text-muted-foreground">{totalCount} users total</p>
+      {visibleItems.map((u) => (
         <Card key={u.id} className="shadow-card">
           <CardContent className="py-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -203,6 +204,7 @@ const AdminUsers = () => {
           </CardContent>
         </Card>
       ))}
+      {hasMore && <ShowMoreButton onClick={showMore} visibleCount={visibleCount} totalCount={totalCount} />}
     </div>
   );
 };

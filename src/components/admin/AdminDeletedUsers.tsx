@@ -3,6 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { usePagination } from "@/hooks/usePagination";
+import ShowMoreButton from "@/components/ShowMoreButton";
 
 interface DeletedUser {
   id: string;
@@ -18,6 +20,7 @@ interface DeletedUser {
 const AdminDeletedUsers = () => {
   const [users, setUsers] = useState<DeletedUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const { visibleItems, hasMore, showMore, totalCount, visibleCount } = usePagination(users, { pageSize: 20 });
 
   useEffect(() => {
     const load = async () => {
@@ -45,7 +48,8 @@ const AdminDeletedUsers = () => {
 
   return (
     <div className="space-y-3">
-      {users.map((u) => (
+      <p className="text-sm text-muted-foreground">{totalCount} deleted users total</p>
+      {visibleItems.map((u) => (
         <Card key={u.id} className="shadow-card">
           <CardContent className="py-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -62,6 +66,7 @@ const AdminDeletedUsers = () => {
           </CardContent>
         </Card>
       ))}
+      {hasMore && <ShowMoreButton onClick={showMore} visibleCount={visibleCount} totalCount={totalCount} />}
     </div>
   );
 };
