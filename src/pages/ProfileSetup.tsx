@@ -116,6 +116,7 @@ const ProfileSetup = () => {
         description: error.message,
       });
     } else {
+      trackEvent("profile_completed");
       toast({
         title: "Profile complete!",
         description: "Welcome to Dare Me!",

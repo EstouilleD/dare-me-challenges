@@ -78,6 +78,7 @@ const Auth = () => {
         description: error.message,
       });
     } else {
+      trackEvent("signup", { method: "email" });
       toast({
         title: "Account created!",
         description: "Please complete your profile.",
