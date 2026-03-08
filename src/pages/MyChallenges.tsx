@@ -10,12 +10,15 @@ import { ArrowLeft } from "lucide-react";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import HeaderLogo from "@/components/HeaderLogo";
 import { getAvatarSrc } from "@/lib/avatars";
+import { usePagination } from "@/hooks/usePagination";
+import ShowMoreButton from "@/components/ShowMoreButton";
 
 const MyChallenges = () => {
   const navigate = useNavigate();
   const { headerClass } = useAutoHideHeader();
   const [challenges, setChallenges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { visibleItems, hasMore, showMore, totalCount, visibleCount } = usePagination(challenges);
 
   useEffect(() => {
     const load = async () => {
@@ -42,8 +45,6 @@ const MyChallenges = () => {
     load();
   }, [navigate]);
 
-  // getAvatarSrc imported from @/lib/avatars
-
   return (
     <div className="min-h-screen bg-background">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
@@ -62,7 +63,7 @@ const MyChallenges = () => {
           <Card><CardContent className="py-8 text-center text-muted-foreground">No active challenges.</CardContent></Card>
         ) : (
           <div className="grid gap-4">
-            {challenges.map((c: any) => (
+            {visibleItems.map((c: any) => (
               <Card key={c.id} className="cursor-pointer hover:shadow-elevated transition-all hover:scale-[1.02]" onClick={() => navigate(`/challenge/${c.id}`)}>
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
@@ -90,6 +91,7 @@ const MyChallenges = () => {
                 </CardContent>
               </Card>
             ))}
+            {hasMore && <ShowMoreButton onClick={showMore} visibleCount={visibleCount} totalCount={totalCount} />}
           </div>
         )}
       </main>

@@ -8,19 +8,21 @@ import { format } from "date-fns";
 import { ArrowLeft } from "lucide-react";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import HeaderLogo from "@/components/HeaderLogo";
+import { usePagination } from "@/hooks/usePagination";
+import ShowMoreButton from "@/components/ShowMoreButton";
 
 const DeletedChallenges = () => {
   const navigate = useNavigate();
   const { headerClass } = useAutoHideHeader();
   const [challenges, setChallenges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { visibleItems, hasMore, showMore, totalCount, visibleCount } = usePagination(challenges);
 
   useEffect(() => {
     const load = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { navigate("/auth"); return; }
 
-      // Challenges the user quit or was excluded from (is_active = false)
       const { data } = await supabase
         .from("participations")
         .select(`
@@ -58,7 +60,7 @@ const DeletedChallenges = () => {
           <Card><CardContent className="py-8 text-center text-muted-foreground">No deleted or quit challenges.</CardContent></Card>
         ) : (
           <div className="grid gap-4">
-            {challenges.map((c: any) => (
+            {visibleItems.map((c: any) => (
               <Card key={c.id} className="cursor-pointer hover:shadow-elevated transition-all hover:scale-[1.02] opacity-75" onClick={() => navigate(`/challenge/${c.id}`)}>
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
@@ -77,6 +79,7 @@ const DeletedChallenges = () => {
                 </CardContent>
               </Card>
             ))}
+            {hasMore && <ShowMoreButton onClick={showMore} visibleCount={visibleCount} totalCount={totalCount} />}
           </div>
         )}
       </main>

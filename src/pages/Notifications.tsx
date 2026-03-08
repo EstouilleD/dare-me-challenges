@@ -7,6 +7,8 @@ import { ArrowLeft, Check, CheckCheck } from "lucide-react";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import HeaderLogo from "@/components/HeaderLogo";
 import { formatDistanceToNow } from "date-fns";
+import { usePagination } from "@/hooks/usePagination";
+import ShowMoreButton from "@/components/ShowMoreButton";
 
 interface Notification {
   id: string;
@@ -23,6 +25,7 @@ const Notifications = () => {
   const { headerClass } = useAutoHideHeader();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const { visibleItems, hasMore, showMore, totalCount, visibleCount } = usePagination(notifications, { pageSize: 15 });
 
   useEffect(() => {
     loadNotifications();
@@ -36,13 +39,11 @@ const Notifications = () => {
       .from("notifications")
       .select("*")
       .eq("user_id", session.user.id)
-      .order("created_at", { ascending: false })
-      .limit(50);
+      .order("created_at", { ascending: false });
 
     setNotifications(data || []);
     setLoading(false);
 
-    // Mark all as read
     if (data && data.some(n => !n.is_read)) {
       await supabase
         .from("notifications")
@@ -105,32 +106,35 @@ const Notifications = () => {
             <p>No notifications yet</p>
           </div>
         ) : (
-          notifications.map(notif => (
-            <Card
-              key={notif.id}
-              className={`cursor-pointer transition-all hover:shadow-md ${
-                !notif.is_read ? "border-primary/30 bg-primary/5" : ""
-              }`}
-              onClick={() => handleNotificationClick(notif)}
-            >
-              <CardContent className="p-4 flex items-start gap-3">
-                <div className="text-2xl flex-shrink-0 mt-0.5">
-                  {notif.title.split(" ")[0]}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm leading-snug ${!notif.is_read ? "font-semibold" : ""}`}>
-                    {notif.message}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true })}
-                  </p>
-                </div>
-                {!notif.is_read && (
-                  <div className="h-2.5 w-2.5 rounded-full bg-primary flex-shrink-0 mt-1.5" />
-                )}
-              </CardContent>
-            </Card>
-          ))
+          <>
+            {visibleItems.map(notif => (
+              <Card
+                key={notif.id}
+                className={`cursor-pointer transition-all hover:shadow-md ${
+                  !notif.is_read ? "border-primary/30 bg-primary/5" : ""
+                }`}
+                onClick={() => handleNotificationClick(notif)}
+              >
+                <CardContent className="p-4 flex items-start gap-3">
+                  <div className="text-2xl flex-shrink-0 mt-0.5">
+                    {notif.title.split(" ")[0]}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm leading-snug ${!notif.is_read ? "font-semibold" : ""}`}>
+                      {notif.message}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true })}
+                    </p>
+                  </div>
+                  {!notif.is_read && (
+                    <div className="h-2.5 w-2.5 rounded-full bg-primary flex-shrink-0 mt-1.5" />
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+            {hasMore && <ShowMoreButton onClick={showMore} visibleCount={visibleCount} totalCount={totalCount} />}
+          </>
         )}
       </main>
     </div>
