@@ -275,7 +275,14 @@ const ProofFeedItem = ({ proof, currentUserId, askNumericScore, challengeStatus,
           <AvatarFallback>{proof.participations.profiles.display_name[0]}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm">{proof.participations.profiles.display_name}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="font-medium text-sm">{proof.participations.profiles.display_name}</p>
+            {hasBoosted && (
+              <span className="inline-flex items-center gap-0.5 bg-yellow-100 text-yellow-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                ⚡ Boosted
+              </span>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground">{format(new Date(proof.created_at), "MMM d, yyyy 'at' h:mm a")}</p>
         </div>
         {isAuthor && (
