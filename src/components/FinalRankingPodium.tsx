@@ -63,6 +63,15 @@ const FinalRankingPodium = ({ challengeId }: FinalRankingPodiumProps) => {
       setCurrentUserId(session.user.id);
       const { data } = await supabase.rpc("is_premium", { _user_id: session.user.id });
       setIsPremium(!!data);
+      
+      // Check if user purchased certificate for this challenge
+      const { data: purchase } = await supabase
+        .from("certificate_purchases")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .eq("challenge_id", challengeId)
+        .maybeSingle();
+      setHasPurchasedCert(!!purchase);
     }
 
     const { data: participations } = await supabase
