@@ -304,17 +304,17 @@ const Profile = () => {
                     <div className="space-y-3">
                       <Label>Choose an avatar</Label>
                       <div className="flex flex-wrap gap-3">
-                        {AVATARS.map((avatar, i) => (
+                        {AVATARS.map((avatar) => (
                           <button
-                            key={i}
+                            key={avatar.key}
                             type="button"
-                            onClick={() => setSelectedAvatar(avatar)}
+                            onClick={() => setSelectedAvatar(avatar.key)}
                             className={`transition-all rounded-full ${
-                              selectedAvatar === avatar ? "ring-4 ring-primary scale-110" : "hover:scale-105"
+                              selectedAvatar === avatar.key ? "ring-4 ring-primary scale-110" : "hover:scale-105"
                             }`}
                           >
                             <Avatar className="h-14 w-14 bg-white">
-                              <AvatarImage src={avatar} />
+                              <AvatarImage src={avatar.src} />
                               <AvatarFallback>?</AvatarFallback>
                             </Avatar>
                           </button>
