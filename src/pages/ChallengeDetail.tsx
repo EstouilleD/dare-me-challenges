@@ -482,6 +482,7 @@ const ChallengeDetail = () => {
   const isFinished = challenge.status === "finished";
   const canJoin = !isParticipant && challenge.status === "active";
   const canPost = (isOwner || isParticipant) && !isFinished;
+  const isBrandChallenge = challenge.communities?.type === "brand";
   
 
   // Merge proofs and posts into a single feed sorted by date
