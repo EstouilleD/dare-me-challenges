@@ -45,6 +45,10 @@ const CreateCommunity = () => {
   const [type, setType] = useState<"public" | "private" | "brand">("public");
   const [requiresApproval, setRequiresApproval] = useState(false);
   const [rules, setRules] = useState("");
+  const [rewardDescription, setRewardDescription] = useState("");
+  const [sponsorCtaText, setSponsorCtaText] = useState("");
+  const [sponsorCtaUrl, setSponsorCtaUrl] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
