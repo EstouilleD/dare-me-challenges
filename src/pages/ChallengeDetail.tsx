@@ -252,6 +252,7 @@ const ChallengeDetail = () => {
     if (error) {
       toast({ variant: "destructive", title: "Failed to join", description: error.message });
     } else {
+      trackEvent("challenge_joined", { challenge_id: id });
       toast({ title: "Joined!", description: "You're now part of this challenge." });
       loadData();
     }
