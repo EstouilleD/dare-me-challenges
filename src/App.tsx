@@ -13,6 +13,7 @@ import ProofDetail from "./pages/ProofDetail";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import Explore from "./pages/Explore";
+import ExploreCategory from "./pages/ExploreCategory";
 import Profile from "./pages/Profile";
 import MyProfile from "./pages/MyProfile";
 import MyChallenges from "./pages/MyChallenges";
@@ -27,6 +28,8 @@ import Store from "./pages/Store";
 import Communities from "./pages/Communities";
 import CommunityDetail from "./pages/CommunityDetail";
 import CreateCommunity from "./pages/CreateCommunity";
+import OnboardingDiscovery from "./pages/OnboardingDiscovery";
+import CommunityJoin from "./pages/CommunityJoin";
 
 const queryClient = new QueryClient();
 
