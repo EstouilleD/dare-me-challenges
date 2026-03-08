@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
 import { ArrowLeft, Users, Trophy, Pencil, Trash2, UserMinus, Clock, UserPlus, Camera, Video, Upload, X, Flag, DoorOpen, Send, Share2 } from "lucide-react";
 import ShareChallenge from "@/components/ShareChallenge";
+import BrandChallengeHeader from "@/components/BrandChallengeHeader";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProofFeedItem from "@/components/ProofFeedItem";
@@ -66,7 +67,7 @@ interface Challenge {
   community_only: boolean;
   challenge_types: ChallengeType;
   profiles: Profile;
-  communities?: { name: string; slug: string; logo_url: string | null; type: string; is_verified: boolean } | null;
+  communities?: { name: string; slug: string; logo_url: string | null; type: string; is_verified: boolean; banner_url: string | null; accent_color: string | null; reward_description: string | null; sponsor_cta_text: string | null; sponsor_cta_url: string | null } | null;
 }
 
 interface Participation {
@@ -174,7 +175,7 @@ const ChallengeDetail = () => {
         *,
         challenge_types(id, name, icon),
         profiles(id, display_name, avatar_url, profile_photo_url, use_avatar),
-        communities(name, slug, logo_url, type, is_verified)
+        communities(name, slug, logo_url, type, is_verified, banner_url, accent_color, reward_description, sponsor_cta_text, sponsor_cta_url)
       `)
       .eq("id", id)
       .single();
@@ -481,6 +482,7 @@ const ChallengeDetail = () => {
   const isFinished = challenge.status === "finished";
   const canJoin = !isParticipant && challenge.status === "active";
   const canPost = (isOwner || isParticipant) && !isFinished;
+  const isBrandChallenge = challenge.communities?.type === "brand";
   
 
   // Merge proofs and posts into a single feed sorted by date
@@ -692,6 +694,17 @@ const ChallengeDetail = () => {
       </Dialog>
 
       <main className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
+        {/* Brand Campaign Header */}
+        {isBrandChallenge && challenge.communities && (
+          <BrandChallengeHeader
+            community={challenge.communities}
+            challengeTitle={challenge.title}
+            challengeIcon={challenge.challenge_types.icon}
+            challengeTypeName={challenge.challenge_types.name}
+            status={challenge.status}
+          />
+        )}
+
         {/* Finished banner + Podium at top */}
         {isFinished && (
           <>
@@ -727,8 +740,8 @@ const ChallengeDetail = () => {
               )}
             </div>
 
-            {/* Community badge */}
-            {challenge.communities && (
+            {/* Community badge (hidden for brand challenges, shown in BrandChallengeHeader) */}
+            {challenge.communities && !isBrandChallenge && (
               <button
                 onClick={() => navigate(`/community/${challenge.communities!.slug}`)}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors w-fit mb-2"
