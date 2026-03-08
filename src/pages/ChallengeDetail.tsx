@@ -147,7 +147,8 @@ const ChallengeDetail = () => {
   const [reportDetails, setReportDetails] = useState("");
   const [submittingReport, setSubmittingReport] = useState(false);
   const [reportSubmitted, setReportSubmitted] = useState(false);
-
+  const [postText, setPostText] = useState("");
+  const [submittingPost, setSubmittingPost] = useState(false);
   useEffect(() => {
     loadData();
   }, [id]);
