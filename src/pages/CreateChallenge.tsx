@@ -117,6 +117,12 @@ const CreateChallenge = () => {
     }
   };
 
+  const loadCategories = async () => {
+    const { data } = await supabase.from("categories").select("id, name, icon").order("sort_order");
+    setCategories(data || []);
+  };
+
+
   const selectedType = types.find((t) => t.id === selectedTypeId);
   const isFrequency = selectedType?.name === "Frequency";
   const isQuantity = selectedType?.name === "Quantity";
