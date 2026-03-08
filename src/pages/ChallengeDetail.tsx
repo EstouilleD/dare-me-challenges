@@ -468,7 +468,9 @@ const ChallengeDetail = () => {
 
   const isOwner = currentUserId === challenge.owner_id;
   const isParticipant = !!myParticipation;
+  const isFinished = challenge.status === "finished";
   const canJoin = !isParticipant && challenge.status === "active";
+  const canPost = (isOwner || isParticipant) && !isFinished;
   const canPost = isOwner || isParticipant;
 
   // Merge proofs and posts into a single feed sorted by date
