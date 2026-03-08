@@ -30,6 +30,7 @@ import CommunityDetail from "./pages/CommunityDetail";
 import CreateCommunity from "./pages/CreateCommunity";
 import OnboardingDiscovery from "./pages/OnboardingDiscovery";
 import CommunityJoin from "./pages/CommunityJoin";
+import CommunitySettings from "./pages/CommunitySettings";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="/store" element={<Store />} />
             <Route path="/communities" element={<Communities />} />
             <Route path="/community/:slug" element={<CommunityDetail />} />
+            <Route path="/community/:slug/settings" element={<CommunitySettings />} />
             <Route path="/community/join/:code" element={<CommunityJoin />} />
             <Route path="/create-community" element={<CreateCommunity />} />
             <Route path="/onboarding" element={<OnboardingDiscovery />} />
