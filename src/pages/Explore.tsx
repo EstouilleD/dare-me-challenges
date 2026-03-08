@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ArrowLeft, Search, CalendarIcon, X } from "lucide-react";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+import HeaderLogo from "@/components/HeaderLogo";
 import { cn } from "@/lib/utils";
 import { getAvatarSrc } from "@/lib/avatars";
 

@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Crown, Coins, Sparkles, Zap, Trophy, Eye, Gift, Check, Settings } from "lucide-react";
 import { usePremium } from "@/hooks/usePremium";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+import HeaderLogo from "@/components/HeaderLogo";
 
 interface CoinPack {
   id: string;

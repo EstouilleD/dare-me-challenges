@@ -15,6 +15,7 @@ import ProofFeedItem from "@/components/ProofFeedItem";
 import PostFeedItem from "@/components/PostFeedItem";
 import InviteParticipants from "@/components/InviteParticipants";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+import HeaderLogo from "@/components/HeaderLogo";
 import ChallengeProgress from "@/components/ChallengeProgress";
 import ChallengeRanking from "@/components/ChallengeRanking";
 import FinalRankingPodium from "@/components/FinalRankingPodium";

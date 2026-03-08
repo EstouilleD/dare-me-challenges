@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { ArrowLeft, Trophy, XCircle } from "lucide-react";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+import HeaderLogo from "@/components/HeaderLogo";
 
 interface HistoryChallenge {
   id: string;

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Check, CheckCheck } from "lucide-react";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+import HeaderLogo from "@/components/HeaderLogo";
 import { formatDistanceToNow } from "date-fns";
 
 interface Notification {

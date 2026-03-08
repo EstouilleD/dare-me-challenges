@@ -14,6 +14,7 @@ import { ArrowLeft, Camera, Video, X, Link, Lock, Crown } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { checkCreationLimit } from "@/hooks/usePremium";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+import HeaderLogo from "@/components/HeaderLogo";
 import { Badge } from "@/components/ui/badge";
 
 interface ChallengeType {

@@ -14,6 +14,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+import HeaderLogo from "@/components/HeaderLogo";
 import { ArrowLeft, User, Lock, Bell, Sun, Moon, Monitor, Palette, Award, Trophy } from "lucide-react";
 import BadgeCard from "@/components/BadgeCard";
 import { useTheme } from "next-themes";

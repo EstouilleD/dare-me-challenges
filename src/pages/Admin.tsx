@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, LayoutDashboard, Flag, Users, FileText, UserX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+import HeaderLogo from "@/components/HeaderLogo";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminReports from "@/components/admin/AdminReports";
 import AdminUsers from "@/components/admin/AdminUsers";
