@@ -233,6 +233,7 @@ const CreateChallenge = () => {
         status,
         community_id: communityId || null,
         community_only: communityId ? communityOnly : false,
+        category_id: categoryId || null,
       })
       .select()
       .single();
