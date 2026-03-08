@@ -31,6 +31,7 @@ import CreateCommunity from "./pages/CreateCommunity";
 import OnboardingDiscovery from "./pages/OnboardingDiscovery";
 import CommunityJoin from "./pages/CommunityJoin";
 import CommunitySettings from "./pages/CommunitySettings";
+import BetaFeedbackButton from "./components/BetaFeedbackButton";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <BetaFeedbackButton />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
