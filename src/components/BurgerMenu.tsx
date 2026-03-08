@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Separator } from "@/components/ui/separator";
 import { Menu, User, Swords, PlusCircle, Trash2, Trophy, Settings, LogOut, Compass, Award, Coins } from "lucide-react";
 import { useState } from "react";
+import { getAvatarSrc } from "@/lib/avatars";
 
 interface Profile {
   id: string;
