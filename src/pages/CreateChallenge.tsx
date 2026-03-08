@@ -222,6 +222,8 @@ const CreateChallenge = () => {
         quantity_target: isQuantity ? parseInt(quantityTarget) || 10 : null,
         is_surprise: isPremiumUser ? isSurprise : false,
         status,
+        community_id: communityId || null,
+        community_only: communityId ? communityOnly : false,
       })
       .select()
       .single();
