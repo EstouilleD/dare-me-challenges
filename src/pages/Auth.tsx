@@ -22,6 +22,7 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
+  const [activeTab, setActiveTab] = useState("login");
 
   useEffect(() => {
     // Check if user is already logged in
