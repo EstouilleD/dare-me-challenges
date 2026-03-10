@@ -61,7 +61,7 @@ const Auth = () => {
 
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -72,11 +72,30 @@ const Auth = () => {
     setLoading(false);
 
     if (error) {
+      // Check for "already registered" type errors
+      const msg = error.message.toLowerCase();
+      if (msg.includes("already registered") || msg.includes("already been registered") || msg.includes("user already exists")) {
+        toast({
+          variant: "destructive",
+          title: "Account already exists",
+          description: "An account with this email already exists. Please log in instead.",
+        });
+        setActiveTab("login");
+        return;
+      }
       toast({
         variant: "destructive",
         title: "Sign up failed",
         description: error.message,
       });
+    } else if (data.user && data.user.identities && data.user.identities.length === 0) {
+      // Supabase returns an empty identities array when the user already exists (with email confirmation enabled)
+      toast({
+        variant: "destructive",
+        title: "Account already exists",
+        description: "An account with this email already exists. Please log in instead.",
+      });
+      setActiveTab("login");
     } else {
       trackEvent("signup", { method: "email" });
       toast({
