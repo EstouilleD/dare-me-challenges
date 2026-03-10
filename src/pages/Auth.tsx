@@ -119,11 +119,20 @@ const Auth = () => {
     setLoading(false);
 
     if (error) {
-      toast({
-        variant: "destructive",
-        title: "Login failed",
-        description: error.message,
-      });
+      const msg = error.message.toLowerCase();
+      if (msg.includes("invalid login credentials") || msg.includes("invalid credentials")) {
+        toast({
+          variant: "destructive",
+          title: "Login failed",
+          description: "Invalid email or password. If you don't have an account, please sign up first.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Login failed",
+          description: error.message,
+        });
+      }
     } else {
       navigate("/");
     }
