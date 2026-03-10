@@ -22,6 +22,7 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
+  const [activeTab, setActiveTab] = useState("login");
 
   useEffect(() => {
     // Check if user is already logged in
@@ -61,7 +62,7 @@ const Auth = () => {
 
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -72,11 +73,30 @@ const Auth = () => {
     setLoading(false);
 
     if (error) {
+      // Check for "already registered" type errors
+      const msg = error.message.toLowerCase();
+      if (msg.includes("already registered") || msg.includes("already been registered") || msg.includes("user already exists")) {
+        toast({
+          variant: "destructive",
+          title: "Account already exists",
+          description: "An account with this email already exists. Please log in instead.",
+        });
+        setActiveTab("login");
+        return;
+      }
       toast({
         variant: "destructive",
         title: "Sign up failed",
         description: error.message,
       });
+    } else if (data.user && data.user.identities && data.user.identities.length === 0) {
+      // Supabase returns an empty identities array when the user already exists (with email confirmation enabled)
+      toast({
+        variant: "destructive",
+        title: "Account already exists",
+        description: "An account with this email already exists. Please log in instead.",
+      });
+      setActiveTab("login");
     } else {
       trackEvent("signup", { method: "email" });
       toast({
@@ -99,11 +119,20 @@ const Auth = () => {
     setLoading(false);
 
     if (error) {
-      toast({
-        variant: "destructive",
-        title: "Login failed",
-        description: error.message,
-      });
+      const msg = error.message.toLowerCase();
+      if (msg.includes("invalid login credentials") || msg.includes("invalid credentials")) {
+        toast({
+          variant: "destructive",
+          title: "Login failed",
+          description: "Invalid email or password. If you don't have an account, please sign up first.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Login failed",
+          description: error.message,
+        });
+      }
     } else {
       navigate("/");
     }
@@ -195,7 +224,7 @@ const Auth = () => {
           <CardDescription>Challenge yourself and your friends</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
