@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,6 +29,7 @@ interface Stats {
 
 const MyProfile = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [stats, setStats] = useState<Stats>({ challengesJoined: 0, challengesCompleted: 0, challengesCreated: 0, wins: 0, proofsSubmitted: 0 });
   const [badges, setBadges] = useState<any[]>([]);
@@ -37,9 +39,7 @@ const MyProfile = () => {
   const { isPremium } = usePremium(uid);
   const [coinBalance, setCoinBalance] = useState<number>(0);
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
+  useEffect(() => { loadProfile(); }, []);
 
   const loadProfile = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -61,7 +61,6 @@ const MyProfile = () => {
     if (profileRes.data) setProfile(profileRes.data);
     setCoinBalance(balanceRes.data ?? 0);
 
-    // Count wins
     const { data: finishedParts } = await supabase
       .from("participations")
       .select("challenge_id, score, challenges!inner(status)")
@@ -95,8 +94,6 @@ const MyProfile = () => {
     setLoading(false);
   };
 
-  // getAvatarSrc imported from @/lib/avatars
-
   const earnedSet = new Set(userBadges.map(ub => ub.badge_id));
   const earnedBadges = badges.filter(b => earnedSet.has(b.id));
   const lockedBadges = badges.filter(b => !earnedSet.has(b.id));
@@ -104,21 +101,20 @@ const MyProfile = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading profile...</p>
+        <p className="text-muted-foreground">{t("profile.loadingProfile")}</p>
       </div>
     );
   }
 
   const statItems = [
-    { icon: Target, label: "Joined", value: stats.challengesJoined },
-    { icon: CheckCircle, label: "Completed", value: stats.challengesCompleted },
-    { icon: Star, label: "Created", value: stats.challengesCreated },
-    { icon: Trophy, label: "Wins", value: stats.wins },
+    { icon: Target, label: t("profile.joined"), value: stats.challengesJoined },
+    { icon: CheckCircle, label: t("profile.completed"), value: stats.challengesCompleted },
+    { icon: Star, label: t("profile.created"), value: stats.challengesCreated },
+    { icon: Trophy, label: t("profile.wins"), value: stats.wins },
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with gradient */}
       <div className="bg-gradient-primary pb-20 pt-4 px-4 relative">
         <div className="container mx-auto max-w-lg">
           <div className="flex items-center justify-between">
@@ -133,7 +129,6 @@ const MyProfile = () => {
       </div>
 
       <main className="container mx-auto px-4 max-w-lg -mt-16 space-y-6 pb-8">
-        {/* Avatar + Name card */}
         <div className="flex flex-col items-center">
           <div className="relative">
             <Avatar className="h-28 w-28 border-4 border-background shadow-lg">
@@ -147,12 +142,9 @@ const MyProfile = () => {
             )}
           </div>
           <h1 className="text-2xl font-bold mt-3">{profile?.display_name}</h1>
-          {profile?.full_name && (
-            <p className="text-muted-foreground">{profile.full_name}</p>
-          )}
+          {profile?.full_name && <p className="text-muted-foreground">{profile.full_name}</p>}
         </div>
 
-        {/* Stats grid */}
         <div className="grid grid-cols-4 gap-2">
           {statItems.map(({ icon: Icon, label, value }) => (
             <Card key={label}>
@@ -165,99 +157,64 @@ const MyProfile = () => {
           ))}
         </div>
 
-        {/* Coin balance + Store link */}
         <Card className="cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate("/store")}>
           <CardContent className="p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Coins className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium">My Coins</span>
+              <span className="text-sm font-medium">{t("profile.myCoins")}</span>
             </div>
             <span className="text-lg font-bold text-primary">{coinBalance} 🪙</span>
           </CardContent>
         </Card>
 
-        {/* Premium banner */}
         {!isPremium && (
-          <PremiumBanner
-            title="Go Premium"
-            description="Unlimited challenges, surprise mode, branded diplomas & more."
-          />
+          <PremiumBanner title={t("profile.goPremium")} description={t("profile.premiumDesc")} />
         )}
 
-        {/* Proofs stat */}
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
-            <span className="text-sm font-medium">Proofs submitted</span>
+            <span className="text-sm font-medium">{t("profile.proofsSubmitted")}</span>
             <span className="text-lg font-bold text-primary">{stats.proofsSubmitted}</span>
           </CardContent>
         </Card>
 
-        {/* Earned badges */}
         <section className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold flex items-center gap-2">
-              🏅 Badges earned
-              <span className="text-sm font-normal text-muted-foreground">
-                ({userBadges.length}/{badges.length})
-              </span>
+              🏅 {t("profile.badgesEarned")}
+              <span className="text-sm font-normal text-muted-foreground">({userBadges.length}/{badges.length})</span>
             </h2>
             <Button variant="ghost" size="sm" onClick={() => navigate("/badges")} className="text-primary text-sm">
-              View all →
+              {t("profile.viewAll")}
             </Button>
           </div>
-          
-          {/* Progress bar */}
           <div className="h-2 rounded-full bg-muted overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-500"
-              style={{ width: `${badges.length > 0 ? (userBadges.length / badges.length) * 100 : 0}%` }}
-            />
+            <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${badges.length > 0 ? (userBadges.length / badges.length) * 100 : 0}%` }} />
           </div>
-
           {earnedBadges.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              No badges earned yet. Start completing challenges! 🎯
-            </p>
+            <p className="text-sm text-muted-foreground text-center py-4">{t("profile.noBadges")}</p>
           ) : (
             <div className="grid grid-cols-3 gap-2">
               {earnedBadges.map(badge => {
                 const ub = userBadges.find(u => u.badge_id === badge.id);
-                return (
-                  <BadgeCard
-                    key={badge.id}
-                    icon={badge.icon}
-                    name={badge.name}
-                    description={badge.description}
-                    earned
-                    earnedAt={ub?.earned_at}
-                    size="sm"
-                  />
-                );
+                return <BadgeCard key={badge.id} icon={badge.icon} name={badge.name} description={badge.description} earned earnedAt={ub?.earned_at} size="sm" />;
               })}
             </div>
           )}
         </section>
 
-        {/* Locked badges preview */}
         {lockedBadges.length > 0 && (
           <section className="space-y-3">
-            <h2 className="text-lg font-bold">🔒 Next to unlock</h2>
+            <h2 className="text-lg font-bold">🔒 {t("profile.nextToUnlock")}</h2>
             <div className="grid grid-cols-3 gap-2">
               {lockedBadges.slice(0, 6).map(badge => (
-                <BadgeCard
-                  key={badge.id}
-                  icon={badge.icon}
-                  name={badge.name}
-                  description={badge.description}
-                  earned={false}
-                  size="sm"
-                />
+                <BadgeCard key={badge.id} icon={badge.icon} name={badge.name} description={badge.description} earned={false} size="sm" />
               ))}
             </div>
             {lockedBadges.length > 6 && (
               <div className="text-center">
                 <Button variant="ghost" size="sm" onClick={() => navigate("/badges")} className="text-muted-foreground">
-                  +{lockedBadges.length - 6} more badges to discover
+                  +{lockedBadges.length - 6} {t("profile.moreBadges")}
                 </Button>
               </div>
             )}
