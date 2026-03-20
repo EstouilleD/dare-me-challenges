@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -6,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Menu, User, Swords, PlusCircle, Trash2, Trophy, Settings, LogOut, Compass, Award, Coins, Users } from "lucide-react";
 import { useState } from "react";
 import { getAvatarSrc } from "@/lib/avatars";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 interface Profile {
   id: string;
@@ -21,9 +23,8 @@ interface BurgerMenuProps {
 
 const BurgerMenu = ({ profile }: BurgerMenuProps) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-
-  // getAvatarSrc is imported from @/lib/avatars
 
   const handleNavigate = (path: string) => {
     setOpen(false);
@@ -37,16 +38,16 @@ const BurgerMenu = ({ profile }: BurgerMenuProps) => {
   };
 
   const menuItems = [
-    { icon: User, label: "Profile", path: "/profile" },
-    { icon: Users, label: "Communities", path: "/communities" },
-    { icon: Compass, label: "Explore", path: "/explore" },
-    { icon: Swords, label: "My Challenges", path: "/my-challenges" },
-    { icon: PlusCircle, label: "Challenges Created", path: "/created-challenges" },
-    { icon: Trash2, label: "Deleted Challenges", path: "/deleted-challenges" },
-    { icon: Trophy, label: "Old Challenges", path: "/challenge-history" },
-    { icon: Award, label: "Badges", path: "/badges" },
-    { icon: Coins, label: "Store", path: "/store" },
-    { icon: Settings, label: "Settings", path: "/settings" },
+    { icon: User, label: t("menu.profile"), path: "/profile" },
+    { icon: Users, label: t("menu.communities"), path: "/communities" },
+    { icon: Compass, label: t("menu.explore"), path: "/explore" },
+    { icon: Swords, label: t("menu.myChallenges"), path: "/my-challenges" },
+    { icon: PlusCircle, label: t("menu.challengesCreated"), path: "/created-challenges" },
+    { icon: Trash2, label: t("menu.deletedChallenges"), path: "/deleted-challenges" },
+    { icon: Trophy, label: t("menu.oldChallenges"), path: "/challenge-history" },
+    { icon: Award, label: t("menu.badges"), path: "/badges" },
+    { icon: Coins, label: t("menu.store"), path: "/store" },
+    { icon: Settings, label: t("menu.settings"), path: "/settings" },
   ];
 
   return (
@@ -86,12 +87,16 @@ const BurgerMenu = ({ profile }: BurgerMenuProps) => {
 
         <Separator />
 
+        <LanguageSwitcher />
+
+        <Separator />
+
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-6 py-3 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors w-full text-left mt-2"
         >
           <LogOut className="h-5 w-5" />
-          Logout
+          {t("menu.logout")}
         </button>
       </SheetContent>
     </Sheet>
