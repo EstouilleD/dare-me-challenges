@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +16,7 @@ import NotificationBell from "@/components/NotificationBell";
 import PremiumBanner from "@/components/PremiumBanner";
 import { usePremium } from "@/hooks/usePremium";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
+
 interface Profile {
   id: string;
   display_name: string;
@@ -44,6 +46,7 @@ interface Challenge {
 
 const Home = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [myChallenges, setMyChallenges] = useState<Challenge[]>([]);
@@ -68,7 +71,6 @@ const Home = () => {
     }
     setUserId(session.user.id);
 
-    // Load profile
     const { data: profileData } = await supabase
       .from("profiles")
       .select("*")
@@ -82,23 +84,15 @@ const Home = () => {
 
     setProfile(profileData);
 
-    // Load coin balance
     const { data: balData } = await supabase.rpc("get_coin_balance", { _user_id: session.user.id });
     setCoinBalance(balData ?? 0);
 
-    // Load challenges to complete (user participations)
     const { data: participations } = await supabase
       .from("participations")
       .select(`
         challenge_id,
         challenges!inner(
-          id,
-          title,
-          description,
-          end_date,
-          status,
-          is_public,
-          community_id,
+          id, title, description, end_date, status, is_public, community_id,
           challenge_types(id, name, icon),
           profiles(id, display_name, avatar_url, profile_photo_url, use_avatar),
           communities(name, slug)
@@ -111,21 +105,14 @@ const Home = () => {
     const myActiveChallenges = participations?.map(p => p.challenges).filter(Boolean) as Challenge[] || [];
     setMyChallenges(myActiveChallenges);
 
-    // Load created challenges
     const { data: created } = await supabase
       .from("challenges")
-      .select(`
-        *,
-        challenge_types(id, name, icon),
-        profiles(id, display_name, avatar_url, profile_photo_url, use_avatar),
-        communities(name, slug)
-      `)
+      .select(`*, challenge_types(id, name, icon), profiles(id, display_name, avatar_url, profile_photo_url, use_avatar), communities(name, slug)`)
       .eq("owner_id", session.user.id)
       .order("created_at", { ascending: false });
 
     setCreatedChallenges(created as Challenge[] || []);
 
-    // Check badges and notify new ones
     const { data: beforeBadges } = await supabase
       .from("user_badges").select("badge_id").eq("user_id", session.user.id);
     const beforeIds = new Set((beforeBadges || []).map(b => b.badge_id));
@@ -137,7 +124,7 @@ const Home = () => {
     const newBadges = (afterBadges || []).filter((b: any) => !beforeIds.has(b.badge_id));
     
     for (const nb of newBadges) {
-      toast({ title: `${(nb as any).badges.icon} Badge unlocked!`, description: (nb as any).badges.name });
+      toast({ title: `${(nb as any).badges.icon} ${t("home.badgeUnlocked")}`, description: (nb as any).badges.name });
     }
 
     setLoading(false);
@@ -147,8 +134,6 @@ const Home = () => {
     await supabase.auth.signOut();
     navigate("/auth");
   };
-
-  // getAvatarSrc is imported from @/lib/avatars
 
   const ChallengeCard = ({ challenge }: { challenge: Challenge }) => (
     <Card 
@@ -187,7 +172,7 @@ const Home = () => {
             <span className="text-muted-foreground">{challenge.profiles.display_name}</span>
           </div>
           <span className="text-muted-foreground">
-            Ends {format(new Date(challenge.end_date), "MMM d")}
+            {t("common.ends")} {format(new Date(challenge.end_date), "MMM d")}
           </span>
         </div>
       </CardContent>
@@ -199,7 +184,7 @@ const Home = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4">⏳</div>
-          <p className="text-muted-foreground">Loading challenges...</p>
+          <p className="text-muted-foreground">{t("home.loadingChallenges")}</p>
         </div>
       </div>
     );
@@ -233,35 +218,26 @@ const Home = () => {
 
       <main className="container mx-auto px-4 py-6 space-y-8">
         <div className="flex flex-col items-center gap-2">
-          <Button 
-            size="lg" 
-            onClick={() => navigate("/create-challenge")}
-            className="shadow-glow w-full max-w-sm text-base py-6"
-          >
+          <Button size="lg" onClick={() => navigate("/create-challenge")} className="shadow-glow w-full max-w-sm text-base py-6">
             <Plus className="h-5 w-5 mr-2" />
-            Create a new challenge
+            {t("home.createChallenge")}
           </Button>
-          <Button 
-            variant="ghost"
-            onClick={() => navigate("/explore")}
-            className="text-muted-foreground"
-          >
+          <Button variant="ghost" onClick={() => navigate("/explore")} className="text-muted-foreground">
             <Compass className="h-4 w-4 mr-1" />
-            Explore challenges
+            {t("home.exploreChallenges")}
           </Button>
         </div>
 
         {!isPremium && (
-          <PremiumBanner compact title="Unlock unlimited challenges & more" />
+          <PremiumBanner compact title={t("home.unlockPremium")} />
         )}
 
-
         <section className="space-y-4">
-          <h2 className="text-2xl font-bold">My challenges to complete</h2>
+          <h2 className="text-2xl font-bold">{t("home.myChallenges")}</h2>
           {myChallenges.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
-                No active challenges. Join or create one!
+                {t("home.noChallenges")}
               </CardContent>
             </Card>
           ) : (
@@ -274,18 +250,18 @@ const Home = () => {
           {myChallenges.length > myVisible && (
             <div className="flex justify-center">
               <Button variant="ghost" onClick={() => setMyVisible((v) => v + 5)} className="gap-1">
-                <ChevronDown className="h-4 w-4" /> Show more ({myChallenges.length - myVisible} remaining)
+                <ChevronDown className="h-4 w-4" /> {t("common.showMore")} ({myChallenges.length - myVisible} {t("common.remaining")})
               </Button>
             </div>
           )}
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-2xl font-bold">Challenges I created</h2>
+          <h2 className="text-2xl font-bold">{t("home.createdChallenges")}</h2>
           {createdChallenges.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
-                You haven't created any challenges yet.
+                {t("home.noCreatedChallenges")}
               </CardContent>
             </Card>
           ) : (
@@ -298,7 +274,7 @@ const Home = () => {
           {createdChallenges.length > createdVisible && (
             <div className="flex justify-center">
               <Button variant="ghost" onClick={() => setCreatedVisible((v) => v + 5)} className="gap-1">
-                <ChevronDown className="h-4 w-4" /> Show more ({createdChallenges.length - createdVisible} remaining)
+                <ChevronDown className="h-4 w-4" /> {t("common.showMore")} ({createdChallenges.length - createdVisible} {t("common.remaining")})
               </Button>
             </div>
           )}
