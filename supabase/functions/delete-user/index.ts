@@ -29,7 +29,7 @@ serve(async (req: Request) => {
     const token = authHeader.replace("Bearer ", "");
     const { data: { user: requestingUser }, error: authError } = await supabaseAdmin.auth.getUser(token);
     if (authError || !requestingUser) {
-      return new Response(JSON.stringify({ error: "Invalid token" }), {
+      return new Response(JSON.stringify({ error: "Authentication failed" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -52,7 +52,7 @@ serve(async (req: Request) => {
         _role: "admin",
       });
       if (!isAdmin) {
-        return new Response(JSON.stringify({ error: "Admin access required" }), {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -88,7 +88,8 @@ serve(async (req: Request) => {
     // Delete the user from auth (cascades to profiles, participations, etc.)
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(target_user_id);
     if (deleteError) {
-      return new Response(JSON.stringify({ error: deleteError.message }), {
+      console.error("delete-user error:", deleteError);
+      return new Response(JSON.stringify({ error: "Failed to delete user" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -99,7 +100,8 @@ serve(async (req: Request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("delete-user error:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
