@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Auth from "./pages/Auth";
+import AuthCallback from "./pages/AuthCallback";
 import ProfileSetup from "./pages/ProfileSetup";
 import Home from "./pages/Home";
 import CreateChallenge from "./pages/CreateChallenge";
@@ -45,6 +46,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/profile-setup" element={<ProfileSetup />} />
             <Route path="/create-challenge" element={<CreateChallenge />} />
             <Route path="/challenge/:id" element={<ChallengeDetail />} />
