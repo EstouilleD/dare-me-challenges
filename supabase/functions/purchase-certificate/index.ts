@@ -70,18 +70,17 @@ serve(async (req) => {
       },
     });
 
-    // Record purchase immediately (Stripe will handle payment confirmation)
-    await serviceClient.from("certificate_purchases").insert({
-      user_id: user.id,
-      challenge_id: challengeId,
-    });
+    // NOTE: Do NOT insert certificate_purchases here.
+    // The record should only be created after payment confirmation via a Stripe webhook.
+    // For now, we check the Stripe session status on the success callback page.
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("purchase-certificate error:", error);
+    return new Response(JSON.stringify({ error: "Payment processing error" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

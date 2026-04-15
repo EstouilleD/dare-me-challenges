@@ -7,6 +7,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Allowlist of valid subscription price IDs
+const ALLOWED_PRICE_IDS = new Set([
+  "price_1T6bmTIsSHrHtrFi7gSk0Jxf", // Monthly
+  "price_1T6bmsIsSHrHtrFiLjbtyfb4", // Quarterly
+  "price_1T6bnBIsSHrHtrFihx3bNQa0", // Yearly
+]);
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -25,7 +32,12 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
 
     const { priceId } = await req.json();
-    if (!priceId) throw new Error("priceId is required");
+    if (!priceId || !ALLOWED_PRICE_IDS.has(priceId)) {
+      return new Response(JSON.stringify({ error: "Invalid price" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -51,7 +63,8 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("create-checkout error:", error);
+    return new Response(JSON.stringify({ error: "Payment processing error" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

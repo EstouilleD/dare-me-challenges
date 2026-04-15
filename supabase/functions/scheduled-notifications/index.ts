@@ -19,14 +19,10 @@ Deno.serve(async (req) => {
     const results: string[] = [];
 
     // ========== UPDATE CHALLENGE STATUSES ==========
-    // Transition active challenges past their end_date to 'finished', and upcoming to 'active'
     await supabase.rpc("update_challenge_status");
     results.push("Status update: done");
 
     // ========== CHALLENGE ENDED NOTIFICATION ==========
-    // Find challenges that just finished (end_date passed, status still 'active')
-    // The update_challenge_status function sets them to 'finished', so we look for
-    // recently finished challenges that haven't been notified yet
     const { data: justFinished } = await supabase
       .from("challenges")
       .select("id, title")
@@ -40,7 +36,6 @@ Deno.serve(async (req) => {
         .eq("challenge_id", challenge.id)
         .eq("is_active", true);
 
-      // Also notify the owner
       const { data: challengeData } = await supabase
         .from("challenges")
         .select("owner_id")
@@ -73,7 +68,7 @@ Deno.serve(async (req) => {
 
     // ========== TIME NOTIFICATIONS ==========
 
-    // J-7: Challenge ends in 7 days
+    // J-7
     const in7Days = new Date(now);
     in7Days.setDate(in7Days.getDate() + 7);
     const in7DaysStart = new Date(in7Days);
@@ -116,7 +111,7 @@ Deno.serve(async (req) => {
     }
     results.push(`J-7: ${(challengesJ7 || []).length} challenges`);
 
-    // J-1: Challenge ends tomorrow
+    // J-1
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStart = new Date(tomorrow);
@@ -159,7 +154,7 @@ Deno.serve(async (req) => {
     }
     results.push(`J-1: ${(challengesJ1 || []).length} challenges`);
 
-    // Day of end: Challenge ends today
+    // Day of end
     const todayStart = new Date(now);
     todayStart.setHours(0, 0, 0, 0);
     const todayEnd = new Date(now);
@@ -259,7 +254,6 @@ Deno.serve(async (req) => {
 
     // ========== BEHAVIORAL NUDGES ==========
 
-    // 1. "You haven't submitted proof yet"
     const twoDaysAgo = new Date(now);
     twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
@@ -305,7 +299,6 @@ Deno.serve(async (req) => {
     }
     results.push(`No-proof nudge: checked`);
 
-    // 2. "Only 2 days left to join"
     const in2Days = new Date(now);
     in2Days.setDate(in2Days.getDate() + 2);
     const in2DaysStart = new Date(in2Days);
@@ -351,7 +344,6 @@ Deno.serve(async (req) => {
     }
     results.push(`Join deadline nudge: checked`);
 
-    // 3. "Your participation slot is full"
     const { data: activeParticipants } = await supabase
       .from("participations")
       .select("user_id")
@@ -394,7 +386,8 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("scheduled-notifications error:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
