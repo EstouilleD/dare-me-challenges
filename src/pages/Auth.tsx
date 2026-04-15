@@ -14,6 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Globe } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -113,10 +115,42 @@ const Auth = () => {
 
   const handleOAuth = async (provider: "google" | "apple") => {
     setLoading(true);
-    const { error } = await lovable.auth.signInWithOAuth(provider, { redirect_uri: `${window.location.origin}/auth/callback` });
-    setLoading(false);
-    if (error) {
-      toast({ variant: "destructive", title: t("auth.signInFailed"), description: error.message });
+
+    if (Capacitor.isNativePlatform()) {
+      // On native (Capacitor), open OAuth in the system browser
+      const redirectUrl = "https://friend-dare-game.lovable.app/auth/callback";
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: true,
+        },
+      });
+
+      if (error) {
+        setLoading(false);
+        toast({ variant: "destructive", title: t("auth.signInFailed"), description: error.message });
+        return;
+      }
+
+      if (data?.url) {
+        // Listen for the browser to redirect back to the app
+        const browserListener = await Browser.addListener("browserFinished", () => {
+          setLoading(false);
+          browserListener.remove();
+        });
+
+        await Browser.open({ url: data.url, presentationStyle: "popover" });
+      } else {
+        setLoading(false);
+      }
+    } else {
+      // On web, use the Lovable managed OAuth
+      const { error } = await lovable.auth.signInWithOAuth(provider, { redirect_uri: `${window.location.origin}/auth/callback` });
+      setLoading(false);
+      if (error) {
+        toast({ variant: "destructive", title: t("auth.signInFailed"), description: error.message });
+      }
     }
   };
 
