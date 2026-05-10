@@ -46,12 +46,10 @@ export default function Challenges() {
       .from('challenges')
       .select(`
         id, title, description, status, is_public, created_at, end_date, owner_id, community_only,
-        profiles!owner_id(display_name, email),
-        challenge_types!type_id(name, icon)
+        profiles(display_name, email),
+        challenge_types(name, icon)
       `)
       .order('created_at', { ascending: false });
-
-    console.log('[Challenges] query result — count:', data?.length ?? 0, 'error:', error);
 
     if (error) {
       console.error('[Challenges] query error:', error);
@@ -62,12 +60,11 @@ export default function Challenges() {
 
     if (data && data.length > 0) {
       const ids = data.map(c => c.id);
-      const [{ data: parts, error: partsErr }, { data: proofs, error: proofsErr }, { data: reports, error: reportsErr }] = await Promise.all([
+      const [{ data: parts }, { data: proofs }, { data: reports }] = await Promise.all([
         supabase.from('participations').select('challenge_id').in('challenge_id', ids),
         supabase.from('proofs').select('challenge_id').in('challenge_id', ids),
         supabase.from('reports').select('challenge_id').in('challenge_id', ids),
       ]);
-      console.log('[Challenges] counts — parts:', parts?.length, partsErr, '| proofs:', proofs?.length, proofsErr, '| reports:', reports?.length, reportsErr);
       const partCount = new Map<string, number>();
       const proofCount = new Map<string, number>();
       const reportCount = new Map<string, number>();
