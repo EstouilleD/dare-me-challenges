@@ -1,0 +1,125 @@
+import { useEffect } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { supabase } from "@/integrations/supabase/client";
+import { Capacitor } from "@capacitor/core";
+import { StatusBar, Style } from "@capacitor/status-bar";
+import Auth from "./pages/Auth";
+import AuthCallback from "./pages/AuthCallback";
+import ProfileSetup from "./pages/ProfileSetup";
+import Home from "./pages/Home";
+import CreateChallenge from "./pages/CreateChallenge";
+import ChallengeDetail from "./pages/ChallengeDetail";
+import ProofDetail from "./pages/ProofDetail";
+import NotFound from "./pages/NotFound";
+import ResetPassword from "./pages/ResetPassword";
+import Explore from "./pages/Explore";
+import ExploreCategory from "./pages/ExploreCategory";
+import Profile from "./pages/Profile";
+import MyProfile from "./pages/MyProfile";
+import MyChallenges from "./pages/MyChallenges";
+import CreatedChallenges from "./pages/CreatedChallenges";
+import DeletedChallenges from "./pages/DeletedChallenges";
+import ChallengeHistory from "./pages/ChallengeHistory";
+import JoinChallenge from "./pages/JoinChallenge";
+import Admin from "./pages/Admin";
+import Badges from "./pages/Badges";
+import Notifications from "./pages/Notifications";
+import Store from "./pages/Store";
+import Communities from "./pages/Communities";
+import CommunityDetail from "./pages/CommunityDetail";
+import CreateCommunity from "./pages/CreateCommunity";
+import OnboardingDiscovery from "./pages/OnboardingDiscovery";
+import CommunityJoin from "./pages/CommunityJoin";
+import CommunitySettings from "./pages/CommunitySettings";
+import BetaFeedbackButton from "./components/BetaFeedbackButton";
+
+const queryClient = new QueryClient();
+
+// Initialise native platform features once on mount
+const PlatformInit = () => {
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const platform = Capacitor.getPlatform();
+    if (platform === 'android') {
+      // Keep the status bar as a separate opaque bar above the WebView.
+      // Android WebView doesn't reliably populate env(safe-area-inset-top),
+      // so overlay mode causes content to hide behind the system bar.
+      StatusBar.setOverlaysWebView({ overlay: false });
+      StatusBar.setStyle({ style: Style.Light });
+      StatusBar.setBackgroundColor({ color: '#2741c4' });
+    } else {
+      // iOS supports env(safe-area-inset-top); the CSS handles the padding.
+      StatusBar.setOverlaysWebView({ overlay: true });
+      StatusBar.setStyle({ style: Style.Dark });
+    }
+  }, []);
+  return null;
+};
+
+// Lives inside BrowserRouter so it can call useNavigate
+const AuthStateHandler = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        navigate("/auth", { replace: true });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+  return null;
+};
+
+const App = () => (
+  <ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <PlatformInit />
+          <AuthStateHandler />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/profile-setup" element={<ProfileSetup />} />
+            <Route path="/create-challenge" element={<CreateChallenge />} />
+            <Route path="/challenge/:id" element={<ChallengeDetail />} />
+            <Route path="/proof/:id" element={<ProofDetail />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/explore/category/:slug" element={<ExploreCategory />} />
+            <Route path="/profile" element={<MyProfile />} />
+            <Route path="/settings" element={<Profile />} />
+            <Route path="/my-challenges" element={<MyChallenges />} />
+            <Route path="/created-challenges" element={<CreatedChallenges />} />
+            <Route path="/deleted-challenges" element={<DeletedChallenges />} />
+            <Route path="/challenge-history" element={<ChallengeHistory />} />
+            <Route path="/join/:challengeId" element={<JoinChallenge />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/badges" element={<Badges />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/store" element={<Store />} />
+            <Route path="/communities" element={<Communities />} />
+            <Route path="/community/:slug" element={<CommunityDetail />} />
+            <Route path="/community/:slug/settings" element={<CommunitySettings />} />
+            <Route path="/community/join/:code" element={<CommunityJoin />} />
+            <Route path="/create-community" element={<CreateCommunity />} />
+            <Route path="/onboarding" element={<OnboardingDiscovery />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <BetaFeedbackButton />
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ThemeProvider>
+);
+
+export default App;

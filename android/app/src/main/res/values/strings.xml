@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Dare Me</string>
+    <string name="title_activity_main">Dare Me</string>
+    <string name="package_name">com.dareme.challenges</string>
+    <string name="custom_url_scheme">com.dareme.challenges</string>
+</resources>
