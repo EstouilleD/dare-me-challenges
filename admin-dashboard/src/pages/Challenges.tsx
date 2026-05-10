@@ -91,8 +91,9 @@ export default function Challenges() {
     const q = search.toLowerCase();
     return challenges.filter(c => {
       const matchSearch = !q || c.title.toLowerCase().includes(q) || c.profiles?.display_name.toLowerCase().includes(q);
-      const matchStatus = statusFilter === 'all' || c.status === statusFilter ||
-        (statusFilter === 'reported' && (c.report_count ?? 0) > 0);
+      const matchStatus = statusFilter === 'all'
+        || (statusFilter === 'reported' && (c.report_count ?? 0) > 0)
+        || c.status === statusFilter;
       const matchVis = visibilityFilter === 'all' ||
         (visibilityFilter === 'public' && c.is_public) ||
         (visibilityFilter === 'private' && !c.is_public) ||
@@ -121,9 +122,10 @@ export default function Challenges() {
   const statusBadge = (status: string, reportCount = 0) => {
     const colors: Record<string, string> = {
       active: 'bg-emerald-500/15 text-emerald-400',
-      completed: 'bg-blue-500/15 text-blue-400',
-      pending: 'bg-amber-500/15 text-amber-400',
+      upcoming: 'bg-indigo-500/15 text-indigo-400',
+      finished: 'bg-blue-500/15 text-blue-400',
       cancelled: 'bg-slate-700 text-slate-400',
+      under_review: 'bg-amber-500/15 text-amber-400',
     };
     return (
       <div className="flex items-center gap-1.5">
@@ -149,8 +151,10 @@ export default function Challenges() {
           className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
           <option value="all">All statuses</option>
           <option value="active">Active</option>
-          <option value="completed">Completed</option>
-          <option value="pending">Pending</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="finished">Finished</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="under_review">Under review</option>
           <option value="reported">Has reports</option>
         </select>
         <select value={visibilityFilter} onChange={e => { setVisibilityFilter(e.target.value); setPage(0); }}
