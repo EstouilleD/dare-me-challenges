@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Search, Shield, ShieldOff, Trash2, ShieldCheck, ShieldX, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Search, Shield, ShieldOff, Trash2, ShieldCheck, ShieldX, ChevronLeft, ChevronRight, X, Crown } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../contexts/ToastContext';
@@ -20,6 +20,7 @@ interface Profile {
 interface UserDetail extends Profile {
   challengesCreated: number;
   participations: number;
+  isPremium: boolean;
 }
 
 const PAGE_SIZE = 20;
@@ -34,7 +35,7 @@ export default function Users() {
   const [detail, setDetail] = useState<UserDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [confirm, setConfirm] = useState<{
-    open: boolean; type: 'block' | 'unblock' | 'delete' | 'makeAdmin' | 'removeAdmin';
+    open: boolean; type: 'block' | 'unblock' | 'delete' | 'makeAdmin' | 'removeAdmin' | 'grantPremium' | 'removePremium';
     user: Profile | null; loading: boolean;
   }>({ open: false, type: 'delete', user: null, loading: false });
 
@@ -66,12 +67,18 @@ export default function Users() {
 
   async function openDetail(user: Profile) {
     setDetailLoading(true);
-    setDetail({ ...user, challengesCreated: 0, participations: 0 });
-    const [{ count: cc }, { count: pc }] = await Promise.all([
+    setDetail({ ...user, challengesCreated: 0, participations: 0, isPremium: false });
+    const [{ count: cc }, { count: pc }, { data: sub }] = await Promise.all([
       supabase.from('challenges').select('*', { count: 'exact', head: true }).eq('owner_id', user.id),
       supabase.from('participations').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+      supabase.from('subscriptions').select('plan, status').eq('user_id', user.id).eq('status', 'active').maybeSingle(),
     ]);
-    setDetail(d => d ? { ...d, challengesCreated: cc ?? 0, participations: pc ?? 0 } : null);
+    setDetail(d => d ? {
+      ...d,
+      challengesCreated: cc ?? 0,
+      participations: pc ?? 0,
+      isPremium: sub?.plan === 'premium',
+    } : null);
     setDetailLoading(false);
   }
 
@@ -99,6 +106,18 @@ export default function Users() {
       } else if (confirm.type === 'removeAdmin') {
         await supabase.from('user_roles').delete().eq('user_id', id).eq('role', 'admin');
         toast('success', `Admin role removed from ${display_name}`);
+      } else if (confirm.type === 'grantPremium') {
+        await supabase.from('subscriptions').upsert({
+          user_id: id,
+          plan: 'premium',
+          status: 'active',
+          current_period_start: new Date().toISOString(),
+          current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        }, { onConflict: 'user_id' });
+        toast('success', `Premium granted to ${display_name}`);
+      } else if (confirm.type === 'removePremium') {
+        await supabase.from('subscriptions').update({ status: 'cancelled' }).eq('user_id', id);
+        toast('success', `Premium removed from ${display_name}`);
       }
       await load();
     } catch {
@@ -124,6 +143,8 @@ export default function Users() {
     delete: `Mark "${confirm.user?.display_name}" as deleted? This is a soft delete.`,
     makeAdmin: `Grant admin role to "${confirm.user?.display_name}"?`,
     removeAdmin: `Remove admin role from "${confirm.user?.display_name}"?`,
+    grantPremium: `Grant Premium subscription to "${confirm.user?.display_name}"? This will activate a 1-year premium plan.`,
+    removePremium: `Remove Premium subscription from "${confirm.user?.display_name}"? Their plan will be cancelled immediately.`,
   };
 
   return (
@@ -250,6 +271,27 @@ export default function Users() {
                   <div className="text-sm font-medium text-slate-200">{v}</div>
                 </div>
               ))}
+              <div className="col-span-2 bg-slate-800 rounded-xl p-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Premium subscription</p>
+                  {detailLoading ? (
+                    <p className="text-sm text-slate-400">…</p>
+                  ) : detail.isPremium ? (
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-400">
+                      <Crown className="w-3 h-3" /> Active
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-700 text-slate-400">Inactive</span>
+                  )}
+                </div>
+                {!detailLoading && (
+                  detail.isPremium
+                    ? <ModalBtn onClick={() => { setDetail(null); startConfirm('removePremium', detail); }} color="bg-slate-700 hover:bg-slate-600">Remove Premium</ModalBtn>
+                    : <ModalBtn onClick={() => { setDetail(null); startConfirm('grantPremium', detail); }} color="bg-amber-600 hover:bg-amber-700">
+                        <Crown className="w-3.5 h-3.5 inline mr-1" />Grant Premium
+                      </ModalBtn>
+                )}
+              </div>
             </div>
             <div className="flex gap-2 flex-wrap">
               {detail.account_status === 'blocked'
@@ -268,10 +310,24 @@ export default function Users() {
 
       <ConfirmModal
         open={confirm.open}
-        title={confirm.type === 'delete' ? 'Delete User' : confirm.type === 'block' ? 'Block User' : confirm.type === 'unblock' ? 'Unblock User' : confirm.type === 'makeAdmin' ? 'Grant Admin' : 'Revoke Admin'}
+        title={
+          confirm.type === 'delete' ? 'Delete User' :
+          confirm.type === 'block' ? 'Block User' :
+          confirm.type === 'unblock' ? 'Unblock User' :
+          confirm.type === 'makeAdmin' ? 'Grant Admin' :
+          confirm.type === 'removeAdmin' ? 'Revoke Admin' :
+          confirm.type === 'grantPremium' ? 'Grant Premium' :
+          'Remove Premium'
+        }
         message={confirmMessages[confirm.type]}
-        confirmLabel={confirm.type === 'delete' ? 'Delete' : confirm.type === 'block' ? 'Block' : 'Confirm'}
-        danger={confirm.type === 'delete' || confirm.type === 'block'}
+        confirmLabel={
+          confirm.type === 'delete' ? 'Delete' :
+          confirm.type === 'block' ? 'Block' :
+          confirm.type === 'grantPremium' ? 'Grant Premium' :
+          confirm.type === 'removePremium' ? 'Remove Premium' :
+          'Confirm'
+        }
+        danger={confirm.type === 'delete' || confirm.type === 'block' || confirm.type === 'removePremium'}
         loading={confirm.loading}
         onConfirm={handleConfirm}
         onCancel={() => setConfirm(c => ({ ...c, open: false }))}
