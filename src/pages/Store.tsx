@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Crown, Coins, Sparkles, Zap, Trophy, Eye, Gift, Check, Settings } from "lucide-react";
+import { ArrowLeft, Crown, Coins, Sparkles, Zap, Trophy, Eye, Gift, Settings } from "lucide-react";
 import { usePremium } from "@/hooks/usePremium";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import HeaderLogo from "@/components/HeaderLogo";
@@ -15,6 +15,7 @@ interface CoinPack {
   name: string;
   coin_amount: number;
   price_cents: number;
+  stripe_price_id: string | null;
 }
 
 const PREMIUM_TIERS = [
@@ -104,8 +105,19 @@ const Store = () => {
   useEffect(() => {
     if (searchParams.get("success") === "true") {
       toast({ title: "🎉 Welcome to Premium!", description: "Your subscription is now active." });
-      // Sync subscription status
       supabase.functions.invoke("check-subscription");
+    }
+    if (searchParams.get("coins_success") === "true") {
+      const amount = searchParams.get("coin_amount");
+      toast({ title: "🪙 Coins added!", description: `${amount} coins have been added to your balance.` });
+      // Refresh balance
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          supabase.rpc("get_coin_balance", { _user_id: session.user.id }).then(({ data }) => {
+            setBalance(data ?? 0);
+          });
+        }
+      });
     }
     if (searchParams.get("canceled") === "true") {
       toast({ title: "Checkout canceled", description: "No charges were made." });
@@ -127,11 +139,25 @@ const Store = () => {
     setLoading(false);
   };
 
-  const handleBuyCoins = (pack: CoinPack) => {
-    toast({
-      title: "Coming soon!",
-      description: `Purchasing ${pack.coin_amount} coins will be available soon.`,
-    });
+  const handleBuyCoins = async (pack: CoinPack) => {
+    if (!pack.stripe_price_id) {
+      toast({ variant: "destructive", title: "Unavailable", description: "This pack is not available for purchase yet." });
+      return;
+    }
+    setCheckingOut(pack.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("purchase-coins", {
+        body: { priceId: pack.stripe_price_id },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Checkout failed", description: err.message });
+    } finally {
+      setCheckingOut(null);
+    }
   };
 
   const handleCheckout = async (priceId: string) => {
@@ -314,8 +340,13 @@ const Store = () => {
                       <p className="font-semibold">{pack.name}</p>
                       <p className="text-sm text-muted-foreground">{pack.coin_amount} coins</p>
                     </div>
-                    <Button variant="default" size="sm" onClick={() => handleBuyCoins(pack)}>
-                      €{(pack.price_cents / 100).toFixed(2)}
+                    <Button
+                      variant="default"
+                      size="sm"
+                      disabled={checkingOut === pack.id}
+                      onClick={() => handleBuyCoins(pack)}
+                    >
+                      {checkingOut === pack.id ? "..." : `€${(pack.price_cents / 100).toFixed(2)}`}
                     </Button>
                   </CardContent>
                 </Card>
