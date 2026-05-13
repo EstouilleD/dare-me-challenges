@@ -130,14 +130,9 @@ const Home = () => {
     setLoading(false);
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  };
-
   const ChallengeCard = ({ challenge }: { challenge: Challenge }) => (
-    <Card 
-      className="cursor-pointer hover:shadow-elevated transition-all hover:scale-[1.02]"
+    <Card
+      className="cursor-pointer hover:shadow-elevated transition-shadow"
       onClick={() => navigate(`/challenge/${challenge.id}`)}
     >
       <CardHeader className="pb-3">
@@ -191,7 +186,7 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <header className={headerClass("sticky top-0 z-10 bg-gradient-primary border-b shadow-card")}>
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
@@ -241,7 +236,7 @@ const Home = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-4 overflow-hidden">
               {myChallenges.slice(0, myVisible).map((challenge) => (
                 <ChallengeCard key={challenge.id} challenge={challenge} />
               ))}
@@ -265,7 +260,7 @@ const Home = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-4 overflow-hidden">
               {createdChallenges.slice(0, createdVisible).map((challenge) => (
                 <ChallengeCard key={challenge.id} challenge={challenge} />
               ))}
