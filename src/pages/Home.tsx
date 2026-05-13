@@ -236,7 +236,7 @@ const Home = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 overflow-hidden">
+            <div className="grid gap-4">
               {myChallenges.slice(0, myVisible).map((challenge) => (
                 <ChallengeCard key={challenge.id} challenge={challenge} />
               ))}
@@ -260,7 +260,7 @@ const Home = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 overflow-hidden">
+            <div className="grid gap-4">
               {createdChallenges.slice(0, createdVisible).map((challenge) => (
                 <ChallengeCard key={challenge.id} challenge={challenge} />
               ))}
