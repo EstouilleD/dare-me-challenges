@@ -34,6 +34,8 @@ export default function Users() {
   const [page, setPage] = useState(0);
   const [detail, setDetail] = useState<UserDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [coinGiftAmount, setCoinGiftAmount] = useState(50);
+  const [givingCoins, setGivingCoins] = useState(false);
   const [confirm, setConfirm] = useState<{
     open: boolean; type: 'block' | 'unblock' | 'delete' | 'makeAdmin' | 'removeAdmin' | 'grantPremium' | 'removePremium';
     user: Profile | null; loading: boolean;
@@ -84,6 +86,43 @@ export default function Users() {
 
   function startConfirm(type: typeof confirm['type'], user: Profile) {
     setConfirm({ open: true, type, user, loading: false });
+  }
+
+  async function handleGiveCoins() {
+    if (!detail || coinGiftAmount <= 0) return;
+    setGivingCoins(true);
+    const { id, display_name } = detail;
+    try {
+      const { data: current } = await supabase
+        .from('coin_balances')
+        .select('balance')
+        .eq('user_id', id)
+        .maybeSingle();
+
+      const newBalance = (current?.balance ?? 0) + coinGiftAmount;
+
+      const [balRes, txRes] = await Promise.all([
+        supabase.from('coin_balances').upsert(
+          { user_id: id, balance: newBalance, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id' }
+        ),
+        supabase.from('coin_transactions').insert({
+          user_id: id,
+          amount: coinGiftAmount,
+          transaction_type: 'admin_grant',
+          description: `Admin gift of ${coinGiftAmount} coins`,
+        }),
+      ]);
+
+      if (balRes.error) throw balRes.error;
+      if (txRes.error) throw txRes.error;
+
+      toast('success', `${coinGiftAmount} coins given to ${display_name}`);
+      setCoinGiftAmount(50);
+    } catch (err: any) {
+      toast('error', err.message ?? 'Failed to give coins');
+    }
+    setGivingCoins(false);
   }
 
   async function handleConfirm() {
@@ -292,6 +331,24 @@ export default function Users() {
                       </ModalBtn>
                 )}
               </div>
+              <div className="col-span-2 bg-slate-800 rounded-xl p-3 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs text-slate-500 mb-1">Give coins</p>
+                  <p className="text-xs text-slate-400">Add coins directly to this user's balance</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <input
+                    type="number"
+                    min="1"
+                    value={coinGiftAmount}
+                    onChange={e => setCoinGiftAmount(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-sm text-slate-200 text-right focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                  <ModalBtn onClick={handleGiveCoins} color="bg-indigo-600 hover:bg-indigo-700" disabled={givingCoins}>
+                    {givingCoins ? '…' : '🪙 Give'}
+                  </ModalBtn>
+                </div>
+              </div>
             </div>
             <div className="flex gap-2 flex-wrap">
               {detail.account_status === 'blocked'
@@ -342,8 +399,8 @@ function ActionBtn({ onClick, icon, label, color }: { onClick: () => void; icon:
   );
 }
 
-function ModalBtn({ onClick, color, children }: { onClick: () => void; color: string; children: React.ReactNode }) {
+function ModalBtn({ onClick, color, children, disabled }: { onClick: () => void; color: string; children: React.ReactNode; disabled?: boolean }) {
   return (
-    <button onClick={onClick} className={`px-4 py-2 rounded-xl text-sm font-medium text-white transition-colors ${color}`}>{children}</button>
+    <button onClick={onClick} disabled={disabled} className={`px-4 py-2 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${color}`}>{children}</button>
   );
 }
