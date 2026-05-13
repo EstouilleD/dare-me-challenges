@@ -15,6 +15,7 @@ interface Profile {
   avatar_url: string | null;
   profile_photo_url: string | null;
   role?: string;
+  isPremium?: boolean;
 }
 
 interface UserDetail extends Profile {
@@ -43,12 +44,14 @@ export default function Users() {
 
   async function load() {
     setLoading(true);
-    const [{ data: profiles }, { data: roles }] = await Promise.all([
+    const [{ data: profiles }, { data: roles }, { data: premiumSubs }] = await Promise.all([
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
       supabase.from('user_roles').select('user_id, role'),
+      supabase.from('subscriptions').select('user_id').eq('status', 'active').eq('plan', 'premium'),
     ]);
     const roleMap = new Map((roles ?? []).map(r => [r.user_id, r.role]));
-    setUsers((profiles ?? []).map(p => ({ ...p, role: roleMap.get(p.id) ?? 'user' })));
+    const premiumSet = new Set((premiumSubs ?? []).map((s: any) => s.user_id));
+    setUsers((profiles ?? []).map(p => ({ ...p, role: roleMap.get(p.id) ?? 'user', isPremium: premiumSet.has(p.id) })));
     setLoading(false);
   }
 
@@ -59,7 +62,8 @@ export default function Users() {
     return users.filter(u => {
       const matchSearch = !q || u.display_name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
       const matchStatus = statusFilter === 'all' || u.account_status === statusFilter ||
-        (statusFilter === 'admin' && u.role === 'admin');
+        (statusFilter === 'admin' && u.role === 'admin') ||
+        (statusFilter === 'premium' && u.isPremium);
       return matchSearch && matchStatus;
     });
   }, [users, search, statusFilter]);
@@ -146,21 +150,36 @@ export default function Users() {
         await supabase.from('user_roles').delete().eq('user_id', id).eq('role', 'admin');
         toast('success', `Admin role removed from ${display_name}`);
       } else if (confirm.type === 'grantPremium') {
-        await supabase.from('subscriptions').upsert({
-          user_id: id,
-          plan: 'premium',
-          status: 'active',
-          current_period_start: new Date().toISOString(),
-          current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-        }, { onConflict: 'user_id' });
+        const { data: existing, error: fetchError } = await supabase
+          .from('subscriptions').select('id').eq('user_id', id).maybeSingle();
+        if (fetchError) throw fetchError;
+        const periodStart = new Date().toISOString();
+        const periodEnd = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+        if (existing) {
+          const { error } = await supabase.from('subscriptions').update({
+            plan: 'premium', status: 'active',
+            current_period_start: periodStart, current_period_end: periodEnd,
+            updated_at: new Date().toISOString(),
+          }).eq('id', existing.id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('subscriptions').insert({
+            user_id: id, plan: 'premium', status: 'active',
+            current_period_start: periodStart, current_period_end: periodEnd,
+          });
+          if (error) throw error;
+        }
         toast('success', `Premium granted to ${display_name}`);
       } else if (confirm.type === 'removePremium') {
-        await supabase.from('subscriptions').update({ status: 'cancelled' }).eq('user_id', id);
+        const { error } = await supabase.from('subscriptions')
+          .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+          .eq('user_id', id).eq('plan', 'premium').eq('status', 'active');
+        if (error) throw error;
         toast('success', `Premium removed from ${display_name}`);
       }
       await load();
-    } catch {
-      toast('error', 'Action failed');
+    } catch (err: any) {
+      toast('error', err.message ?? 'Action failed');
     }
     setConfirm({ open: false, type: 'delete', user: null, loading: false });
     setDetail(null);
@@ -209,6 +228,7 @@ export default function Users() {
           <option value="blocked">Blocked</option>
           <option value="deleted">Deleted</option>
           <option value="admin">Admins</option>
+          <option value="premium">Premium</option>
         </select>
       </div>
 
@@ -242,7 +262,16 @@ export default function Users() {
                     </button>
                   </td>
                   <td className="px-5 py-3 text-slate-400">{user.email}</td>
-                  <td className="px-5 py-3">{statusBadge(user.account_status, user.role)}</td>
+                  <td className="px-5 py-3">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {statusBadge(user.account_status, user.role)}
+                      {user.isPremium && (
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-400">
+                          <Crown className="w-2.5 h-2.5" /> Premium
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-5 py-3 text-slate-500 text-xs">{format(new Date(user.created_at), 'MMM d, yyyy')}</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-1">
