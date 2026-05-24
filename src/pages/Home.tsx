@@ -132,16 +132,16 @@ const Home = () => {
 
   const ChallengeCard = ({ challenge }: { challenge: Challenge }) => (
     <Card
-      className="cursor-pointer hover:shadow-elevated transition-shadow"
+      className="cursor-pointer hover:shadow-elevated transition-shadow w-full overflow-hidden"
       onClick={() => navigate(`/challenge/${challenge.id}`)}
     >
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start justify-between gap-2 min-w-0">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <span className="text-2xl flex-shrink-0">{challenge.challenge_types.icon}</span>
             <div className="min-w-0 flex-1">
               <CardTitle className="text-lg truncate">{challenge.title}</CardTitle>
-              <CardDescription className="line-clamp-2 text-sm">
+              <CardDescription className="line-clamp-2 text-sm break-words">
                 {challenge.description}
               </CardDescription>
             </div>
@@ -151,22 +151,22 @@ const Home = () => {
           </Badge>
         </div>
         {challenge.communities && (
-          <div className="flex items-center gap-1.5 mt-1">
-            <Users className="h-3 w-3 text-primary" />
-            <span className="text-xs text-primary font-medium">{challenge.communities.name}</span>
+          <div className="flex items-center gap-1.5 mt-1 min-w-0">
+            <Users className="h-3 w-3 text-primary flex-shrink-0" />
+            <span className="text-xs text-primary font-medium truncate">{challenge.communities.name}</span>
           </div>
         )}
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2">
-            <Avatar className="h-6 w-6">
+        <div className="flex items-center justify-between text-sm gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <Avatar className="h-6 w-6 flex-shrink-0">
               <AvatarImage src={getAvatarSrc(challenge.profiles)} />
               <AvatarFallback>{challenge.profiles.display_name[0]}</AvatarFallback>
             </Avatar>
-            <span className="text-muted-foreground">{challenge.profiles.display_name}</span>
+            <span className="text-muted-foreground truncate">{challenge.profiles.display_name}</span>
           </div>
-          <span className="text-muted-foreground">
+          <span className="text-muted-foreground flex-shrink-0">
             {t("common.ends")} {format(new Date(challenge.end_date), "MMM d")}
           </span>
         </div>
