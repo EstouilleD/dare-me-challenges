@@ -153,26 +153,20 @@ export default function Users() {
         const { data: existing, error: fetchError } = await supabase
           .from('subscriptions').select('id').eq('user_id', id).maybeSingle();
         if (fetchError) throw fetchError;
-        const periodStart = new Date().toISOString();
-        const periodEnd = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
         if (existing) {
-          const { error } = await supabase.from('subscriptions').update({
-            plan: 'premium', status: 'active',
-            current_period_start: periodStart, current_period_end: periodEnd,
-            updated_at: new Date().toISOString(),
-          }).eq('id', existing.id);
+          const { error } = await supabase.from('subscriptions')
+            .update({ plan: 'premium', status: 'active' })
+            .eq('id', existing.id);
           if (error) throw error;
         } else {
-          const { error } = await supabase.from('subscriptions').insert({
-            user_id: id, plan: 'premium', status: 'active',
-            current_period_start: periodStart, current_period_end: periodEnd,
-          });
+          const { error } = await supabase.from('subscriptions')
+            .insert({ user_id: id, plan: 'premium', status: 'active' });
           if (error) throw error;
         }
         toast('success', `Premium granted to ${display_name}`);
       } else if (confirm.type === 'removePremium') {
         const { error } = await supabase.from('subscriptions')
-          .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+          .update({ status: 'cancelled' })
           .eq('user_id', id).eq('plan', 'premium').eq('status', 'active');
         if (error) throw error;
         toast('success', `Premium removed from ${display_name}`);
