@@ -327,7 +327,14 @@ const ChallengeDetail = () => {
     if (!session) return;
 
     // Upload file to storage
-    const fileExt = proofFile.name.split(".").pop();
+    const mimeToExt: Record<string, string> = {
+      "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp",
+      "image/heic": "heic", "image/heif": "heif",
+      "video/mp4": "mp4", "video/quicktime": "mov", "video/webm": "webm",
+    };
+    const fileExt = proofFile.name.includes(".")
+      ? proofFile.name.split(".").pop()
+      : (mimeToExt[proofFile.type] ?? "jpg");
     const filePath = `${session.user.id}/${Date.now()}.${fileExt}`;
     const { error: uploadError } = await supabase.storage
       .from("proofs")
@@ -900,7 +907,7 @@ const ChallengeDetail = () => {
                       <Video className="h-6 w-6 text-muted-foreground" />
                     </div>
                     <span className="text-sm text-muted-foreground">Tap to take or upload</span>
-                    <input type="file" accept="image/*,video/*" capture="environment" onChange={handleFileChange} className="hidden" />
+                    <input type="file" accept="image/*,video/*" onChange={handleFileChange} className="hidden" />
                   </label>
                 </div>
               ) : (
