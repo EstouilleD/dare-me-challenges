@@ -211,7 +211,7 @@ const Home = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 space-y-8">
+      <main className="container mx-auto px-4 pt-6 pb-16 space-y-8">
         <div className="flex flex-col items-center gap-2">
           <Button size="lg" onClick={() => navigate("/create-challenge")} className="shadow-glow w-full max-w-sm text-base py-6">
             <Plus className="h-5 w-5 mr-2" />

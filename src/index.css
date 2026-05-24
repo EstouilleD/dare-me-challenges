@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Push all page content above the Android nav bar / iOS home indicator */
+body {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
