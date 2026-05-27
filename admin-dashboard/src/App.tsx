@@ -10,6 +10,7 @@ import Communities from './pages/Communities';
 import Reports from './pages/Reports';
 import Coins from './pages/Coins';
 import Notifications from './pages/Notifications';
+import Moderation from './pages/Moderation';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isAdmin, loading } = useAuth();
@@ -49,6 +50,7 @@ export default function App() {
               <Route path="reports" element={<Reports />} />
               <Route path="coins" element={<Coins />} />
               <Route path="notifications" element={<Notifications />} />
+              <Route path="moderation" element={<Moderation />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

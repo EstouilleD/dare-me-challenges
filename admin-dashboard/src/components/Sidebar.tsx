@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Trophy, Users2, Flag,
-  Coins, Bell, LogOut, Zap, X,
+  Coins, Bell, LogOut, Zap, X, ShieldAlert,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -13,6 +13,7 @@ const links = [
   { to: '/reports', label: 'Reports', icon: Flag },
   { to: '/coins', label: 'Coins & Transactions', icon: Coins },
   { to: '/notifications', label: 'Notifications', icon: Bell },
+  { to: '/moderation', label: 'Moderation', icon: ShieldAlert },
 ];
 
 interface SidebarProps {
