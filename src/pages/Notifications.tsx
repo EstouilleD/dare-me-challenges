@@ -89,10 +89,10 @@ const Notifications = () => {
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-white hover:bg-white/20">
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-bold text-white">Notifications</h1>
+            <h1 className="text-lg font-bold text-white">{t("notifications.title")}</h1>
             {notifications.some(n => !n.is_read) && (
               <Button variant="ghost" size="sm" onClick={markAllRead} className="text-white hover:bg-white/20 gap-1 ml-auto mr-2">
-                <CheckCheck className="h-4 w-4" /> Mark all read
+                <CheckCheck className="h-4 w-4" /> {t("notifications.markAllRead")}
               </Button>
             )}
             <HeaderLogo />

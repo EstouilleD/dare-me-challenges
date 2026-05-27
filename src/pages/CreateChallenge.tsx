@@ -198,8 +198,15 @@ const CreateChallenge = () => {
 
     // Upload demo file if provided
     if (demoTab === "file" && demoFile) {
-      const fileExt = demoFile.name.split(".").pop();
-      const filePath = `demos/${session.user.id}/${Date.now()}.${fileExt}`;
+      const mimeToExt: Record<string, string> = {
+        "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp",
+        "image/heic": "heic", "image/heif": "heif",
+        "video/mp4": "mp4", "video/quicktime": "mov", "video/webm": "webm",
+      };
+      const fileExt = demoFile.name.includes(".")
+        ? demoFile.name.split(".").pop()
+        : (mimeToExt[demoFile.type] ?? "jpg");
+      const filePath = `${session.user.id}/demos/${Date.now()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from("proofs")
         .upload(filePath, demoFile);

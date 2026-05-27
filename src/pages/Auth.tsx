@@ -246,7 +246,7 @@ const Auth = () => {
   );
 
   return (
-    <div className="safe-top min-h-screen flex items-center justify-center p-4 bg-gradient-hero">
+    <div className="safe-top safe-bottom min-h-screen flex items-center justify-center p-4 bg-gradient-hero">
       <Card className="w-full max-w-md shadow-elevated">
         <CardHeader className="text-center space-y-2">
           <img src={logo} alt="Dare Me" className="h-20 mx-auto" />
