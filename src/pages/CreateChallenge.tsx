@@ -206,7 +206,7 @@ const CreateChallenge = () => {
       const fileExt = demoFile.name.includes(".")
         ? demoFile.name.split(".").pop()
         : (mimeToExt[demoFile.type] ?? "jpg");
-      const filePath = `${session.user.id}/demos/${Date.now()}.${fileExt}`;
+      const filePath = `${session.user.id}/demo_${Date.now()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from("proofs")
         .upload(filePath, demoFile);
