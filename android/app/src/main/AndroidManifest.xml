@@ -24,7 +24,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Deep link for OAuth callback -->
+            <!-- Android App Link: intercepts https://friend-dare-game.lovable.app/auth/callback
+                 Chrome CCT dispatches HTTPS redirects correctly (unlike custom schemes).
+                 Requires .well-known/assetlinks.json to be served at the domain. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https"
+                      android:host="friend-dare-game.lovable.app"
+                      android:pathPrefix="/auth/callback" />
+            </intent-filter>
+
+            <!-- Custom scheme fallback (iOS and legacy) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

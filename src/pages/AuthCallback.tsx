@@ -3,60 +3,62 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Capacitor } from "@capacitor/core";
 import { Browser } from "@capacitor/browser";
+import type { Session } from "@supabase/supabase-js";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleCallback = async () => {
-      try {
-        // Try exchanging code from URL (PKCE flow)
-        const url = new URL(window.location.href);
-        const code = url.searchParams.get("code");
+    let done = false;
 
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
-          if (error) {
-            console.error("OAuth callback error:", error.message);
-          }
-        } else {
-          // Hash fragment flow (implicit) — Supabase auto-detects tokens in hash
-          const { error } = await supabase.auth.getSession();
-          if (error) {
-            console.error("OAuth session error:", error.message);
-          }
-        }
-      } catch (err) {
-        console.error("OAuth callback exception:", err);
-      }
+    const goNext = async (session: Session) => {
+      if (done) return;
+      done = true;
 
-      // Close the system browser if running on native
       if (Capacitor.isNativePlatform()) {
-        try {
-          await Browser.close();
-        } catch {
-          // Browser might already be closed
-        }
+        try { await Browser.close(); } catch { /* already closed */ }
       }
 
-      const { data: { session: finalSession } } = await supabase.auth.getSession();
-      if (finalSession) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("avatar_url, profile_photo_url")
-          .eq("id", finalSession.user.id)
-          .single();
-        if (!profile?.avatar_url && !profile?.profile_photo_url) {
-          navigate("/profile-setup", { replace: true });
-        } else {
-          navigate("/", { replace: true });
-        }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("avatar_url, profile_photo_url")
+        .eq("id", session.user.id)
+        .single();
+
+      if (!profile?.avatar_url && !profile?.profile_photo_url) {
+        navigate("/profile-setup", { replace: true });
       } else {
-        navigate("/auth", { replace: true });
+        navigate("/", { replace: true });
       }
     };
 
-    handleCallback();
+    // Check if session already exists (detectSessionInUrl:true may have already
+    // processed the code before this effect runs)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) goNext(session);
+    });
+
+    // Also subscribe in case the exchange is still in progress
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
+        subscription.unsubscribe();
+        goNext(session);
+      }
+    });
+
+    // Bail out after 15 s so the user isn't stuck on the loading screen
+    const timer = setTimeout(() => {
+      if (!done) {
+        subscription.unsubscribe();
+        navigate("/auth", { replace: true });
+      }
+    }, 15_000);
+
+    return () => {
+      done = true;
+      subscription.unsubscribe();
+      clearTimeout(timer);
+    };
   }, [navigate]);
 
   return (

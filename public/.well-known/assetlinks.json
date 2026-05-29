@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.dareme.challenges",
+    "sha256_cert_fingerprints": [
+      "9C:37:B4:0D:CC:51:17:1A:B3:14:D9:16:45:0C:6B:E1:99:B9:35:3F:1B:3B:CB:1B:F5:67:16:61:BE:FC:EE:66"
+    ]
+  }
+}]

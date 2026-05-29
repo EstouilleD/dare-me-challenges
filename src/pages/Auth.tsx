@@ -172,7 +172,14 @@ const Auth = () => {
     setLoading(true);
 
     if (Capacitor.isNativePlatform()) {
-      const redirectUrl = "com.dareme.challenges://auth/callback";
+      // Android uses the HTTPS App Link URL so Chrome CCT dispatches it correctly.
+      // Chrome blocks custom-scheme redirects from server-side 302s (Chrome 80+),
+      // but always allows HTTPS redirects which Android App Links then intercept.
+      // iOS keeps the custom scheme which works fine with Safari.
+      const redirectUrl = Capacitor.getPlatform() === "android"
+        ? "https://friend-dare-game.lovable.app/auth/callback"
+        : "com.dareme.challenges://auth/callback";
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: { redirectTo: redirectUrl, skipBrowserRedirect: true },
@@ -186,37 +193,30 @@ const Auth = () => {
 
       let handled = false;
 
-      // onAuthStateChange catches SIGNED_IN (PKCE) and TOKEN_REFRESHED (implicit setSession)
+      // Cleans up all listeners. Safe to call multiple times.
+      const cleanup = () => {
+        handled = true;
+        authSub?.unsubscribe();
+        try { appUrlListenerRef?.remove(); } catch {}
+        try { browserFinishedRef?.remove(); } catch {}
+      };
+
       const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(async (event, session) => {
         if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session && !handled) {
-          handled = true;
-          authSub.unsubscribe();
+          cleanup();
+          try { await Browser.close(); } catch {}
           setLoading(false);
           await navigateAfterAuth(session.user.id);
         }
       });
 
-      const cleanup = async () => {
-        if (handled) return;
-        // Direct session check as final fallback
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session && !handled) {
-          handled = true;
-          authSub.unsubscribe();
-          setLoading(false);
-          await navigateAfterAuth(session.user.id);
-        } else if (!handled) {
-          handled = true;
-          authSub.unsubscribe();
-          setLoading(false);
-        }
-      };
+      // These refs are assigned below; closures capture by reference so it's safe.
+      let appUrlListenerRef: { remove: () => void } | null = null;
+      let browserFinishedRef: { remove: () => void } | null = null;
 
-      const appUrlListener = await CapacitorApp.addListener("appUrlOpen", async ({ url }) => {
-        appUrlListener.remove();
-        browserListener.remove();
-        await Browser.close().catch(() => {});
-
+      appUrlListenerRef = await CapacitorApp.addListener("appUrlOpen", async ({ url }) => {
+        // DEBUG: confirm deep link fired and show the URL prefix
+        toast({ title: "🔗 Deep link received", description: url.substring(0, 60) });
         try {
           const parsed = new URL(url);
           const code = parsed.searchParams.get("code");
@@ -225,28 +225,69 @@ const Auth = () => {
           const refreshToken = hashParams.get("refresh_token");
 
           if (code) {
+            toast({ title: "🔑 Exchanging code…" });
             const { error } = await supabase.auth.exchangeCodeForSession(url);
-            if (error) console.error("PKCE exchange failed:", error.message);
+            if (error) {
+              console.error("PKCE exchange failed:", error.message);
+              cleanup();
+              setLoading(false);
+              toast({ variant: "destructive", title: t("auth.signInFailed"), description: error.message });
+              return;
+            }
           } else if (accessToken && refreshToken) {
             const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-            if (error) console.error("Implicit setSession failed:", error.message);
+            if (error) {
+              console.error("Implicit setSession failed:", error.message);
+              cleanup();
+              setLoading(false);
+              toast({ variant: "destructive", title: t("auth.signInFailed"), description: error.message });
+              return;
+            }
+          } else {
+            // Deep link arrived with no usable params — just unblock the UI.
+            cleanup();
+            setLoading(false);
+            return;
           }
         } catch (e) {
           console.error("OAuth URL error:", e);
+          cleanup();
+          setLoading(false);
+          return;
         }
 
-        // Direct session check right after exchange, then wait for onAuthStateChange
-        await cleanup();
+        // onAuthStateChange handles navigation; this is a direct fallback in case
+        // the SIGNED_IN event already fired before our listener was ready.
+        if (!handled) {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            cleanup();
+            try { await Browser.close(); } catch {}
+            setLoading(false);
+            await navigateAfterAuth(session.user.id);
+          } else {
+            cleanup();
+            setLoading(false);
+          }
+        }
       });
 
-      const browserListener = await Browser.addListener("browserFinished", async () => {
-        browserListener.remove();
-        await new Promise(r => setTimeout(r, 2000));
-        appUrlListener.remove();
-        await cleanup();
+      // Safety net: when the browser closes for ANY reason (user pressed back,
+      // deep link fired, or CCT was dismissed), unblock the UI after a short
+      // grace period so the exchange can finish if it's still in progress.
+      browserFinishedRef = await Browser.addListener("browserFinished", () => {
+        // DEBUG: confirm browser closed event fires
+        toast({ title: "🌐 Browser closed" });
+        setTimeout(() => {
+          if (!handled) {
+            cleanup();
+            setLoading(false);
+            toast({ variant: "destructive", title: "Sign-in incomplete", description: "Deep link was not received. Check Supabase redirect URL." });
+          }
+        }, 4000);
       });
 
-      await Browser.open({ url: data.url, presentationStyle: "popover" });
+      await Browser.open({ url: data.url });
     } else {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,

@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Camera, Video, X, Link, Lock, Crown, Users } from "lucide-react";
+import { ArrowLeft, Camera, Video, X, Link, Lock, Crown, Users, Image as ImageIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { checkCreationLimit } from "@/hooks/usePremium";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
@@ -524,26 +524,59 @@ const CreateChallenge = () => {
                   </TabsContent>
                   <TabsContent value="file">
                     {!demoFile ? (
-                      <label className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-muted-foreground/30 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-accent/30 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <Camera className="h-5 w-5 text-muted-foreground" />
-                          <Video className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        <span className="text-sm text-muted-foreground">{t("createChallenge.demoUploadPrompt")}</span>
-                        <input
-                          type="file"
-                          accept="image/*,video/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            setDemoFile(file);
-                            if (file.type.startsWith("image/")) {
+                      <div className="grid grid-cols-3 gap-2">
+                        {/* Take photo */}
+                        <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-muted-foreground/30 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-accent/30 transition-colors text-center">
+                          <Camera className="h-6 w-6 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground leading-tight">{t("createChallenge.demoTakePhoto")}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setDemoFile(file);
                               setDemoPreview(URL.createObjectURL(file));
-                            }
-                          }}
-                          className="hidden"
-                        />
-                      </label>
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                        {/* Record video */}
+                        <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-muted-foreground/30 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-accent/30 transition-colors text-center">
+                          <Video className="h-6 w-6 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground leading-tight">{t("createChallenge.demoRecordVideo")}</span>
+                          <input
+                            type="file"
+                            accept="video/*"
+                            capture="environment"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setDemoFile(file);
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                        {/* Choose from gallery */}
+                        <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-muted-foreground/30 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-accent/30 transition-colors text-center">
+                          <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground leading-tight">{t("createChallenge.demoChooseGallery")}</span>
+                          <input
+                            type="file"
+                            accept="image/*,video/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setDemoFile(file);
+                              if (file.type.startsWith("image/")) {
+                                setDemoPreview(URL.createObjectURL(file));
+                              }
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
                     ) : (
                       <div className="relative">
                         <Button
