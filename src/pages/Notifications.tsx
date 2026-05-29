@@ -23,6 +23,7 @@ interface Notification {
 
 const Notifications = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { headerClass } = useAutoHideHeader();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
