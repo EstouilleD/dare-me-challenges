@@ -97,13 +97,14 @@ const InviteParticipants = ({ challengeId, challengeTitle, senderName, currentUs
     if (error) {
       toast({ variant: "destructive", title: "Failed to invite", description: error.message });
     } else {
-      await supabase.from("notifications").insert({
+      const { error: notifError } = await supabase.from("notifications").insert({
         user_id: user.id,
         type: "challenge_invite",
         title: "Challenge Invitation 🎯",
         message: `${senderName} invited you to join "${challengeTitle}"`,
         data: { challenge_id: challengeId, sender_id: currentUserId },
       });
+      if (notifError) console.error("Failed to send invite notification:", notifError.message);
       toast({ title: "Invitation sent!", description: `${user.display_name} has been invited.` });
       setInvitedUserIds(prev => new Set(prev).add(user.id));
       onInviteSent();
