@@ -108,8 +108,8 @@ const Auth = () => {
 
     setLoading(true);
     const redirectTo = Capacitor.isNativePlatform()
-      ? "com.dareme.challenges://profile-setup"
-      : `${window.location.origin}/profile-setup`;
+      ? "com.dareme.challenges://auth/callback"
+      : `${window.location.origin}/auth/callback`;
     const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: redirectTo } });
     setLoading(false);
 
