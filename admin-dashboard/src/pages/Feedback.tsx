@@ -38,19 +38,37 @@ export default function FeedbackPage() {
 
   async function load() {
     setLoading(true);
-    const { data, error } = await supabase
+
+    const { data: feedbackData, error } = await supabase
       .from('beta_feedback' as any)
-      .select('id, category, message, page_url, created_at, user_id, profiles(display_name, email)')
+      .select('id, category, message, page_url, created_at, user_id')
       .order('created_at', { ascending: false });
 
     if (error) {
       toast('error', `Failed to load feedback: ${error.message}`);
-    } else {
-      setItems((data ?? []).map((f: Record<string, unknown>) => ({
-        ...f,
-        profiles: Array.isArray(f.profiles) ? f.profiles[0] ?? null : f.profiles,
-      })) as Feedback[]);
+      setLoading(false);
+      return;
     }
+
+    const rows = (feedbackData ?? []) as Record<string, unknown>[];
+
+    // Fetch profiles for all unique user_ids
+    const userIds = [...new Set(rows.map(f => f.user_id as string).filter(Boolean))];
+    let profileMap: Record<string, { display_name: string; email: string }> = {};
+    if (userIds.length > 0) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('id, display_name, email')
+        .in('id', userIds);
+      for (const p of profileData ?? []) {
+        profileMap[p.id] = { display_name: p.display_name, email: p.email };
+      }
+    }
+
+    setItems(rows.map(f => ({
+      ...f,
+      profiles: profileMap[f.user_id as string] ?? null,
+    })) as Feedback[]);
     setLoading(false);
   }
 
