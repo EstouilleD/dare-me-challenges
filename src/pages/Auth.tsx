@@ -186,35 +186,58 @@ const Auth = () => {
 
       let handled = false;
 
-      const finish = async () => {
-        if (handled) return;
-        handled = true;
-        setLoading(false);
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
+      // onAuthStateChange is the most reliable signal — fires whenever
+      // supabase establishes a session, regardless of how we exchange the code.
+      const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === "SIGNED_IN" && session && !handled) {
+          handled = true;
+          authSub.unsubscribe();
+          setLoading(false);
           await navigateAfterAuth(session.user.id);
         }
-        // No session → user stays on auth page, loading is false
+      });
+
+      const cleanup = () => {
+        if (!handled) {
+          handled = true;
+          authSub.unsubscribe();
+          setLoading(false);
+          // No session established — stay on auth page
+        }
       };
 
       const appUrlListener = await CapacitorApp.addListener("appUrlOpen", async ({ url }) => {
         appUrlListener.remove();
         browserListener.remove();
         await Browser.close().catch(() => {});
+
         try {
-          await supabase.auth.exchangeCodeForSession(url);
+          // Handle both PKCE (?code=) and implicit (#access_token=) responses
+          const parsed = new URL(url);
+          const code = parsed.searchParams.get("code");
+          const hashParams = new URLSearchParams(parsed.hash.substring(1));
+          const accessToken = hashParams.get("access_token");
+          const refreshToken = hashParams.get("refresh_token");
+
+          if (code) {
+            await supabase.auth.exchangeCodeForSession(url);
+          } else if (accessToken && refreshToken) {
+            await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          }
         } catch (e) {
-          console.error("OAuth exchangeCodeForSession failed:", e);
+          console.error("OAuth session error:", e);
         }
-        await finish();
+
+        // Give onAuthStateChange 2 s to fire, then give up
+        setTimeout(cleanup, 2000);
       });
 
-      // Wait 1.5 s after browser closes before giving up — gives appUrlOpen time to fire first
       const browserListener = await Browser.addListener("browserFinished", async () => {
         browserListener.remove();
-        await new Promise(r => setTimeout(r, 1500));
+        // Wait for appUrlOpen to fire before giving up
+        await new Promise(r => setTimeout(r, 2000));
         appUrlListener.remove();
-        await finish();
+        cleanup();
       });
 
       await Browser.open({ url: data.url, presentationStyle: "popover" });
