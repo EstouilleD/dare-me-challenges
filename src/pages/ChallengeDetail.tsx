@@ -789,6 +789,8 @@ const ChallengeDetail = () => {
               {isOwner && challenge.status === "active" && (
                 <InviteParticipants
                   challengeId={challenge.id}
+                  challengeTitle={challenge.title}
+                  senderName={challenge.profiles.display_name}
                   currentUserId={currentUserId}
                   existingParticipantIds={participants.map(p => p.user_id)}
                   onInviteSent={loadData}

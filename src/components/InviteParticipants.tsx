@@ -25,12 +25,14 @@ interface Profile {
 
 interface InviteParticipantsProps {
   challengeId: string;
+  challengeTitle: string;
+  senderName: string;
   currentUserId: string;
   existingParticipantIds: string[];
   onInviteSent: () => void;
 }
 
-const InviteParticipants = ({ challengeId, currentUserId, existingParticipantIds, onInviteSent }: InviteParticipantsProps) => {
+const InviteParticipants = ({ challengeId, challengeTitle, senderName, currentUserId, existingParticipantIds, onInviteSent }: InviteParticipantsProps) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
 
@@ -95,6 +97,13 @@ const InviteParticipants = ({ challengeId, currentUserId, existingParticipantIds
     if (error) {
       toast({ variant: "destructive", title: "Failed to invite", description: error.message });
     } else {
+      await supabase.from("notifications").insert({
+        user_id: user.id,
+        type: "challenge_invite",
+        title: "Challenge Invitation 🎯",
+        message: `${senderName} invited you to join "${challengeTitle}"`,
+        data: { challenge_id: challengeId, sender_id: currentUserId },
+      });
       toast({ title: "Invitation sent!", description: `${user.display_name} has been invited.` });
       setInvitedUserIds(prev => new Set(prev).add(user.id));
       onInviteSent();
