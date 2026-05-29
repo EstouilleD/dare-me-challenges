@@ -178,41 +178,46 @@ const Auth = () => {
         options: { redirectTo: redirectUrl, skipBrowserRedirect: true },
       });
 
-      if (error) {
+      if (error || !data?.url) {
         setLoading(false);
-        toast({ variant: "destructive", title: t("auth.signInFailed"), description: error.message });
+        if (error) toast({ variant: "destructive", title: t("auth.signInFailed"), description: error.message });
         return;
       }
 
-      if (data?.url) {
-        const appUrlListener = await CapacitorApp.addListener("appUrlOpen", async ({ url }) => {
-          appUrlListener.remove();
-          browserListener.remove();
-          await Browser.close();
-          try {
-            await supabase.auth.exchangeCodeForSession(url);
-          } catch {
-            await supabase.auth.getSession();
-          }
-          setLoading(false);
-          const { data: { session: oauthSession } } = await supabase.auth.getSession();
-          if (oauthSession) {
-            await navigateAfterAuth(oauthSession.user.id);
-          } else {
-            navigate("/auth", { replace: true });
-          }
-        });
+      let handled = false;
 
-        const browserListener = await Browser.addListener("browserFinished", () => {
-          setLoading(false);
-          browserListener.remove();
-          appUrlListener.remove();
-        });
-
-        await Browser.open({ url: data.url, presentationStyle: "popover" });
-      } else {
+      const finish = async () => {
+        if (handled) return;
+        handled = true;
         setLoading(false);
-      }
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await navigateAfterAuth(session.user.id);
+        }
+        // No session → user stays on auth page, loading is false
+      };
+
+      const appUrlListener = await CapacitorApp.addListener("appUrlOpen", async ({ url }) => {
+        appUrlListener.remove();
+        browserListener.remove();
+        await Browser.close().catch(() => {});
+        try {
+          await supabase.auth.exchangeCodeForSession(url);
+        } catch (e) {
+          console.error("OAuth exchangeCodeForSession failed:", e);
+        }
+        await finish();
+      });
+
+      // Wait 1.5 s after browser closes before giving up — gives appUrlOpen time to fire first
+      const browserListener = await Browser.addListener("browserFinished", async () => {
+        browserListener.remove();
+        await new Promise(r => setTimeout(r, 1500));
+        appUrlListener.remove();
+        await finish();
+      });
+
+      await Browser.open({ url: data.url, presentationStyle: "popover" });
     } else {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
