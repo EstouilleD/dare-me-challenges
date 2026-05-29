@@ -186,10 +186,9 @@ const Auth = () => {
 
       let handled = false;
 
-      // onAuthStateChange is the most reliable signal — fires whenever
-      // supabase establishes a session, regardless of how we exchange the code.
+      // onAuthStateChange catches SIGNED_IN (PKCE) and TOKEN_REFRESHED (implicit setSession)
       const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === "SIGNED_IN" && session && !handled) {
+        if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session && !handled) {
           handled = true;
           authSub.unsubscribe();
           setLoading(false);
@@ -197,12 +196,19 @@ const Auth = () => {
         }
       });
 
-      const cleanup = () => {
-        if (!handled) {
+      const cleanup = async () => {
+        if (handled) return;
+        // Direct session check as final fallback
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && !handled) {
           handled = true;
           authSub.unsubscribe();
           setLoading(false);
-          // No session established — stay on auth page
+          await navigateAfterAuth(session.user.id);
+        } else if (!handled) {
+          handled = true;
+          authSub.unsubscribe();
+          setLoading(false);
         }
       };
 
@@ -212,7 +218,6 @@ const Auth = () => {
         await Browser.close().catch(() => {});
 
         try {
-          // Handle both PKCE (?code=) and implicit (#access_token=) responses
           const parsed = new URL(url);
           const code = parsed.searchParams.get("code");
           const hashParams = new URLSearchParams(parsed.hash.substring(1));
@@ -220,24 +225,25 @@ const Auth = () => {
           const refreshToken = hashParams.get("refresh_token");
 
           if (code) {
-            await supabase.auth.exchangeCodeForSession(url);
+            const { error } = await supabase.auth.exchangeCodeForSession(url);
+            if (error) console.error("PKCE exchange failed:", error.message);
           } else if (accessToken && refreshToken) {
-            await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+            const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+            if (error) console.error("Implicit setSession failed:", error.message);
           }
         } catch (e) {
-          console.error("OAuth session error:", e);
+          console.error("OAuth URL error:", e);
         }
 
-        // Give onAuthStateChange 2 s to fire, then give up
-        setTimeout(cleanup, 2000);
+        // Direct session check right after exchange, then wait for onAuthStateChange
+        await cleanup();
       });
 
       const browserListener = await Browser.addListener("browserFinished", async () => {
         browserListener.remove();
-        // Wait for appUrlOpen to fire before giving up
         await new Promise(r => setTimeout(r, 2000));
         appUrlListener.remove();
-        cleanup();
+        await cleanup();
       });
 
       await Browser.open({ url: data.url, presentationStyle: "popover" });
