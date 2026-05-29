@@ -211,6 +211,9 @@
     "demoUpload": "Upload",
     "demoUrlPlaceholder": "https://youtube.com/...",
     "demoUploadPrompt": "Upload a photo or video",
+    "demoTakePhoto": "Take a photo",
+    "demoRecordVideo": "Record a video",
+    "demoChooseGallery": "Choose from gallery",
     "creating": "Creating...",
     "limitButton": "Monthly limit reached",
     "submitButton": "Create Challenge 🚀",
@@ -285,7 +288,11 @@
     "title": "Notifications",
     "loading": "Loading notifications...",
     "markAllRead": "Mark all read",
-    "empty": "No notifications yet"
+    "empty": "No notifications yet",
+    "accept": "Accept",
+    "decline": "Decline",
+    "inviteAccepted": "Invitation accepted!",
+    "inviteDeclined": "Invitation declined"
   },
   "notFound": {
     "message": "Oops! Page not found",

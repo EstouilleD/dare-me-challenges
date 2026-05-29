@@ -211,6 +211,9 @@
     "demoUpload": "Importer",
     "demoUrlPlaceholder": "https://youtube.com/...",
     "demoUploadPrompt": "Importer une photo ou une vidéo",
+    "demoTakePhoto": "Prendre une photo",
+    "demoRecordVideo": "Enregistrer une vidéo",
+    "demoChooseGallery": "Choisir depuis la galerie",
     "creating": "Création...",
     "limitButton": "Limite mensuelle atteinte",
     "submitButton": "Créer le défi 🚀",
@@ -285,7 +288,11 @@
     "title": "Notifications",
     "loading": "Chargement des notifications...",
     "markAllRead": "Tout marquer comme lu",
-    "empty": "Aucune notification"
+    "empty": "Aucune notification",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "inviteAccepted": "Invitation acceptée !",
+    "inviteDeclined": "Invitation refusée"
   },
   "notFound": {
     "message": "Oups ! Page introuvable",

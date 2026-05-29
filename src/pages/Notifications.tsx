@@ -4,12 +4,13 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Check, CheckCheck } from "lucide-react";
+import { ArrowLeft, CheckCheck } from "lucide-react";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import HeaderLogo from "@/components/HeaderLogo";
 import { formatDistanceToNow } from "date-fns";
 import { usePagination } from "@/hooks/usePagination";
 import ShowMoreButton from "@/components/ShowMoreButton";
+import { useToast } from "@/hooks/use-toast";
 
 interface Notification {
   id: string;
@@ -24,9 +25,12 @@ interface Notification {
 const Notifications = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { toast } = useToast();
   const { headerClass } = useAutoHideHeader();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actioned, setActioned] = useState<Record<string, "accepted" | "declined">>({});
+  const [userId, setUserId] = useState<string | null>(null);
   const { visibleItems, hasMore, showMore, totalCount, visibleCount } = usePagination(notifications, { pageSize: 15 });
 
   useEffect(() => {
@@ -36,6 +40,7 @@ const Notifications = () => {
   const loadNotifications = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { navigate("/auth"); return; }
+    setUserId(session.user.id);
 
     const { data } = await supabase
       .from("notifications")
@@ -56,28 +61,44 @@ const Notifications = () => {
   };
 
   const markAllRead = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    if (!userId) return;
     await supabase
       .from("notifications")
       .update({ is_read: true })
-      .eq("user_id", session.user.id)
+      .eq("user_id", userId)
       .eq("is_read", false);
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
   };
 
+  const handleAcceptInvite = (notif: Notification, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActioned(prev => ({ ...prev, [notif.id]: "accepted" }));
+    navigate(`/join/${notif.data.challenge_id}`);
+  };
+
+  const handleDeclineInvite = async (notif: Notification, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!userId) return;
+    await supabase
+      .from("invitations")
+      .update({ status: "declined" })
+      .eq("challenge_id", notif.data.challenge_id)
+      .eq("recipient_user_id", userId)
+      .eq("status", "pending");
+    setActioned(prev => ({ ...prev, [notif.id]: "declined" }));
+    toast({ title: t("notifications.inviteDeclined") });
+  };
+
   const handleNotificationClick = (notif: Notification) => {
-    if (notif.data?.challenge_id) {
-      navigate(`/challenge/${notif.data.challenge_id}`);
-    } else if (notif.data?.proof_id) {
-      navigate(`/proof/${notif.data.proof_id}`);
-    }
+    if (notif.type === "challenge_invite") return; // handled by buttons
+    if (notif.data?.challenge_id) navigate(`/challenge/${notif.data.challenge_id}`);
+    else if (notif.data?.proof_id) navigate(`/proof/${notif.data.proof_id}`);
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading notifications...</p>
+        <p className="text-muted-foreground">{t("notifications.loading")}</p>
       </div>
     );
   }
@@ -105,36 +126,69 @@ const Notifications = () => {
         {notifications.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <p className="text-4xl mb-3">🔔</p>
-            <p>No notifications yet</p>
+            <p>{t("notifications.empty")}</p>
           </div>
         ) : (
           <>
-            {visibleItems.map(notif => (
-              <Card
-                key={notif.id}
-                className={`cursor-pointer transition-all hover:shadow-md ${
-                  !notif.is_read ? "border-primary/30 bg-primary/5" : ""
-                }`}
-                onClick={() => handleNotificationClick(notif)}
-              >
-                <CardContent className="p-4 flex items-start gap-3">
-                  <div className="text-2xl flex-shrink-0 mt-0.5">
-                    {notif.title.split(" ")[0]}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm leading-snug ${!notif.is_read ? "font-semibold" : ""}`}>
-                      {notif.message}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true })}
-                    </p>
-                  </div>
-                  {!notif.is_read && (
-                    <div className="h-2.5 w-2.5 rounded-full bg-primary flex-shrink-0 mt-1.5" />
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+            {visibleItems.map(notif => {
+              const isInvite = notif.type === "challenge_invite";
+              const inviteAction = actioned[notif.id];
+
+              return (
+                <Card
+                  key={notif.id}
+                  className={`transition-all ${
+                    !notif.is_read ? "border-primary/30 bg-primary/5" : ""
+                  } ${!isInvite ? "cursor-pointer hover:shadow-md" : ""}`}
+                  onClick={() => handleNotificationClick(notif)}
+                >
+                  <CardContent className="p-4 flex items-start gap-3">
+                    <div className="text-2xl flex-shrink-0 mt-0.5">
+                      {notif.title.split(" ")[0]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm leading-snug ${!notif.is_read ? "font-semibold" : ""}`}>
+                        {notif.message}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true })}
+                      </p>
+
+                      {/* Accept / Decline buttons for challenge invites */}
+                      {isInvite && !inviteAction && (
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            size="sm"
+                            className="flex-1 h-8 text-xs"
+                            onClick={e => handleAcceptInvite(notif, e)}
+                          >
+                            {t("notifications.accept")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 h-8 text-xs"
+                            onClick={e => handleDeclineInvite(notif, e)}
+                          >
+                            {t("notifications.decline")}
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Actioned state */}
+                      {isInvite && inviteAction && (
+                        <p className={`text-xs mt-2 font-medium ${inviteAction === "accepted" ? "text-primary" : "text-muted-foreground"}`}>
+                          {inviteAction === "accepted" ? `✓ ${t("notifications.inviteAccepted")}` : `✗ ${t("notifications.inviteDeclined")}`}
+                        </p>
+                      )}
+                    </div>
+                    {!notif.is_read && (
+                      <div className="h-2.5 w-2.5 rounded-full bg-primary flex-shrink-0 mt-1.5" />
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
             {hasMore && <ShowMoreButton onClick={showMore} visibleCount={visibleCount} totalCount={totalCount} />}
           </>
         )}
