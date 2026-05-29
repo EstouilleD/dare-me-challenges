@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Search, MessageSquarePlus, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { Search, MessageSquarePlus, X, ChevronLeft, ChevronRight, Trash2, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../contexts/ToastContext';
@@ -12,6 +12,7 @@ interface Feedback {
   page_url: string | null;
   created_at: string;
   user_id: string;
+  resolved: boolean;
   profiles: { display_name: string; email: string } | null;
 }
 
@@ -24,14 +25,18 @@ const CATEGORIES: Record<string, { label: string; emoji: string; color: string }
 
 const PAGE_SIZE = 25;
 
+type ResolvedFilter = 'all' | 'open' | 'resolved';
+
 export default function FeedbackPage() {
   const { toast } = useToast();
   const [items, setItems] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('all');
+  const [resolvedFilter, setResolvedFilter] = useState<ResolvedFilter>('open');
   const [page, setPage] = useState(0);
   const [detail, setDetail] = useState<Feedback | null>(null);
+  const [toggling, setToggling] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<{ open: boolean; item: Feedback | null; loading: boolean }>({
     open: false, item: null, loading: false,
   });
@@ -41,7 +46,8 @@ export default function FeedbackPage() {
 
     const { data: feedbackData, error } = await supabase
       .from('beta_feedback' as any)
-      .select('id, category, message, page_url, created_at, user_id')
+      .select('id, category, message, page_url, created_at, user_id, resolved')
+      .order('resolved', { ascending: true })
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -52,7 +58,6 @@ export default function FeedbackPage() {
 
     const rows = (feedbackData ?? []) as Record<string, unknown>[];
 
-    // Fetch profiles for all unique user_ids
     const userIds = [...new Set(rows.map(f => f.user_id as string).filter(Boolean))];
     let profileMap: Record<string, { display_name: string; email: string }> = {};
     if (userIds.length > 0) {
@@ -67,12 +72,30 @@ export default function FeedbackPage() {
 
     setItems(rows.map(f => ({
       ...f,
+      resolved: (f.resolved as boolean) ?? false,
       profiles: profileMap[f.user_id as string] ?? null,
     })) as Feedback[]);
     setLoading(false);
   }
 
   useEffect(() => { load(); }, []);
+
+  async function toggleResolved(f: Feedback, e: React.MouseEvent) {
+    e.stopPropagation();
+    setToggling(f.id);
+    const newVal = !f.resolved;
+    const { error } = await supabase
+      .from('beta_feedback' as any)
+      .update({ resolved: newVal } as any)
+      .eq('id', f.id);
+    if (error) {
+      toast('error', 'Failed to update');
+    } else {
+      setItems(prev => prev.map(item => item.id === f.id ? { ...item, resolved: newVal } : item));
+      if (detail?.id === f.id) setDetail(d => d ? { ...d, resolved: newVal } : d);
+    }
+    setToggling(null);
+  }
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -83,19 +106,23 @@ export default function FeedbackPage() {
         || f.profiles?.email.toLowerCase().includes(q)
         || (f.page_url ?? '').toLowerCase().includes(q);
       const matchCat = catFilter === 'all' || f.category === catFilter;
-      return matchSearch && matchCat;
+      const matchResolved = resolvedFilter === 'all'
+        || (resolvedFilter === 'open' && !f.resolved)
+        || (resolvedFilter === 'resolved' && f.resolved);
+      return matchSearch && matchCat && matchResolved;
     });
-  }, [items, search, catFilter]);
+  }, [items, search, catFilter, resolvedFilter]);
 
   const pages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
-  // Stats per category
   const stats = useMemo(() => {
     const counts: Record<string, number> = {};
-    for (const f of items) counts[f.category] = (counts[f.category] ?? 0) + 1;
+    for (const f of items) if (!f.resolved) counts[f.category] = (counts[f.category] ?? 0) + 1;
     return counts;
   }, [items]);
+
+  const openCount = items.filter(f => !f.resolved).length;
 
   async function handleDelete() {
     if (!confirm.item) return;
@@ -122,7 +149,7 @@ export default function FeedbackPage() {
 
   return (
     <div className="space-y-5">
-      {/* Header stats */}
+      {/* Header stats — open items only */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {Object.entries(CATEGORIES).map(([key, meta]) => (
           <button
@@ -157,10 +184,19 @@ export default function FeedbackPage() {
           onChange={e => { setCatFilter(e.target.value); setPage(0); }}
           className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
-          <option value="all">All categories ({items.length})</option>
+          <option value="all">All categories</option>
           {Object.entries(CATEGORIES).map(([key, meta]) => (
-            <option key={key} value={key}>{meta.emoji} {meta.label} ({stats[key] ?? 0})</option>
+            <option key={key} value={key}>{meta.emoji} {meta.label}</option>
           ))}
+        </select>
+        <select
+          value={resolvedFilter}
+          onChange={e => { setResolvedFilter(e.target.value as ResolvedFilter); setPage(0); }}
+          className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="open">Open ({openCount})</option>
+          <option value="resolved">Resolved ({items.length - openCount})</option>
+          <option value="all">All ({items.length})</option>
         </select>
       </div>
 
@@ -177,39 +213,51 @@ export default function FeedbackPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-800">
-                {['User', 'Category', 'Message', 'Page', 'Date', ''].map(h => (
-                  <th key={h} className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">{h}</th>
+                {['Done', 'User', 'Category', 'Message', 'Page', 'Date', ''].map(h => (
+                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} className="text-center py-12 text-slate-500">Loading…</td></tr>
+                <tr><td colSpan={7} className="text-center py-12 text-slate-500">Loading…</td></tr>
               ) : paginated.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-12 text-slate-500">No feedback found</td></tr>
+                <tr><td colSpan={7} className="text-center py-12 text-slate-500">No feedback found</td></tr>
               ) : paginated.map(f => (
                 <tr
                   key={f.id}
-                  className="border-b border-slate-800/50 hover:bg-slate-800/40 transition-colors cursor-pointer"
+                  className={`border-b border-slate-800/50 hover:bg-slate-800/40 transition-colors cursor-pointer ${f.resolved ? 'opacity-50' : ''}`}
                   onClick={() => setDetail(f)}
                 >
-                  <td className="px-5 py-3">
+                  {/* Resolved checkbox */}
+                  <td className="px-4 py-3" onClick={e => toggleResolved(f, e)}>
+                    <button
+                      disabled={toggling === f.id}
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0 ${
+                        f.resolved
+                          ? 'bg-emerald-500 border-emerald-500 text-white'
+                          : 'border-slate-600 hover:border-emerald-500'
+                      }`}
+                      title={f.resolved ? 'Mark as open' : 'Mark as resolved'}
+                    >
+                      {f.resolved && <CheckCircle2 className="w-3.5 h-3.5" />}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
                     <p className="text-slate-200 text-xs font-medium">{f.profiles?.display_name ?? '—'}</p>
                     <p className="text-slate-500 text-[11px]">{f.profiles?.email ?? '—'}</p>
                   </td>
-                  <td className="px-5 py-3">{catBadge(f.category)}</td>
-                  <td className="px-5 py-3 text-slate-300 text-xs max-w-sm">
+                  <td className="px-4 py-3">{catBadge(f.category)}</td>
+                  <td className="px-4 py-3 text-slate-300 text-xs max-w-sm">
                     <p className="line-clamp-2">{f.message}</p>
                   </td>
-                  <td className="px-5 py-3 text-slate-500 text-[11px] max-w-[140px] truncate">
-                    {f.page_url ?? '—'}
-                  </td>
-                  <td className="px-5 py-3 text-slate-500 text-xs whitespace-nowrap">
+                  <td className="px-4 py-3 text-slate-500 text-[11px] max-w-[140px] truncate">{f.page_url ?? '—'}</td>
+                  <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">
                     {format(new Date(f.created_at), 'MMM d, yyyy')}
                     <br />
                     <span className="text-[11px]">{format(new Date(f.created_at), 'HH:mm')}</span>
                   </td>
-                  <td className="px-5 py-3">
+                  <td className="px-4 py-3">
                     <button
                       onClick={e => { e.stopPropagation(); setConfirm({ open: true, item: f, loading: false }); }}
                       className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors"
@@ -245,6 +293,9 @@ export default function FeedbackPage() {
             <div className="flex items-center gap-2 mb-4">
               {catBadge(detail.category)}
               <span className="text-xs text-slate-500">{format(new Date(detail.created_at), 'MMM d, yyyy · HH:mm')}</span>
+              {detail.resolved && (
+                <span className="ml-auto px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400">✓ Resolved</span>
+              )}
             </div>
 
             <div className="space-y-3 mb-5">
@@ -265,12 +316,25 @@ export default function FeedbackPage() {
               </div>
             </div>
 
-            <button
-              onClick={() => { setDetail(null); setConfirm({ open: true, item: detail, loading: false }); }}
-              className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl transition-colors"
-            >
-              Delete
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={e => toggleResolved(detail, e)}
+                disabled={toggling === detail.id}
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-colors ${
+                  detail.resolved
+                    ? 'bg-slate-700 hover:bg-slate-600 text-slate-200'
+                    : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                }`}
+              >
+                {detail.resolved ? '↩ Mark as open' : '✓ Mark as resolved'}
+              </button>
+              <button
+                onClick={() => { setDetail(null); setConfirm({ open: true, item: detail, loading: false }); }}
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl transition-colors"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}
