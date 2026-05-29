@@ -134,9 +134,10 @@ const CommunityDetail = () => {
     setMembers((mems as any) || []);
 
     if (membership) {
-      const { data: p } = await supabase
+      const { data: p, error: postsError } = await supabase
         .from("community_posts").select("id, text, created_at, user_id, profiles(id, display_name, avatar_url, profile_photo_url, use_avatar)")
         .eq("community_id", c.id).order("created_at", { ascending: false }).limit(50);
+      if (postsError) console.error("[community feed]", postsError.message);
       setPosts((p as any) || []);
 
       // Load pinned post
