@@ -148,6 +148,8 @@ const ChallengeDetail = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [editCategoryId, setEditCategoryId] = useState<string | null>(null);
+  const [categories, setCategories] = useState<{ id: string; name: string; icon: string }[]>([]);
   const [saving, setSaving] = useState(false);
 
   // Report state
@@ -188,6 +190,9 @@ const ChallengeDetail = () => {
     }
 
     setChallenge(challengeData as Challenge);
+
+    const { data: cats } = await supabase.from("categories").select("id, name, icon").order("sort_order");
+    setCategories(cats || []);
 
     const { data: parts } = await supabase
       .from("participations")
@@ -380,7 +385,7 @@ const ChallengeDetail = () => {
     setSaving(true);
     const { error } = await supabase
       .from("challenges")
-      .update({ title: editTitle.trim(), description: editDescription.trim() })
+      .update({ title: editTitle.trim(), description: editDescription.trim(), category_id: editCategoryId || null })
       .eq("id", challenge.id);
     setSaving(false);
     if (error) {
@@ -420,6 +425,7 @@ const ChallengeDetail = () => {
     if (!challenge) return;
     setEditTitle(challenge.title);
     setEditDescription(challenge.description);
+    setEditCategoryId((challenge as any).category_id || null);
     setEditDialogOpen(true);
   };
 
@@ -669,7 +675,7 @@ const ChallengeDetail = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Challenge</DialogTitle>
-            <DialogDescription>Update the challenge title and description.</DialogDescription>
+            <DialogDescription>Update the challenge title, description and category.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -688,6 +694,22 @@ const ChallengeDetail = () => {
                 onChange={(e) => setEditDescription(e.target.value)}
                 rows={4}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select value={editCategoryId || "none"} onValueChange={(v) => setEditCategoryId(v === "none" ? null : v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="No category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No category</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.icon} {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <Button onClick={handleEditChallenge} disabled={saving || !editTitle.trim()} className="w-full">
               {saving ? "Saving..." : "Save Changes"}
