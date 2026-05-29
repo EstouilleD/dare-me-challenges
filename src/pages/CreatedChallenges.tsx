@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import HeaderLogo from "@/components/HeaderLogo";
 import { usePagination } from "@/hooks/usePagination";
@@ -14,6 +14,7 @@ import ShowMoreButton from "@/components/ShowMoreButton";
 
 const CreatedChallenges = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { headerClass } = useAutoHideHeader();
   const [challenges, setChallenges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,15 +44,27 @@ const CreatedChallenges = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="text-white hover:bg-white/20">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-bold text-white truncate flex-1">Challenges Created</h1>
+          <h1 className="text-lg font-bold text-white truncate flex-1">{t("createdChallenges.title")}</h1>
+          <Button size="sm" onClick={() => navigate("/create-challenge")} className="bg-white/20 hover:bg-white/30 text-white border-0 gap-1 flex-shrink-0">
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">{t("home.createChallenge")}</span>
+          </Button>
           <HeaderLogo />
         </div>
       </header>
       <main className="container mx-auto px-4 py-6">
         {loading ? (
-          <p className="text-center text-muted-foreground py-8">Loading...</p>
+          <p className="text-center text-muted-foreground py-8">{t("home.loadingChallenges")}</p>
         ) : challenges.length === 0 ? (
-          <Card><CardContent className="py-8 text-center text-muted-foreground">You haven't created any challenges yet.</CardContent></Card>
+          <Card>
+            <CardContent className="py-10 text-center space-y-4">
+              <p className="text-muted-foreground">{t("home.noCreatedChallenges")}</p>
+              <Button onClick={() => navigate("/create-challenge")} className="gap-2">
+                <Plus className="h-4 w-4" />
+                {t("home.createChallenge")}
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           <div className="grid gap-4">
             {visibleItems.map((c: any) => (
@@ -71,7 +84,7 @@ const CreatedChallenges = () => {
                 <CardContent className="pt-0">
                   <div className="flex items-center justify-between text-sm text-muted-foreground">
                     <span>{c.is_public ? "🌍 Public" : "🔒 Private"}</span>
-                    <span>Ends {format(new Date(c.end_date), "MMM d")}</span>
+                    <span>{t("common.ends")} {format(new Date(c.end_date), "MMM d")}</span>
                   </div>
                 </CardContent>
               </Card>
