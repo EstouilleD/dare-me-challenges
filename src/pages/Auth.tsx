@@ -176,10 +176,13 @@ const Auth = () => {
       // Chrome blocks custom-scheme redirects from server-side 302s (Chrome 80+),
       // but always allows HTTPS redirects which Android App Links then intercept.
       // iOS keeps the custom scheme which works fine with Safari.
-      // Android: use HTTPS so Chrome CCT allows the server-side redirect.
-      // The AuthCallback web page exchanges the code and then does a JS navigation
-      // to com.dareme.challenges://auth/session?tokens — Chrome allows JS-initiated
-      // custom scheme navigations in CCT, which triggers appUrlOpen in the app.
+      // Android: use the HTTPS App Link URL. When assetlinks.json is verified,
+      // Android intercepts https://friend-dare-game.lovable.app/auth/callback
+      // BEFORE the CCT even loads the page, fires appUrlOpen with ?code=, and
+      // exchangeCodeForSession runs in the app. This bypasses Chrome's block on
+      // custom-scheme redirects entirely. The ?source=android param is preserved
+      // by Supabase and used by AuthCallback as a JS-redirect fallback if App
+      // Links verification hasn't happened yet.
       // iOS: keep the custom scheme which works fine with Safari.
       const redirectUrl = Capacitor.getPlatform() === "android"
         ? "https://friend-dare-game.lovable.app/auth/callback?source=android"
