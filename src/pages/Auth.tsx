@@ -15,6 +15,12 @@ import { Globe, Eye, EyeOff } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Capacitor } from "@capacitor/core";
 import { Browser } from "@capacitor/browser";
+import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
+
+// Web OAuth client ID — used by the native SDK to request an ID token
+// that Supabase can verify server-side.
+const GOOGLE_WEB_CLIENT_ID =
+  "699351948587-oqr8kolidgfq1ekuqjjb0ef667cv8nn8.apps.googleusercontent.com";
 
 interface PasswordInputProps {
   id: string;
@@ -167,23 +173,36 @@ const Auth = () => {
   const handleOAuth = async (provider: "google" | "apple") => {
     setLoading(true);
     try {
-      if (Capacitor.isNativePlatform()) {
-        // Android: redirect to the HTTPS App Link — intercepted by the manifest intent-filter
-        //          before Chrome loads the page, so the CCT closes automatically.
-        // iOS:     redirect to the custom scheme — SFSafariViewController hands it to appUrlOpen.
-        const redirectTo = Capacitor.getPlatform() === "android"
-          ? "https://friend-dare-game.lovable.app/auth/callback"
-          : "com.dareme.challenges://auth/callback";
+      if (provider === "google" && Capacitor.getPlatform() === "android") {
+        // Native Android: shows the Google account picker directly — no browser, no deep links.
+        // initialize() must be called each time with an explicit clientId because the plugin's
+        // load() method is a no-op and the config key it reads is "clientId", not "serverClientId".
+        await GoogleAuth.initialize({
+          clientId: GOOGLE_WEB_CLIENT_ID,
+          scopes: ["profile", "email"],
+          grantOfflineAccess: true,
+        });
+        const googleUser = await GoogleAuth.signIn();
+        const idToken = googleUser.authentication.idToken;
+        if (!idToken) throw new Error("No ID token returned from Google Sign-In");
 
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: idToken,
+        });
+        if (error) throw error;
+        if (data.session) await navigateAfterAuth(data.session.user.id);
+
+      } else if (Capacitor.isNativePlatform()) {
+        // iOS: browser-based flow with custom scheme deep link.
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider,
-          options: { redirectTo, skipBrowserRedirect: true },
+          options: { redirectTo: "com.dareme.challenges://auth/callback", skipBrowserRedirect: true },
         });
         if (error || !data?.url) throw error ?? new Error("No OAuth URL returned");
-
         await Browser.open({ url: data.url });
-        // Auth page goes to background; AuthCallback handles the rest when the deep link fires.
         setLoading(false);
+
       } else {
         // Web: standard full-page redirect flow.
         const { error } = await supabase.auth.signInWithOAuth({
