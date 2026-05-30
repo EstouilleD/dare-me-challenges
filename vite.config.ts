@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["robots.txt"],
       workbox: {
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/auth\/callback/],
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/auth\/callback/, /^\/.well-known\//],
       },
       manifest: {
         name: "Dare Me - Challenge App",
