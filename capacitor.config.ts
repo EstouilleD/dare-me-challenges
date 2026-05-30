@@ -10,6 +10,11 @@ const config: CapacitorConfig = {
     iosScheme: 'https',
   },
   plugins: {
+    GoogleAuth: {
+      scopes: ["profile", "email"],
+      serverClientId: "699351948587-oqr8kolidgfq1ekuqjjb0ef667cv8nn8.apps.googleusercontent.com",
+      forceCodeForRefreshToken: true,
+    },
     SplashScreen: {
       launchAutoHide: true,
       launchShowDuration: 2000,
