@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
+import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import ProfileSetup from "./pages/ProfileSetup";
@@ -52,6 +53,9 @@ const PlatformInit = () => {
       StatusBar.setOverlaysWebView({ overlay: false });
       StatusBar.setStyle({ style: Style.Light });
       StatusBar.setBackgroundColor({ color: '#2741c4' });
+      // GoogleAuth.load() is empty — the client is only built when initialize() is called.
+      // Must run before signIn() or signOut() to avoid a NullPointerException crash.
+      GoogleAuth.initialize();
     } else {
       // iOS supports env(safe-area-inset-top); the CSS handles the padding.
       StatusBar.setOverlaysWebView({ overlay: true });
