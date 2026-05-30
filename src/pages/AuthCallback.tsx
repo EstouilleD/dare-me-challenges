@@ -15,6 +15,20 @@ const AuthCallback = () => {
       if (done) return;
       done = true;
 
+      // Android native: server-side redirects to custom schemes are blocked by
+      // Chrome CCT (Chrome 80+), but JS-initiated navigations to custom schemes
+      // ARE allowed. So we redirect here via JS, passing tokens in the URL for
+      // the app to pick up via appUrlOpen → setSession.
+      const callbackUrl = new URL(window.location.href);
+      if (callbackUrl.searchParams.get("source") === "android") {
+        window.location.href =
+          `com.dareme.challenges://auth/session` +
+          `?access_token=${encodeURIComponent(session.access_token)}` +
+          `&refresh_token=${encodeURIComponent(session.refresh_token)}`;
+        return;
+      }
+
+      // Web / iOS flow
       if (Capacitor.isNativePlatform()) {
         try { await Browser.close(); } catch { /* already closed */ }
       }
@@ -32,13 +46,12 @@ const AuthCallback = () => {
       }
     };
 
-    // Check if session already exists (detectSessionInUrl:true may have already
-    // processed the code before this effect runs)
+    // detectSessionInUrl:true may have already exchanged the code before this
+    // effect runs — check immediately.
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) goNext(session);
     });
 
-    // Also subscribe in case the exchange is still in progress
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
         subscription.unsubscribe();
@@ -46,7 +59,6 @@ const AuthCallback = () => {
       }
     });
 
-    // Bail out after 15 s so the user isn't stuck on the loading screen
     const timer = setTimeout(() => {
       if (!done) {
         subscription.unsubscribe();

@@ -176,8 +176,13 @@ const Auth = () => {
       // Chrome blocks custom-scheme redirects from server-side 302s (Chrome 80+),
       // but always allows HTTPS redirects which Android App Links then intercept.
       // iOS keeps the custom scheme which works fine with Safari.
+      // Android: use HTTPS so Chrome CCT allows the server-side redirect.
+      // The AuthCallback web page exchanges the code and then does a JS navigation
+      // to com.dareme.challenges://auth/session?tokens — Chrome allows JS-initiated
+      // custom scheme navigations in CCT, which triggers appUrlOpen in the app.
+      // iOS: keep the custom scheme which works fine with Safari.
       const redirectUrl = Capacitor.getPlatform() === "android"
-        ? "https://friend-dare-game.lovable.app/auth/callback"
+        ? "https://friend-dare-game.lovable.app/auth/callback?source=android"
         : "com.dareme.challenges://auth/callback";
 
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -202,6 +207,8 @@ const Auth = () => {
       };
 
       const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log("[OAuth] onAuthStateChange:", event, session?.user?.email ?? "no-session", "handled:", handled);
+        toast({ title: `🔔 authState: ${event}`, description: session?.user?.email ?? "no session" });
         if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session && !handled) {
           cleanup();
           try { await Browser.close(); } catch {}
@@ -215,51 +222,122 @@ const Auth = () => {
       let browserFinishedRef: { remove: () => void } | null = null;
 
       appUrlListenerRef = await CapacitorApp.addListener("appUrlOpen", async ({ url }) => {
-        // DEBUG: confirm deep link fired and show the URL prefix
-        toast({ title: "🔗 Deep link received", description: url.substring(0, 60) });
+        console.log("[OAuth] appUrlOpen fired:", url);
+        toast({ title: "🔗 appUrlOpen fired", description: url.substring(0, 80) });
+
         try {
           const parsed = new URL(url);
           const code = parsed.searchParams.get("code");
+          const errorParam = parsed.searchParams.get("error");
+          // Android flow: tokens passed as query params from web AuthCallback
+          const queryAccessToken = parsed.searchParams.get("access_token");
+          const queryRefreshToken = parsed.searchParams.get("refresh_token");
+          // Legacy implicit flow: tokens in hash fragment
           const hashParams = new URLSearchParams(parsed.hash.substring(1));
-          const accessToken = hashParams.get("access_token");
-          const refreshToken = hashParams.get("refresh_token");
+          const hashAccessToken = hashParams.get("access_token");
+          const hashRefreshToken = hashParams.get("refresh_token");
+
+          console.log("[OAuth] url parsed — code:", !!code, "error:", errorParam, "queryTokens:", !!queryAccessToken, "hashTokens:", !!hashAccessToken);
+          toast({ title: "🔍 URL parsed", description: `code=${!!code} qToken=${!!queryAccessToken} error=${errorParam ?? "none"}` });
+
+          if (errorParam) {
+            cleanup();
+            setLoading(false);
+            toast({ variant: "destructive", title: "OAuth provider error", description: errorParam });
+            return;
+          }
 
           if (code) {
-            toast({ title: "🔑 Exchanging code…" });
-            const { error } = await supabase.auth.exchangeCodeForSession(url);
-            if (error) {
-              console.error("PKCE exchange failed:", error.message);
+            // Direct PKCE code exchange (custom scheme or non-Android flow)
+            console.log("[OAuth] calling exchangeCodeForSession");
+            toast({ title: "🔑 Calling exchangeCodeForSession…" });
+            const { data: exchData, error: exchError } = await supabase.auth.exchangeCodeForSession(url);
+            console.log("[OAuth] exchange result — user:", exchData?.session?.user?.email ?? "none", "error:", exchError?.message ?? "none");
+            toast({ title: exchError ? "❌ Exchange failed" : "✅ Exchange OK", description: exchError?.message ?? exchData?.session?.user?.email ?? "no session in response" });
+
+            if (exchError) {
               cleanup();
               setLoading(false);
-              toast({ variant: "destructive", title: t("auth.signInFailed"), description: error.message });
+              toast({ variant: "destructive", title: t("auth.signInFailed"), description: exchError.message });
               return;
             }
-          } else if (accessToken && refreshToken) {
-            const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-            if (error) {
-              console.error("Implicit setSession failed:", error.message);
+
+            if (exchData?.session && !handled) {
+              console.log("[OAuth] navigating from exchData.session");
+              cleanup();
+              try { await Browser.close(); } catch {}
+              setLoading(false);
+              await navigateAfterAuth(exchData.session.user.id);
+              return;
+            }
+
+          } else if (queryAccessToken && queryRefreshToken) {
+            // Android flow: web AuthCallback exchanged the code and passed tokens
+            // back via JS navigation to com.dareme.challenges://auth/session?tokens
+            console.log("[OAuth] setSession from query params (Android web-callback flow)");
+            toast({ title: "🔑 setSession from web callback…" });
+            const { data: setData, error: setError } = await supabase.auth.setSession({ access_token: queryAccessToken, refresh_token: queryRefreshToken });
+            console.log("[OAuth] setSession — user:", setData?.session?.user?.email ?? "none", "error:", setError?.message ?? "none");
+            toast({ title: setError ? "❌ setSession failed" : "✅ setSession OK", description: setError?.message ?? setData?.session?.user?.email ?? "no session" });
+
+            if (setError) {
               cleanup();
               setLoading(false);
-              toast({ variant: "destructive", title: t("auth.signInFailed"), description: error.message });
+              toast({ variant: "destructive", title: t("auth.signInFailed"), description: setError.message });
               return;
             }
+
+            if (setData?.session && !handled) {
+              cleanup();
+              try { await Browser.close(); } catch {}
+              setLoading(false);
+              await navigateAfterAuth(setData.session.user.id);
+              return;
+            }
+
+          } else if (hashAccessToken && hashRefreshToken) {
+            // Legacy implicit flow
+            console.log("[OAuth] setSession from hash params (implicit flow)");
+            const { data: setData, error: setError } = await supabase.auth.setSession({ access_token: hashAccessToken, refresh_token: hashRefreshToken });
+            console.log("[OAuth] setSession — user:", setData?.session?.user?.email ?? "none", "error:", setError?.message ?? "none");
+            toast({ title: setError ? "❌ setSession failed" : "✅ setSession OK", description: setError?.message ?? setData?.session?.user?.email ?? "no session" });
+
+            if (setError) {
+              cleanup();
+              setLoading(false);
+              toast({ variant: "destructive", title: t("auth.signInFailed"), description: setError.message });
+              return;
+            }
+
+            if (setData?.session && !handled) {
+              cleanup();
+              try { await Browser.close(); } catch {}
+              setLoading(false);
+              await navigateAfterAuth(setData.session.user.id);
+              return;
+            }
+
           } else {
-            // Deep link arrived with no usable params — just unblock the UI.
+            console.log("[OAuth] appUrlOpen: no code, no tokens in URL");
+            toast({ variant: "destructive", title: "⚠️ No code or tokens in URL" });
             cleanup();
             setLoading(false);
             return;
           }
         } catch (e) {
-          console.error("OAuth URL error:", e);
+          console.error("[OAuth] URL parse/exchange error:", e);
+          toast({ variant: "destructive", title: "OAuth error", description: String(e) });
           cleanup();
           setLoading(false);
           return;
         }
 
-        // onAuthStateChange handles navigation; this is a direct fallback in case
-        // the SIGNED_IN event already fired before our listener was ready.
+        // Final fallback: onAuthStateChange should have already navigated,
+        // but double-check with getSession in case it fired before our listener.
         if (!handled) {
           const { data: { session } } = await supabase.auth.getSession();
+          console.log("[OAuth] getSession fallback:", session?.user?.email ?? "no session");
+          toast({ title: "🔄 getSession fallback", description: session?.user?.email ?? "no session — resetting" });
           if (session) {
             cleanup();
             try { await Browser.close(); } catch {}
@@ -272,17 +350,17 @@ const Auth = () => {
         }
       });
 
-      // Safety net: when the browser closes for ANY reason (user pressed back,
-      // deep link fired, or CCT was dismissed), unblock the UI after a short
-      // grace period so the exchange can finish if it's still in progress.
+      // Safety net: if the browser closes without the deep link firing (user pressed
+      // back, or App Link not verified), unblock the UI after a grace period.
       browserFinishedRef = await Browser.addListener("browserFinished", () => {
-        // DEBUG: confirm browser closed event fires
-        toast({ title: "🌐 Browser closed" });
+        console.log("[OAuth] browserFinished fired, handled:", handled);
+        toast({ title: "🌐 Browser closed", description: `handled=${handled}` });
         setTimeout(() => {
           if (!handled) {
+            console.log("[OAuth] browserFinished timeout — resetting (deep link never fired)");
             cleanup();
             setLoading(false);
-            toast({ variant: "destructive", title: "Sign-in incomplete", description: "Deep link was not received. Check Supabase redirect URL." });
+            toast({ variant: "destructive", title: "Sign-in incomplete", description: "Deep link not received — App Link may not be verified yet." });
           }
         }, 4000);
       });
