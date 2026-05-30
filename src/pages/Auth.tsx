@@ -15,7 +15,6 @@ import { Globe, Eye, EyeOff } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Capacitor } from "@capacitor/core";
 import { Browser } from "@capacitor/browser";
-import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
 
 interface PasswordInputProps {
   id: string;
@@ -129,9 +128,6 @@ const Auth = () => {
       toast({ title: t("auth.accountCreated"), description: t("auth.completeProfile") });
       await navigateAfterAuth(data.session.user.id);
     } else {
-      // No session yet — email confirmation is required before they can sign in.
-      // Do NOT navigate away; stay on auth so the session check in ProfileSetup
-      // doesn't immediately bounce them back here.
       toast({ title: t("auth.accountCreated"), description: t("auth.completeProfile") });
     }
   };
@@ -170,60 +166,38 @@ const Auth = () => {
 
   const handleOAuth = async (provider: "google" | "apple") => {
     setLoading(true);
-
     try {
-      if (provider === "google" && Capacitor.getPlatform() === "android") {
-        // initialize() builds the GoogleSignInClient from config (load() is a no-op in this plugin).
-        // Awaiting here prevents the NullPointerException crash from a race on first tap.
-        await GoogleAuth.initialize();
-        const googleUser = await GoogleAuth.signIn();
-        const idToken = googleUser.authentication.idToken;
-        if (!idToken) throw new Error("No ID token returned from Google Sign-In");
+      if (Capacitor.isNativePlatform()) {
+        // Android: redirect to the HTTPS App Link — intercepted by the manifest intent-filter
+        //          before Chrome loads the page, so the CCT closes automatically.
+        // iOS:     redirect to the custom scheme — SFSafariViewController hands it to appUrlOpen.
+        const redirectTo = Capacitor.getPlatform() === "android"
+          ? "https://friend-dare-game.lovable.app/auth/callback"
+          : "com.dareme.challenges://auth/callback";
 
-        const { data, error } = await supabase.auth.signInWithIdToken({
-          provider: "google",
-          token: idToken,
-        });
-        if (error) throw error;
-        if (data.session) await navigateAfterAuth(data.session.user.id);
-
-      } else if (Capacitor.isNativePlatform()) {
-        // iOS: browser-based flow with custom scheme deep link
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider,
-          options: { redirectTo: "com.dareme.challenges://auth/callback", skipBrowserRedirect: true },
+          options: { redirectTo, skipBrowserRedirect: true },
         });
-        if (error || !data?.url) throw error || new Error("No OAuth URL");
+        if (error || !data?.url) throw error ?? new Error("No OAuth URL returned");
 
-        let handled = false;
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-          if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session && !handled) {
-            handled = true;
-            subscription.unsubscribe();
-            try { await Browser.close(); } catch {}
-            setLoading(false);
-            await navigateAfterAuth(session.user.id);
-          }
-        });
         await Browser.open({ url: data.url });
-
+        // Auth page goes to background; AuthCallback handles the rest when the deep link fires.
+        setLoading(false);
       } else {
-        // Web: standard redirect flow
+        // Web: standard full-page redirect flow.
         const { error } = await supabase.auth.signInWithOAuth({
           provider,
           options: { redirectTo: `${window.location.origin}/auth/callback` },
         });
         if (error) throw error;
-        // Browser will redirect — setLoading stays true until page unloads
-        return;
+        // Page will redirect — stay in loading state until navigation.
       }
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
-      console.error("Google sign-in error:", message);
       toast({ variant: "destructive", title: t("auth.signInFailed"), description: message });
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const socialButtons = (

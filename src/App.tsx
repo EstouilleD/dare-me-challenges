@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
+import { App as CapApp } from "@capacitor/app";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import ProfileSetup from "./pages/ProfileSetup";
@@ -61,6 +62,32 @@ const PlatformInit = () => {
   return null;
 };
 
+// Routes deep links into React Router.
+// Fires for Android App Links (https://friend-dare-game.lovable.app/auth/callback)
+// and iOS custom scheme (com.dareme.challenges://auth/callback).
+const AppUrlHandler = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const listenerPromise = CapApp.addListener("appUrlOpen", ({ url }) => {
+      try {
+        const parsed = new URL(url);
+        // Android App Link:  parsed.pathname === "/auth/callback"
+        // iOS custom scheme: parsed.host === "auth", parsed.pathname === "/callback"
+        const route =
+          parsed.pathname === "/auth/callback"
+            ? `/auth/callback${parsed.search}${parsed.hash}`
+            : `/${parsed.host}${parsed.pathname}${parsed.search}${parsed.hash}`;
+
+        if (route.startsWith("/auth/callback")) {
+          navigate(route, { replace: true });
+        }
+      } catch {}
+    });
+    return () => { listenerPromise.then((h) => h.remove()); };
+  }, [navigate]);
+  return null;
+};
+
 // Lives inside BrowserRouter so it can call useNavigate
 const AuthStateHandler = () => {
   const navigate = useNavigate();
@@ -83,6 +110,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <PlatformInit />
+          <AppUrlHandler />
           <AuthStateHandler />
           <Routes>
             <Route path="/" element={<Home />} />

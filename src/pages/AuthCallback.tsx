@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { Capacitor } from "@capacitor/core";
 import { Browser } from "@capacitor/browser";
 import type { Session } from "@supabase/supabase-js";
@@ -9,27 +9,15 @@ const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let done = false;
+    let mounted = true;
 
     const goNext = async (session: Session) => {
-      if (done) return;
-      done = true;
+      if (!mounted) return;
 
-      // Android native: Chrome CCT blocks server-side custom-scheme redirects
-      // (Chrome 80+) but allows JS-initiated ones. Pass tokens via JS navigation
-      // so the app picks them up in appUrlOpen → setSession.
-      const callbackUrl = new URL(window.location.href);
-      if (callbackUrl.searchParams.get("source") === "android") {
-        window.location.href =
-          `com.dareme.challenges://auth/session` +
-          `?access_token=${encodeURIComponent(session.access_token)}` +
-          `&refresh_token=${encodeURIComponent(session.refresh_token)}`;
-        return;
-      }
-
-      // Web / iOS flow
+      // Close the in-app browser on native (no-op on Android App Link since CCT
+      // closes automatically, harmless on iOS).
       if (Capacitor.isNativePlatform()) {
-        try { await Browser.close(); } catch { /* already closed */ }
+        try { await Browser.close(); } catch {}
       }
 
       const { data: profile } = await supabase
@@ -38,33 +26,55 @@ const AuthCallback = () => {
         .eq("id", session.user.id)
         .single();
 
-      if (!profile?.avatar_url && !profile?.profile_photo_url) {
-        navigate("/profile-setup", { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
+      if (!mounted) return;
+      navigate(
+        !profile?.avatar_url && !profile?.profile_photo_url ? "/profile-setup" : "/",
+        { replace: true }
+      );
     };
 
+    // On native, appUrlOpen navigates here via React Router (SPA navigation).
+    // Supabase's detectSessionInUrl only fires on full page load, not SPA navigation,
+    // so we must exchange the PKCE code manually.
+    //
+    // On web, the page fully reloads so detectSessionInUrl handles it automatically
+    // and fires SIGNED_IN — we just wait for that event below.
+    const code = new URLSearchParams(window.location.search).get("code");
+
+    if (Capacitor.isNativePlatform() && code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
+        if (!mounted) return;
+        if (error || !data.session) {
+          navigate("/auth", { replace: true });
+        } else {
+          goNext(data.session);
+        }
+      });
+      return () => { mounted = false; };
+    }
+
+    // Web fallback: session may already exist (detectSessionInUrl ran) or
+    // SIGNED_IN event is about to fire.
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) goNext(session);
+      if (session && mounted) goNext(session);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
+      if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session && mounted) {
         subscription.unsubscribe();
         goNext(session);
       }
     });
 
     const timer = setTimeout(() => {
-      if (!done) {
+      if (mounted) {
         subscription.unsubscribe();
         navigate("/auth", { replace: true });
       }
     }, 15_000);
 
     return () => {
-      done = true;
+      mounted = false;
       subscription.unsubscribe();
       clearTimeout(timer);
     };
