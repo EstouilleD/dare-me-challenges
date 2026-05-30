@@ -12,6 +12,9 @@ const config: CapacitorConfig = {
   plugins: {
     GoogleAuth: {
       scopes: ["profile", "email"],
+      // "clientId" is the key the Android plugin reads (androidClientId → clientId → R.string.server_client_id).
+      // "serverClientId" is kept for iOS/web compatibility.
+      clientId: "699351948587-oqr8kolidgfq1ekuqjjb0ef667cv8nn8.apps.googleusercontent.com",
       serverClientId: "699351948587-oqr8kolidgfq1ekuqjjb0ef667cv8nn8.apps.googleusercontent.com",
       forceCodeForRefreshToken: true,
     },

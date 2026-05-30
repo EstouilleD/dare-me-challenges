@@ -173,8 +173,9 @@ const Auth = () => {
 
     try {
       if (provider === "google" && Capacitor.getPlatform() === "android") {
-        // Native Google Sign-In — no browser, no deep links, no complexity.
-        // GoogleAuth.signIn() shows the native account picker and returns tokens directly.
+        // initialize() builds the GoogleSignInClient from config (load() is a no-op in this plugin).
+        // Awaiting here prevents the NullPointerException crash from a race on first tap.
+        await GoogleAuth.initialize();
         const googleUser = await GoogleAuth.signIn();
         const idToken = googleUser.authentication.idToken;
         if (!idToken) throw new Error("No ID token returned from Google Sign-In");
