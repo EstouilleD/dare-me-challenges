@@ -76,13 +76,17 @@ const ProfileSetup = () => {
       profilePhotoUrl = data.publicUrl;
     }
 
-    const { error } = await supabase.from("profiles").update({
+    // upsert instead of update: new Google/OAuth users have no profiles row yet
+    // (auth.users is created by signInWithIdToken but profiles row may not exist).
+    // update() silently does nothing on missing rows; upsert() creates it.
+    const { error } = await supabase.from("profiles").upsert({
+      id: session.user.id,
       display_name: displayName.trim(),
       full_name: fullName.trim() || null,
       use_avatar: useAvatar,
       avatar_url: useAvatar ? selectedAvatar : null,
       profile_photo_url: !useAvatar ? profilePhotoUrl : null,
-    }).eq("id", session.user.id);
+    });
 
     setLoading(false);
     if (error) {

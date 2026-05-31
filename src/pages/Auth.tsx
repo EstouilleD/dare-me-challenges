@@ -87,14 +87,20 @@ const Auth = () => {
   };
 
   const navigateAfterAuth = async (userId: string) => {
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("avatar_url, profile_photo_url")
       .eq("id", userId)
       .single();
+    if (profileError && profileError.code !== "PGRST116") {
+      // PGRST116 = no rows — expected for new users; any other error is real
+      toast({ variant: "destructive", title: "❌ Profile query error", description: `${profileError.code}: ${profileError.message}`, duration: 15000 });
+    }
     if (!profile?.avatar_url && !profile?.profile_photo_url) {
+      toast({ title: "➡️ Step 4: → /profile-setup", description: "No avatar found, opening profile setup", duration: 5000 });
       navigate("/profile-setup", { replace: true });
     } else {
+      toast({ title: "➡️ Step 4: → /home", description: `avatar: ${profile?.avatar_url ?? profile?.profile_photo_url}`, duration: 5000 });
       navigate("/", { replace: true });
     }
   };
@@ -224,8 +230,16 @@ const Auth = () => {
           setLoading(false);
           return;
         }
-        toast({ title: "✅ Step 3: Supabase OK", description: `uid: ${data.session?.user?.id}`, duration: 5000 });
-        if (data.session) await navigateAfterAuth(data.session.user.id);
+        if (!data.session) {
+          debugToast("Step 3: no session returned", { user: data.user?.id ?? "null", session: "null" });
+          setLoading(false);
+          return;
+        }
+        toast({ title: "✅ Step 3: Supabase OK", description: `uid: ${data.session.user.id}`, duration: 5000 });
+
+        // STEP 4 — navigate
+        toast({ title: "⏳ Step 4: checking profile…", description: "", duration: 5000 });
+        await navigateAfterAuth(data.session.user.id);
 
       } else if (Capacitor.isNativePlatform()) {
         // iOS: browser-based flow with custom scheme deep link.
