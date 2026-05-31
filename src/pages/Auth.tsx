@@ -174,22 +174,23 @@ const Auth = () => {
     setLoading(true);
     try {
       if (provider === "google" && Capacitor.getPlatform() === "android") {
-        // Native Android: shows the Google account picker directly — no browser, no deep links.
-        // initialize() must be called each time with an explicit clientId because the plugin's
-        // load() method is a no-op and the config key it reads is "clientId", not "serverClientId".
-        await GoogleAuth.initialize({
-          clientId: GOOGLE_WEB_CLIENT_ID,
-          scopes: ["profile", "email"],
-          grantOfflineAccess: true,
-        });
+        // initialize() reads clientId from capacitor.config.ts GoogleAuth.clientId.
+        // Must be awaited — the plugin's load() is a no-op so the client isn't built until here.
+        console.log("[GoogleAuth] calling initialize(), clientId from config:", GOOGLE_WEB_CLIENT_ID);
+        await GoogleAuth.initialize();
+        console.log("[GoogleAuth] initialize() complete, calling signIn()");
+
         const googleUser = await GoogleAuth.signIn();
         const idToken = googleUser.authentication.idToken;
+        console.log("[GoogleAuth] signIn() complete — idToken present:", !!idToken, "| first 20 chars:", idToken?.slice(0, 20));
         if (!idToken) throw new Error("No ID token returned from Google Sign-In");
 
+        console.log("[Supabase] calling signInWithIdToken...");
         const { data, error } = await supabase.auth.signInWithIdToken({
           provider: "google",
           token: idToken,
         });
+        console.log("[Supabase] signInWithIdToken result — error:", JSON.stringify(error), "| session uid:", data.session?.user?.id ?? "none");
         if (error) throw error;
         if (data.session) await navigateAfterAuth(data.session.user.id);
 
@@ -214,6 +215,7 @@ const Auth = () => {
       }
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
+      console.error("[GoogleAuth] caught error:", JSON.stringify(e), "| message:", message);
       toast({ variant: "destructive", title: t("auth.signInFailed"), description: message });
       setLoading(false);
     }
