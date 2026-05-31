@@ -170,28 +170,61 @@ const Auth = () => {
     }
   };
 
+  // Shows the full raw error on screen — no USB/logcat needed.
+  const debugToast = (step: string, err: unknown) => {
+    const raw = (() => {
+      try { return JSON.stringify(err, Object.getOwnPropertyNames(err as object)); }
+      catch { return String(err); }
+    })();
+    toast({ variant: "destructive", title: `❌ ${step}`, description: raw, duration: 30000 });
+  };
+
   const handleOAuth = async (provider: "google" | "apple") => {
     setLoading(true);
     try {
       if (provider === "google" && Capacitor.getPlatform() === "android") {
-        // initialize() reads clientId from capacitor.config.ts GoogleAuth.clientId.
-        // Must be awaited — the plugin's load() is a no-op so the client isn't built until here.
-        console.log("[GoogleAuth] calling initialize(), clientId from config:", GOOGLE_WEB_CLIENT_ID);
-        await GoogleAuth.initialize();
-        console.log("[GoogleAuth] initialize() complete, calling signIn()");
 
-        const googleUser = await GoogleAuth.signIn();
+        // STEP 1 — initialize
+        toast({ title: "⏳ Step 1: initialize()", description: `clientId: ${GOOGLE_WEB_CLIENT_ID.slice(0, 30)}…`, duration: 5000 });
+        try {
+          await GoogleAuth.initialize();
+        } catch (e) {
+          debugToast("Step 1 initialize() FAILED", e);
+          setLoading(false);
+          return;
+        }
+
+        // STEP 2 — signIn (native account picker)
+        toast({ title: "⏳ Step 2: signIn()", description: "Waiting for Google account picker…", duration: 5000 });
+        let googleUser: Awaited<ReturnType<typeof GoogleAuth.signIn>>;
+        try {
+          googleUser = await GoogleAuth.signIn();
+        } catch (e) {
+          debugToast("Step 2 signIn() FAILED", e);
+          setLoading(false);
+          return;
+        }
+
         const idToken = googleUser.authentication.idToken;
-        console.log("[GoogleAuth] signIn() complete — idToken present:", !!idToken, "| first 20 chars:", idToken?.slice(0, 20));
-        if (!idToken) throw new Error("No ID token returned from Google Sign-In");
+        if (!idToken) {
+          debugToast("Step 2 signIn() — no idToken", { authentication: googleUser.authentication });
+          setLoading(false);
+          return;
+        }
+        toast({ title: "✅ Step 2: got idToken", description: `${idToken.slice(0, 40)}…`, duration: 5000 });
 
-        console.log("[Supabase] calling signInWithIdToken...");
+        // STEP 3 — exchange with Supabase
+        toast({ title: "⏳ Step 3: signInWithIdToken()", description: "Sending token to Supabase…", duration: 5000 });
         const { data, error } = await supabase.auth.signInWithIdToken({
           provider: "google",
           token: idToken,
         });
-        console.log("[Supabase] signInWithIdToken result — error:", JSON.stringify(error), "| session uid:", data.session?.user?.id ?? "none");
-        if (error) throw error;
+        if (error) {
+          debugToast("Step 3 signInWithIdToken() FAILED", error);
+          setLoading(false);
+          return;
+        }
+        toast({ title: "✅ Step 3: Supabase OK", description: `uid: ${data.session?.user?.id}`, duration: 5000 });
         if (data.session) await navigateAfterAuth(data.session.user.id);
 
       } else if (Capacitor.isNativePlatform()) {
@@ -211,12 +244,9 @@ const Auth = () => {
           options: { redirectTo: `${window.location.origin}/auth/callback` },
         });
         if (error) throw error;
-        // Page will redirect — stay in loading state until navigation.
       }
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : String(e);
-      console.error("[GoogleAuth] caught error:", JSON.stringify(e), "| message:", message);
-      toast({ variant: "destructive", title: t("auth.signInFailed"), description: message });
+      debugToast("handleOAuth unexpected error", e);
       setLoading(false);
     }
   };
