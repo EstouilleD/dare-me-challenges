@@ -15,12 +15,6 @@ import { Globe, Eye, EyeOff } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Capacitor } from "@capacitor/core";
 import { Browser } from "@capacitor/browser";
-import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
-
-// Web OAuth client ID — used by the native SDK to request an ID token
-// that Supabase can verify server-side.
-const GOOGLE_WEB_CLIENT_ID =
-  "699351948587-oqr8kolidgfq1ekuqjjb0ef667cv8nn8.apps.googleusercontent.com";
 
 interface PasswordInputProps {
   id: string;
@@ -87,20 +81,14 @@ const Auth = () => {
   };
 
   const navigateAfterAuth = async (userId: string) => {
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile } = await supabase
       .from("profiles")
       .select("avatar_url, profile_photo_url")
       .eq("id", userId)
       .single();
-    if (profileError && profileError.code !== "PGRST116") {
-      // PGRST116 = no rows — expected for new users; any other error is real
-      toast({ variant: "destructive", title: "❌ Profile query error", description: `${profileError.code}: ${profileError.message}`, duration: 15000 });
-    }
     if (!profile?.avatar_url && !profile?.profile_photo_url) {
-      toast({ title: "➡️ Step 4: → /profile-setup", description: "No avatar found, opening profile setup", duration: 5000 });
       navigate("/profile-setup", { replace: true });
     } else {
-      toast({ title: "➡️ Step 4: → /home", description: `avatar: ${profile?.avatar_url ?? profile?.profile_photo_url}`, duration: 5000 });
       navigate("/", { replace: true });
     }
   };
@@ -176,91 +164,37 @@ const Auth = () => {
     }
   };
 
-  // Shows the full raw error on screen — no USB/logcat needed.
-  const debugToast = (step: string, err: unknown) => {
-    const raw = (() => {
-      try { return JSON.stringify(err, Object.getOwnPropertyNames(err as object)); }
-      catch { return String(err); }
-    })();
-    toast({ variant: "destructive", title: `❌ ${step}`, description: raw, duration: 30000 });
-  };
-
   const handleOAuth = async (provider: "google" | "apple") => {
     setLoading(true);
     try {
-      if (provider === "google" && Capacitor.getPlatform() === "android") {
-
-        // STEP 1 — initialize
-        toast({ title: "⏳ Step 1: initialize()", description: `clientId: ${GOOGLE_WEB_CLIENT_ID.slice(0, 30)}…`, duration: 5000 });
-        try {
-          await GoogleAuth.initialize();
-        } catch (e) {
-          debugToast("Step 1 initialize() FAILED", e);
-          setLoading(false);
-          return;
-        }
-
-        // STEP 2 — signIn (native account picker)
-        toast({ title: "⏳ Step 2: signIn()", description: "Waiting for Google account picker…", duration: 5000 });
-        let googleUser: Awaited<ReturnType<typeof GoogleAuth.signIn>>;
-        try {
-          googleUser = await GoogleAuth.signIn();
-        } catch (e) {
-          debugToast("Step 2 signIn() FAILED", e);
-          setLoading(false);
-          return;
-        }
-
-        const idToken = googleUser.authentication.idToken;
-        if (!idToken) {
-          debugToast("Step 2 signIn() — no idToken", { authentication: googleUser.authentication });
-          setLoading(false);
-          return;
-        }
-        toast({ title: "✅ Step 2: got idToken", description: `${idToken.slice(0, 40)}…`, duration: 5000 });
-
-        // STEP 3 — exchange with Supabase
-        toast({ title: "⏳ Step 3: signInWithIdToken()", description: "Sending token to Supabase…", duration: 5000 });
-        const { data, error } = await supabase.auth.signInWithIdToken({
-          provider: "google",
-          token: idToken,
-        });
-        if (error) {
-          debugToast("Step 3 signInWithIdToken() FAILED", error);
-          setLoading(false);
-          return;
-        }
-        if (!data.session) {
-          debugToast("Step 3: no session returned", { user: data.user?.id ?? "null", session: "null" });
-          setLoading(false);
-          return;
-        }
-        toast({ title: "✅ Step 3: Supabase OK", description: `uid: ${data.session.user.id}`, duration: 5000 });
-
-        // STEP 4 — navigate
-        toast({ title: "⏳ Step 4: checking profile…", description: "", duration: 5000 });
-        await navigateAfterAuth(data.session.user.id);
-
-      } else if (Capacitor.isNativePlatform()) {
-        // iOS: browser-based flow with custom scheme deep link.
+      if (Capacitor.isNativePlatform()) {
+        // Opens the system browser (Chrome Custom Tab on Android, SFSafariViewController on iOS).
+        // After Google auth, Supabase redirects to com.dareme.challenges://auth/callback?code=xxx.
+        // The custom scheme intent-filter in AndroidManifest.xml intercepts the redirect,
+        // which fires appUrlOpen -> AppUrlHandler navigates to /auth/callback ->
+        // AuthCallback exchanges the PKCE code and navigates into the app.
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider,
-          options: { redirectTo: "com.dareme.challenges://auth/callback", skipBrowserRedirect: true },
+          options: {
+            redirectTo: "com.dareme.challenges://auth/callback",
+            skipBrowserRedirect: true,
+          },
         });
-        if (error || !data?.url) throw error ?? new Error("No OAuth URL returned");
+        if (error || !data?.url) throw error ?? new Error("No OAuth URL");
         await Browser.open({ url: data.url });
         setLoading(false);
-
       } else {
-        // Web: standard full-page redirect flow.
+        // Web: standard full-page redirect.
         const { error } = await supabase.auth.signInWithOAuth({
           provider,
           options: { redirectTo: `${window.location.origin}/auth/callback` },
         });
         if (error) throw error;
+        // Browser will redirect — stay loading until page unloads.
       }
     } catch (e: unknown) {
-      debugToast("handleOAuth unexpected error", e);
+      const message = e instanceof Error ? e.message : String(e);
+      toast({ variant: "destructive", title: t("auth.signInFailed"), description: message });
       setLoading(false);
     }
   };
