@@ -1,0 +1,76 @@
+{
+  "project_info": {
+    "project_number": "699351948587",
+    "project_id": "dare-me-6yyogv",
+    "storage_bucket": "dare-me-6yyogv.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:699351948587:android:c3fa819ac3e4e8c5bab96e",
+        "android_client_info": {
+          "package_name": "com.dareme.challenges"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "699351948587-rba84vaatoh3fd523ng7uf41nh3g59fj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dareme.challenges",
+            "certificate_hash": "a7761799ae3348b6da3ba49df45b7f1a3f3aa822"
+          }
+        },
+        {
+          "client_id": "699351948587-oqr8kolidgfq1ekuqjjb0ef667cv8nn8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0eJU3VUtCfC_0Rqp8Uq9yYELJe8yunbg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "699351948587-oqr8kolidgfq1ekuqjjb0ef667cv8nn8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:699351948587:android:f519eaa39963bef3bab96e",
+        "android_client_info": {
+          "package_name": "com.mycompany.dareme"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "699351948587-oqr8kolidgfq1ekuqjjb0ef667cv8nn8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0eJU3VUtCfC_0Rqp8Uq9yYELJe8yunbg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "699351948587-oqr8kolidgfq1ekuqjjb0ef667cv8nn8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
