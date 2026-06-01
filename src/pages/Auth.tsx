@@ -168,15 +168,24 @@ const Auth = () => {
     setLoading(true);
     try {
       if (Capacitor.isNativePlatform()) {
-        // Opens the system browser (Chrome Custom Tab on Android, SFSafariViewController on iOS).
-        // After Google auth, Supabase redirects to com.dareme.challenges://auth/callback?code=xxx.
-        // The custom scheme intent-filter in AndroidManifest.xml intercepts the redirect,
-        // which fires appUrlOpen -> AppUrlHandler navigates to /auth/callback ->
-        // AuthCallback exchanges the PKCE code and navigates into the app.
+        // Opens Chrome Custom Tab (Android) or SFSafariViewController (iOS).
+        //
+        // Android: redirectTo uses the HTTPS App Link, NOT the custom scheme.
+        // Chrome CCT blocks server-side 302 redirects to custom schemes (Chrome 80+),
+        // but always passes HTTPS App Link redirects to the registered app via
+        // the intent-filter in AndroidManifest.xml → appUrlOpen fires.
+        // If the App Link isn't verified yet, AuthCallback has a JS fallback that
+        // redirects to the custom scheme (JS-initiated redirects are allowed).
+        //
+        // iOS: SFSafariViewController handles custom scheme redirects correctly.
+        const redirectTo = Capacitor.getPlatform() === "android"
+          ? "https://friend-dare-game.lovable.app/auth/callback"
+          : "com.dareme.challenges://auth/callback";
+
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider,
           options: {
-            redirectTo: "com.dareme.challenges://auth/callback",
+            redirectTo,
             skipBrowserRedirect: true,
           },
         });

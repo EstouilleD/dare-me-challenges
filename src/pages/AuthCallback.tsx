@@ -11,11 +11,32 @@ const AuthCallback = () => {
   useEffect(() => {
     let mounted = true;
 
+    const code = new URLSearchParams(window.location.search).get("code");
+
+    // ── App Link fallback (Android only) ────────────────────────────────────
+    // When the HTTPS App Link is not yet verified by Android, Chrome CCT loads
+    // this web page instead of opening the native app. The PKCE code_verifier
+    // is in the native WebView's localStorage, not in this browser context.
+    //
+    // Fix: redirect back to the native app via a JS-initiated custom scheme URL.
+    // JS-initiated redirects to custom schemes ARE allowed by Chrome; server-side
+    // 302 redirects to custom schemes are NOT (Chrome 80+).
+    //
+    // Detection: not inside Capacitor + Android User-Agent + code in URL.
+    if (
+      !Capacitor.isNativePlatform() &&
+      /android/i.test(navigator.userAgent) &&
+      code
+    ) {
+      window.location.replace(
+        `com.dareme.challenges://auth/callback?code=${encodeURIComponent(code)}`
+      );
+      return;
+    }
+
     const goNext = async (session: Session) => {
       if (!mounted) return;
 
-      // Close the in-app browser on native (no-op on Android App Link since CCT
-      // closes automatically, harmless on iOS).
       if (Capacitor.isNativePlatform()) {
         try { await Browser.close(); } catch {}
       }
@@ -33,18 +54,15 @@ const AuthCallback = () => {
       );
     };
 
-    // On native, appUrlOpen navigates here via React Router (SPA navigation).
-    // Supabase's detectSessionInUrl only fires on full page load, not SPA navigation,
-    // so we must exchange the PKCE code manually.
-    //
-    // On web, the page fully reloads so detectSessionInUrl handles it automatically
-    // and fires SIGNED_IN — we just wait for that event below.
-    const code = new URLSearchParams(window.location.search).get("code");
-
+    // ── Native: explicit PKCE code exchange ──────────────────────────────────
+    // appUrlOpen navigated here via React Router (SPA navigation).
+    // detectSessionInUrl only fires on full page loads, not SPA navigation,
+    // so we must exchange the code manually.
     if (Capacitor.isNativePlatform() && code) {
       supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
         if (!mounted) return;
         if (error || !data.session) {
+          console.error("[AuthCallback] exchangeCodeForSession failed:", error);
           navigate("/auth", { replace: true });
         } else {
           goNext(data.session);
@@ -53,8 +71,9 @@ const AuthCallback = () => {
       return () => { mounted = false; };
     }
 
-    // Web fallback: session may already exist (detectSessionInUrl ran) or
-    // SIGNED_IN event is about to fire.
+    // ── Web: detectSessionInUrl handled the exchange automatically ───────────
+    // Check if a session already exists (detectSessionInUrl may have completed)
+    // or wait for the SIGNED_IN event.
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session && mounted) goNext(session);
     });

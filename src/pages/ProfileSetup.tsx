@@ -81,6 +81,7 @@ const ProfileSetup = () => {
     // update() silently does nothing on missing rows; upsert() creates it.
     const { error } = await supabase.from("profiles").upsert({
       id: session.user.id,
+      email: session.user.email,
       display_name: displayName.trim(),
       full_name: fullName.trim() || null,
       use_avatar: useAvatar,
