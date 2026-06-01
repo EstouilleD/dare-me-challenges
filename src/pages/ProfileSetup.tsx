@@ -76,15 +76,18 @@ const ProfileSetup = () => {
       profilePhotoUrl = data.publicUrl;
     }
 
-    // Use an RPC so the email is read from auth.users inside the database
-    // (SECURITY DEFINER), bypassing any JS-side session/JWT email issues.
-    const { error } = await supabase.rpc("upsert_own_profile", {
-      p_display_name:      displayName.trim(),
-      p_full_name:         fullName.trim() || null,
-      p_use_avatar:        useAvatar,
-      p_avatar_url:        useAvatar ? selectedAvatar : null,
-      p_profile_photo_url: !useAvatar ? profilePhotoUrl : null,
-    });
+    // The handle_new_user trigger already created the row with the email.
+    // Just update the profile fields — no email needed, no INSERT risk.
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        display_name:      displayName.trim(),
+        full_name:         fullName.trim() || null,
+        use_avatar:        useAvatar,
+        avatar_url:        useAvatar ? selectedAvatar : null,
+        profile_photo_url: !useAvatar ? profilePhotoUrl : null,
+      })
+      .eq("id", session.user.id);
 
     setLoading(false);
     if (error) {
