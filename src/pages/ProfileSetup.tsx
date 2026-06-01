@@ -59,28 +59,13 @@ const ProfileSetup = () => {
     }
     setLoading(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { navigate("/auth"); return; }
-
-    // getUser() makes a server round-trip so this is always fresh.
-    // Fall through all three locations Supabase may store the email for
-    // OAuth users: top-level field, user_metadata, identities array.
-    const email: string =
-      user.email ||
-      (user.user_metadata?.email as string | undefined) ||
-      (user.identities?.[0]?.identity_data?.email as string | undefined) ||
-      "";
-
-    if (!email) {
-      toast({ variant: "destructive", title: t("auth.signInFailed"), description: "Could not retrieve email from Google account." });
-      setLoading(false);
-      return;
-    }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { navigate("/auth"); return; }
 
     let profilePhotoUrl = "";
     if (!useAvatar && photoFile) {
       const fileExt = photoFile.name.split(".").pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, photoFile);
       if (uploadError) {
         toast({ variant: "destructive", title: t("settings.uploadFailed"), description: uploadError.message });
@@ -91,19 +76,19 @@ const ProfileSetup = () => {
       profilePhotoUrl = data.publicUrl;
     }
 
-    const { error } = await supabase.from("profiles").upsert({
-      id: user.id,
-      email,
-      display_name: displayName.trim(),
-      full_name: fullName.trim() || null,
-      use_avatar: useAvatar,
-      avatar_url: useAvatar ? selectedAvatar : null,
-      profile_photo_url: !useAvatar ? profilePhotoUrl : null,
+    // Use an RPC so the email is read from auth.users inside the database
+    // (SECURITY DEFINER), bypassing any JS-side session/JWT email issues.
+    const { error } = await supabase.rpc("upsert_own_profile", {
+      p_display_name:      displayName.trim(),
+      p_full_name:         fullName.trim() || null,
+      p_use_avatar:        useAvatar,
+      p_avatar_url:        useAvatar ? selectedAvatar : null,
+      p_profile_photo_url: !useAvatar ? profilePhotoUrl : null,
     });
 
     setLoading(false);
     if (error) {
-      toast({ variant: "destructive", title: t("settings.updateFailed"), description: `${error.message} [email: "${email}"]` });
+      toast({ variant: "destructive", title: t("settings.updateFailed"), description: error.message });
     } else {
       trackEvent("profile_completed");
       toast({ title: t("profileSetup.profileComplete"), description: t("profileSetup.welcomeMsg") });
