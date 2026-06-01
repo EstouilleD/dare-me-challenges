@@ -61,7 +61,21 @@ const ProfileSetup = () => {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { navigate("/auth"); return; }
-    const email = user.email ?? (user.user_metadata?.email as string | undefined);
+
+    // getUser() makes a server round-trip so this is always fresh.
+    // Fall through all three locations Supabase may store the email for
+    // OAuth users: top-level field, user_metadata, identities array.
+    const email: string =
+      user.email ||
+      (user.user_metadata?.email as string | undefined) ||
+      (user.identities?.[0]?.identity_data?.email as string | undefined) ||
+      "";
+
+    if (!email) {
+      toast({ variant: "destructive", title: t("auth.signInFailed"), description: "Could not retrieve email from Google account." });
+      setLoading(false);
+      return;
+    }
 
     let profilePhotoUrl = "";
     if (!useAvatar && photoFile) {
@@ -77,9 +91,6 @@ const ProfileSetup = () => {
       profilePhotoUrl = data.publicUrl;
     }
 
-    // upsert instead of update: new Google/OAuth users have no profiles row yet
-    // (auth.users is created by signInWithIdToken but profiles row may not exist).
-    // update() silently does nothing on missing rows; upsert() creates it.
     const { error } = await supabase.from("profiles").upsert({
       id: user.id,
       email,
