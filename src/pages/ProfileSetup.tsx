@@ -76,22 +76,33 @@ const ProfileSetup = () => {
       profilePhotoUrl = data.publicUrl;
     }
 
-    // The handle_new_user trigger already created the row with the email.
-    // Just update the profile fields — no email needed, no INSERT risk.
+    const updatePayload = {
+      display_name:      displayName.trim(),
+      full_name:         fullName.trim() || null,
+      use_avatar:        useAvatar,
+      avatar_url:        useAvatar ? selectedAvatar : null,
+      profile_photo_url: !useAvatar ? profilePhotoUrl : null,
+    };
+
+    toast({
+      title: "DEBUG — payload",
+      description: `uid: ${session.user.id}\n${JSON.stringify(updatePayload)}`,
+      duration: 20000,
+    });
+
     const { error } = await supabase
       .from("profiles")
-      .update({
-        display_name:      displayName.trim(),
-        full_name:         fullName.trim() || null,
-        use_avatar:        useAvatar,
-        avatar_url:        useAvatar ? selectedAvatar : null,
-        profile_photo_url: !useAvatar ? profilePhotoUrl : null,
-      })
+      .update(updatePayload)
       .eq("id", session.user.id);
 
     setLoading(false);
     if (error) {
-      toast({ variant: "destructive", title: t("settings.updateFailed"), description: error.message });
+      toast({
+        variant: "destructive",
+        title: t("settings.updateFailed"),
+        description: `msg: ${error.message} | code: ${error.code} | details: ${error.details} | hint: ${error.hint}`,
+        duration: 30000,
+      });
     } else {
       trackEvent("profile_completed");
       toast({ title: t("profileSetup.profileComplete"), description: t("profileSetup.welcomeMsg") });
