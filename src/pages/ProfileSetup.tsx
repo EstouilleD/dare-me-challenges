@@ -103,7 +103,7 @@ const ProfileSetup = () => {
 
     setLoading(false);
     if (error) {
-      toast({ variant: "destructive", title: t("settings.updateFailed"), description: error.message });
+      toast({ variant: "destructive", title: t("settings.updateFailed"), description: `${error.message} [email: "${email}"]` });
     } else {
       trackEvent("profile_completed");
       toast({ title: t("profileSetup.profileComplete"), description: t("profileSetup.welcomeMsg") });
