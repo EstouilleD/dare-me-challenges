@@ -32,9 +32,9 @@ const ProfileSetup = () => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (cancelled) return;
       if (!session) { navigate("/auth", { replace: true }); return; }
-      const { data: profile } = await supabase.from("profiles").select("avatar_url, profile_photo_url").eq("id", session.user.id).single();
+      const { data: profile } = await supabase.from("profiles").select("use_avatar").eq("id", session.user.id).single();
       if (cancelled) return;
-      if (profile && (profile.avatar_url || profile.profile_photo_url)) {
+      if (profile?.use_avatar != null) {
         navigate("/", { replace: true });
       }
     });

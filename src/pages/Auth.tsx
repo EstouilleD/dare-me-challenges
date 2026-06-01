@@ -83,10 +83,10 @@ const Auth = () => {
   const navigateAfterAuth = async (userId: string) => {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("avatar_url, profile_photo_url")
+      .select("use_avatar")
       .eq("id", userId)
       .single();
-    if (!profile?.avatar_url && !profile?.profile_photo_url) {
+    if (profile?.use_avatar == null) {
       navigate("/profile-setup", { replace: true });
     } else {
       navigate("/", { replace: true });

@@ -43,13 +43,16 @@ const AuthCallback = () => {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("avatar_url, profile_photo_url")
+        .select("use_avatar")
         .eq("id", session.user.id)
         .single();
 
       if (!mounted) return;
+      // use_avatar is NULL until ProfileSetup completes (trigger leaves it null).
+      // Checking it avoids a loop when avatar_url/profile_photo_url are both null
+      // (e.g. user chose avatar but the URL field isn't populated yet).
       navigate(
-        !profile?.avatar_url && !profile?.profile_photo_url ? "/profile-setup" : "/",
+        profile?.use_avatar == null ? "/profile-setup" : "/",
         { replace: true }
       );
     };
