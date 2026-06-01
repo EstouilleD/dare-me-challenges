@@ -59,13 +59,14 @@ const ProfileSetup = () => {
     }
     setLoading(true);
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { navigate("/auth"); return; }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { navigate("/auth"); return; }
+    const email = user.email ?? (user.user_metadata?.email as string | undefined);
 
     let profilePhotoUrl = "";
     if (!useAvatar && photoFile) {
       const fileExt = photoFile.name.split(".").pop();
-      const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, photoFile);
       if (uploadError) {
         toast({ variant: "destructive", title: t("settings.uploadFailed"), description: uploadError.message });
@@ -80,8 +81,8 @@ const ProfileSetup = () => {
     // (auth.users is created by signInWithIdToken but profiles row may not exist).
     // update() silently does nothing on missing rows; upsert() creates it.
     const { error } = await supabase.from("profiles").upsert({
-      id: session.user.id,
-      email: session.user.email,
+      id: user.id,
+      email,
       display_name: displayName.trim(),
       full_name: fullName.trim() || null,
       use_avatar: useAvatar,
