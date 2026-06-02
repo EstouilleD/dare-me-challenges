@@ -77,7 +77,7 @@ const Home = () => {
       .eq("id", session.user.id)
       .single();
 
-    if (!profileData?.avatar_url && !profileData?.profile_photo_url) {
+    if (profileData?.use_avatar == null) {
       navigate("/profile-setup", { replace: true });
       return;
     }
