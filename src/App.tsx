@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { App as CapApp } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import ProfileSetup from "./pages/ProfileSetup";
@@ -79,6 +80,9 @@ const AppUrlHandler = () => {
             : `/${parsed.host}${parsed.pathname}${parsed.search}${parsed.hash}`;
 
         if (route.startsWith("/auth/callback")) {
+          // Close the CCT immediately so the native app comes to the
+          // foreground before the async PKCE exchange runs.
+          Browser.close().catch(() => {});
           navigate(route, { replace: true });
         }
       } catch {}

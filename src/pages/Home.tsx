@@ -77,7 +77,7 @@ const Home = () => {
       .eq("id", session.user.id)
       .single();
 
-    if (profileData?.use_avatar == null) {
+    if (!profileData?.onboarding_completed) {
       navigate("/profile-setup", { replace: true });
       return;
     }

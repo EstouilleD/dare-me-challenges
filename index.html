@@ -30,6 +30,15 @@
 
   <body>
     <div id="root"></div>
+    <script>
+      // Suppress the PWA "Add to Home Screen" install prompt.
+      // Users must install the native app from the Play Store / App Store,
+      // not as a standalone PWA, to avoid duplicate app confusion.
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        return false;
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

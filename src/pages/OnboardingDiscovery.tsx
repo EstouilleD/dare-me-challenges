@@ -67,7 +67,13 @@ const OnboardingDiscovery = () => {
     }
   };
 
-  const finish = () => navigate("/");
+  const finish = async () => {
+    await supabase
+      .from("profiles")
+      .update({ onboarding_completed: true })
+      .eq("id", userId);
+    navigate("/");
+  };
 
   if (loading) return (
     <div className="safe-top min-h-screen flex items-center justify-center bg-gradient-hero">
@@ -105,7 +111,7 @@ const OnboardingDiscovery = () => {
                 ))}
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" onClick={() => navigate("/")} className="flex-1">{t("common.skip")}</Button>
+                <Button variant="ghost" onClick={finish} className="flex-1">{t("common.skip")}</Button>
                 <Button onClick={saveInterests} disabled={selectedCategories.length < 3} className="flex-1 gap-1">
                   {t("common.continue")} <ChevronRight className="h-4 w-4" />
                 </Button>

@@ -26,6 +26,8 @@ export default defineConfig(({ mode }) => ({
         display: "standalone",
         orientation: "portrait",
         start_url: "/",
+        prefer_related_applications: true,
+        related_applications: [{ platform: "play", id: "com.dareme.challenges" }],
         icons: [
           {
             src: "/pwa-192x192.svg",

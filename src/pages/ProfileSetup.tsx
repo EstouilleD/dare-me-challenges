@@ -32,9 +32,9 @@ const ProfileSetup = () => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (cancelled) return;
       if (!session) { navigate("/auth", { replace: true }); return; }
-      const { data: profile } = await supabase.from("profiles").select("use_avatar").eq("id", session.user.id).single();
+      const { data: profile } = await supabase.from("profiles").select("onboarding_completed").eq("id", session.user.id).single();
       if (cancelled) return;
-      if (profile?.use_avatar != null) {
+      if (profile?.onboarding_completed) {
         navigate("/", { replace: true });
       }
     });

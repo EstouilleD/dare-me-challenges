@@ -83,10 +83,10 @@ const Auth = () => {
   const navigateAfterAuth = async (userId: string) => {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("use_avatar")
+      .select("onboarding_completed")
       .eq("id", userId)
       .single();
-    if (profile?.use_avatar == null) {
+    if (!profile?.onboarding_completed) {
       navigate("/profile-setup", { replace: true });
     } else {
       navigate("/", { replace: true });
@@ -228,9 +228,16 @@ const Auth = () => {
     </div>
   );
 
+  const isMobileWeb = !Capacitor.isNativePlatform() && /android|iphone|ipad/i.test(navigator.userAgent);
+
   return (
     <div className="safe-top safe-bottom min-h-screen flex items-center justify-center p-4 bg-gradient-hero">
-      <Card className="w-full max-w-md shadow-elevated">
+      {isMobileWeb && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-primary text-primary-foreground text-center text-xs py-2.5 px-4">
+          For the best experience, use the <strong>Dare Me app</strong> on your device.
+        </div>
+      )}
+      <Card className="w-full max-w-md shadow-elevated" style={isMobileWeb ? { marginTop: "36px" } : undefined}>
         <CardHeader className="text-center space-y-2">
           <img src={logo} alt="Dare Me" className="h-20 mx-auto" />
           <CardDescription>{t("auth.tagline")}</CardDescription>

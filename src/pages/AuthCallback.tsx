@@ -43,16 +43,13 @@ const AuthCallback = () => {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("use_avatar")
+        .select("onboarding_completed")
         .eq("id", session.user.id)
         .single();
 
       if (!mounted) return;
-      // use_avatar is NULL until ProfileSetup completes (trigger leaves it null).
-      // Checking it avoids a loop when avatar_url/profile_photo_url are both null
-      // (e.g. user chose avatar but the URL field isn't populated yet).
       navigate(
-        profile?.use_avatar == null ? "/profile-setup" : "/",
+        profile?.onboarding_completed ? "/" : "/profile-setup",
         { replace: true }
       );
     };
@@ -102,6 +99,8 @@ const AuthCallback = () => {
     };
   }, [navigate]);
 
+  const isMobileWeb = !Capacitor.isNativePlatform() && /android|iphone|ipad/i.test(navigator.userAgent);
+
   return (
     <div style={{
       position: "fixed",
@@ -112,6 +111,7 @@ const AuthCallback = () => {
       justifyContent: "center",
       background: "#0f0f0f",
       gap: "16px",
+      padding: "24px",
     }}>
       <svg
         width="40"
@@ -129,9 +129,14 @@ const AuthCallback = () => {
         />
       </svg>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      <p style={{ color: "#888", fontSize: "14px", margin: 0, fontFamily: "system-ui, sans-serif" }}>
-        Signing in…
+      <p style={{ color: "#ccc", fontSize: "16px", fontWeight: 600, margin: 0, fontFamily: "system-ui, sans-serif" }}>
+        {isMobileWeb ? "Returning to the app…" : "Signing in…"}
       </p>
+      {isMobileWeb && (
+        <p style={{ color: "#555", fontSize: "13px", margin: 0, fontFamily: "system-ui, sans-serif", textAlign: "center" }}>
+          If the app doesn't open automatically, please return to it manually.
+        </p>
+      )}
     </div>
   );
 };
