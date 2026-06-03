@@ -16,20 +16,22 @@ const AuthCallback = () => {
     // ── App Link fallback (Android only) ────────────────────────────────────
     // When the HTTPS App Link is not yet verified by Android, Chrome CCT loads
     // this web page instead of opening the native app. The PKCE code_verifier
-    // is in the native WebView's localStorage, not in this browser context.
+    // lives in the native WebView's localStorage, not in this browser context,
+    // so we must bounce back to the native app.
     //
-    // Fix: redirect back to the native app via a JS-initiated custom scheme URL.
-    // JS-initiated redirects to custom schemes ARE allowed by Chrome; server-side
-    // 302 redirects to custom schemes are NOT (Chrome 80+).
-    //
-    // Detection: not inside Capacitor + Android User-Agent + code in URL.
+    // Use the Android intent:// URL format — it is reliably handled by Chrome
+    // and explicitly targets the installed package. Direct custom-scheme
+    // window.location redirects can be silently blocked by Chrome on Android 12+.
     if (
       !Capacitor.isNativePlatform() &&
       /android/i.test(navigator.userAgent) &&
       code
     ) {
+      const fallback = encodeURIComponent("https://friend-dare-game.lovable.app/auth");
       window.location.replace(
-        `com.dareme.challenges://auth/callback?code=${encodeURIComponent(code)}`
+        `intent://auth/callback?code=${encodeURIComponent(code)}` +
+        `#Intent;scheme=com.dareme.challenges;package=com.dareme.challenges;` +
+        `S.browser_fallback_url=${fallback};end`
       );
       return;
     }
