@@ -60,7 +60,7 @@ const ProfileSetup = () => {
     setLoading(true);
 
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { navigate("/auth"); return; }
+    if (!session) { navigate("/auth", { replace: true }); return; }
 
     let profilePhotoUrl = "";
     if (!useAvatar && photoFile) {
@@ -83,12 +83,6 @@ const ProfileSetup = () => {
       avatar_url:        useAvatar ? selectedAvatar : null,
       profile_photo_url: !useAvatar ? profilePhotoUrl : null,
     };
-
-    toast({
-      title: "DEBUG — payload",
-      description: `uid: ${session.user.id}\n${JSON.stringify(updatePayload)}`,
-      duration: 20000,
-    });
 
     const { error } = await supabase
       .from("profiles")

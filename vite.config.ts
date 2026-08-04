@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => ({
         description: "Create challenges, compete with friends, submit proofs, and earn your place on the leaderboard.",
         theme_color: "#000000",
         background_color: "#000000",
-        display: "standalone",
+        display: "browser",
         orientation: "portrait",
         start_url: "/",
         prefer_related_applications: true,

@@ -31,7 +31,7 @@ const OnboardingDiscovery = () => {
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { navigate("/auth"); return; }
+    if (!session) { navigate("/auth", { replace: true }); return; }
     setUserId(session.user.id);
 
     const [catRes, comRes, chRes] = await Promise.all([
@@ -68,10 +68,14 @@ const OnboardingDiscovery = () => {
   };
 
   const finish = async () => {
-    await supabase
+    const { error } = await supabase
       .from("profiles")
       .update({ onboarding_completed: true })
       .eq("id", userId);
+    if (error) {
+      toast({ variant: "destructive", title: t("settings.updateFailed"), description: error.message });
+      return;
+    }
     navigate("/");
   };
 

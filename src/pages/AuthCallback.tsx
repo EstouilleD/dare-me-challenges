@@ -39,10 +39,6 @@ const AuthCallback = () => {
     const goNext = async (session: Session) => {
       if (!mounted) return;
 
-      if (Capacitor.isNativePlatform()) {
-        try { await Browser.close(); } catch {}
-      }
-
       const { data: profile } = await supabase
         .from("profiles")
         .select("onboarding_completed")
