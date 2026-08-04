@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Capacitor } from "@capacitor/core";
-import { Browser } from "@capacitor/browser";
 import type { Session } from "@supabase/supabase-js";
 
 const AuthCallback = () => {
